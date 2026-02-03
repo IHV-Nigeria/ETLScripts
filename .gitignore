@@ -1,0 +1,9 @@
+# Ignore everything inside the output folder
+output/*
+
+# But do not ignore the .gitkeep file (keeps the folder in Git)
+!output/.gitkeep
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
