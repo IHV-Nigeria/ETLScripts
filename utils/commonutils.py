@@ -2,6 +2,33 @@ from datetime import datetime, date
 from typing import Optional
 
 
+
+
+def validate_date(date_val: Optional[datetime]) -> Optional[datetime]:
+    """
+    Validates clinical dates. If the date is a typo (e.g., year 2023702),
+    it returns 1960-01-01 to prevent script crashes while flagging the error.
+    """
+    if date_val is None:
+        return None
+
+    # Define a reasonable clinical window for IHVN data
+    MIN_YEAR = 1900
+    MAX_YEAR = 2100
+    PLACEHOLDER_DATE = datetime(1960, 1, 1)
+
+    try:
+        # Check if the year is within a realistic range
+        if MIN_YEAR <= date_val.year <= MAX_YEAR:
+            return date_val
+        else:
+            # Return 1960 for typos like 2023702
+            return PLACEHOLDER_DATE
+    except (AttributeError, ValueError):
+        # Handles cases where the object isn't a proper datetime
+        return PLACEHOLDER_DATE
+
+
 def get_fy_and_quater_from_date(input_date: datetime):
     if input_date is None:
         return None
