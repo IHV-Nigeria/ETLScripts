@@ -3,7 +3,7 @@ from pymongo import MongoClient
 
 def get_db_connection(db_name="ihvn"):
     """Established connection to MongoDB and returns the database object."""
-    client = MongoClient("mongodb://localhost:27017/")
+    client = MongoClient("mongodb://localhost:27017/",datetime_conversion="DATETIME_AUTO")
     return client[db_name]
 
 def get_art_container_size(db,db_name="ihvn"):
