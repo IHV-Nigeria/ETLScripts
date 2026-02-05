@@ -22,9 +22,10 @@ import utils.commonutils as commonutils
 
 
 def export_eac_data(cutoff_datetime=None, filename=None ):
-    db = mongo_dao.get_db_connection("cdr")
-    cursor = mongo_dao.get_art_containers(db)
-    size = mongo_dao.get_art_container_size(db)
+    db_name="cdr"
+    db = mongo_dao.get_db_connection(db)
+    cursor = mongo_dao.get_art_containers(db,db_name)
+    size = mongo_dao.get_art_container_size(db,db_name)
     print(f"Processing {size} ART containers...")
 
     BATCH_SIZE = 1000

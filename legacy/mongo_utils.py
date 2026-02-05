@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from pprint import pprint
 from datetime import datetime, date
 import pandas as pd
-import constants as constants
+import legacy.constants as constants
 
 def get_db_connection(db_name="cdr"):
     """Established connection to MongoDB and returns the database object."""
