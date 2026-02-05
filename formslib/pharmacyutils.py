@@ -1,5 +1,6 @@
 from typing import Final, Optional
 from datetime import datetime, date
+from utils import commonutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import pandas as pd
@@ -186,18 +187,18 @@ def get_last_arv_pickup_date(doc, cutoff_datetime: Optional[datetime] = None):
     if not obs:
         return None
     last_pickup_date = obs.get("obsDatetime")
-    return last_pickup_date
+    return commonutils.validate_date(last_pickup_date)
 
 def get_min_second_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = None):
     second_line_concept_arr = [CHILD_2ND_LINE_REGIMEN_CONCEPT_ID, ADULT_2ND_LINE_REGIMEN_CONCEPT_ID]
     first_second_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, second_line_concept_arr, cutoff_datetime)
     regimen_date = first_second_line_obs.get("obsDatetime") if first_second_line_obs else None
-    return regimen_date
+    return commonutils.validate_date(regimen_date)  
 def get_min_third_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = None):
     third_line_concept_arr = [CHILD_3RD_LINE_REGIMEN_CONCEPT_ID, ADULT_3RD_LINE_REGIMEN_CONCEPT_ID]
     first_third_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID,  third_line_concept_arr, cutoff_datetime)
     regimen_date = first_third_line_obs.get("obsDatetime") if first_third_line_obs else None
-    return regimen_date
+    return commonutils.validate_date(regimen_date)  
 
 def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen_line_obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
@@ -223,4 +224,4 @@ def get_pharmacy_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
     if not pharmacy_next_appointment_obs:
         return None
     next_appointment_date = pharmacy_next_appointment_obs.get("valueDatetime")
-    return next_appointment_date
+    return commonutils.validate_date(next_appointment_date) 

@@ -3,6 +3,7 @@ from typing import Final, Optional
 from datetime import datetime, date
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
+import utils.commonutils as commonutils
 import pandas as pd
 
 # Constants for HIV Enrollment
@@ -20,7 +21,7 @@ def get_date_transferred_in(doc,cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, HIV_ENROLLMENT_FORM_ID, DATE_TRANSFERED_IN_CONCEPT_ID,cutoff_datetime)
     # Result if true | condition | result if false
     date_transferred_in = obs.get("valueDatetime") if obs else None
-    return date_transferred_in
+    return commonutils.validate_date(date_transferred_in)
     
 
 def get_care_entry_point(doc,cutoff_datetime: Optional[datetime] = None):

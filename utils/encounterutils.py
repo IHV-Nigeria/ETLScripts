@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime, date
 
 import formslib.ctdutils as ctdutils
+from utils import commonutils
 
 def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
@@ -35,7 +36,7 @@ def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[dateti
 def get_last_encounter_date(doc, cutoff_datetime: Optional[datetime] = None):
     encounter = get_last_encounter(doc, cutoff_datetime) 
     encounter_datetime = encounter.get('encounterDatetime') if encounter else None
-    return encounter_datetime
+    return commonutils.validate_date(encounter_datetime)
 
 def get_nth_encounter(doc, form_id, n):
     """
@@ -76,7 +77,7 @@ def get_encounter_datetime(encounter):
         return None
     encounter_datetime = encounter.get('encounterDatetime')
     
-    return encounter_datetime
+    return commonutils.validate_date(encounter_datetime)
 
 def get_encounter_id(encounter):
     if encounter is None:

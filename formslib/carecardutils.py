@@ -1,5 +1,6 @@
 from typing import Optional
 from datetime import datetime, date
+from utils import commonutils
 import utils.obsutils as obsutils
 
 from utils.obsutils import get_first_obs
@@ -69,4 +70,4 @@ def get_clinical_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
     if not clinical_next_appointment_obs:
         return None
     next_appointment_date = clinical_next_appointment_obs.get("valueDatetime")
-    return next_appointment_date
+    return commonutils.validate_date(next_appointment_date) 

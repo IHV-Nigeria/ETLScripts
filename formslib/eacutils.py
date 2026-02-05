@@ -2,6 +2,7 @@
 
 from datetime import datetime, date
 from typing import Optional
+from utils import commonutils
 from utils.encounterutils import get_last_encounter_by_form_id, get_nth_encounter
 from utils.obsutils import get_obs_with_encounter_id
 
@@ -19,7 +20,7 @@ EAC_ADHERENCE_COMMENTS_CONCEPT_ID = 165606
 def get_eac_date(n, doc):
     eacn = get_nth_encounter(doc, EAC_FORM_ID, n)
     eacn_date = eacn.get("encounterDatetime") if eacn else None
-    return eacn_date
+    return commonutils.validate_date(eacn_date)
 
 def get_nth_eac_encounter(doc,n):
     eacn = get_nth_encounter(doc, EAC_FORM_ID, n)

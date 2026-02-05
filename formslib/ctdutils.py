@@ -1,5 +1,6 @@
 from typing import Optional
 from datetime import datetime, date
+from utils import commonutils
 import utils.obsutils as obsutils
 
 
@@ -20,4 +21,4 @@ def get_outcome_date(doc, cutoff_datetime: Optional[datetime] = None):
     if not reson_for_termination_obs:
         return None
     termination_date = reson_for_termination_obs.get("obsDatetime") 
-    return termination_date
+    return commonutils.validate_date(termination_date)

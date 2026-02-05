@@ -1,6 +1,8 @@
 from typing import Optional
 from datetime import datetime, date
 
+from utils import commonutils
+
 
 def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
@@ -164,7 +166,7 @@ def get_obs_with_group_id(doc, form_id, encounter_id, search_obs_concept_id,obs_
             obs.get("voided") == 0 ):
 
             # 2. Access the datetime object directly
-            obs_dt = obs.get("obsDatetime")
+            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
             if isinstance(obs_dt, datetime):
                 matching_obs.append(obs)
                 
@@ -184,7 +186,7 @@ def get_first_obs_with_value(doc,form_id,concept_id, value_coded_arr, earliest_c
             obs.get("valueCoded") in value_coded_arr):
             
             # 2. Access the datetime object directly
-            obs_dt = obs.get("obsDatetime")
+            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))      
             
             # Ensure it is a valid datetime object before comparing
             if isinstance(obs_dt, datetime):
@@ -206,12 +208,12 @@ def get_first_obs_with_value(doc,form_id,concept_id, value_coded_arr, earliest_c
 def getValueDatetimeFromObs(obs):
     if obs is None:
         return None
-    return obs.get("valueDatetime")
+    return commonutils.validate_date(obs.get("valueDatetime"))
 
 def getObsDatetimeFromObs(obs):
     if obs is None:
         return None
-    return obs.get("obsDatetime")
+    return commonutils.validate_date(obs.get("obsDatetime"))
 
 def getValueNumericFromObs(obs):
     if obs is None:
