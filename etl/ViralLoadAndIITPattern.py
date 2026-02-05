@@ -37,8 +37,8 @@ def export_iit_vl_data(cutoff_datetime=None, filename=None ):
     for doc in tqdm(cursor, total=size, desc="ViralLoadAndIITPatternETL Progress"):
             header =demographicsutils.get_message_header(doc)
             demographics = demographicsutils.get_patient_demographics(doc)
-            birthdate = demographics.get("birthdate")
-            art_start_date = artcommence.get_art_start_date(doc, cutoff_datetime)
+            birthdate = commonutils.validate_date(demographics.get("birthdate"))
+            art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
             pickup_1_date_obs = pharmacyutils.get_nth_pickup_obs_of_last_x_pickups(doc, 1, 5, cutoff_datetime)
             pickup_2_date_obs = pharmacyutils.get_nth_pickup_obs_of_last_x_pickups(doc, 2, 5, cutoff_datetime)
             pickup_3_date_obs = pharmacyutils.get_nth_pickup_obs_of_last_x_pickups(doc, 3, 5, cutoff_datetime)
@@ -81,9 +81,9 @@ def export_iit_vl_data(cutoff_datetime=None, filename=None ):
                 "patientHospitalID": demographicsutils.get_patient_identifier(5, doc),
                 
                 "sex": demographics.get("gender"),
-                "birthdate": demographics.get("birthdate"),
+                "birthdate": birthdate,
             
-                "artStartDate": artcommence.get_art_start_date(doc, cutoff_datetime),
+                "artStartDate": art_start_date,
                 "ageAtARTStartMonths": demographicsutils.get_pediatric_age_art_start_months(doc,birthdate,art_start_date),
                 "ageAtARTStartYears": demographicsutils.get_age_art_start_years(doc, birthdate, art_start_date),
                 "careEntryPoint": hivenrollmentutils.get_care_entry_point(doc,cutoff_datetime),
