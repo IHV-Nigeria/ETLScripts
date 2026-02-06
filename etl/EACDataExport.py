@@ -138,41 +138,7 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
                 
                 
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-               
-                
-               
-                
-
-                
-
-               
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
+                      
             }
             batch_list.append(record)
 
@@ -190,7 +156,7 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     #print(f"Found {len(df)} matching records.")
     #print(df.head(20))
     #return export_dataframe(df, filename)
-
+    db.client.close()
     print(f"\nFinal export complete. Total records processed: {size}")
     print(f"File saved to: {full_path}")
     return full_path
