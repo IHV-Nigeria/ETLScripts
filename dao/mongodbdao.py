@@ -34,3 +34,13 @@ def get_art_containers(db,db_name="ihvn"):
     }
     art_containers_cusor = db.container.find(query)
     return art_containers_cusor
+
+def get_all_facilities(db,db_name="ihvn"):
+    if(db is None):
+        db = get_db_connection(db_name)
+    # We sort by State and FacilityName to keep your logs and 
+    # output folders organized.
+    
+    facilities_cursor = db.facilities.find().sort([("State", 1), ("FacilityName", 1)])
+    return list(facilities_cursor)
+

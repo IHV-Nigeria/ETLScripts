@@ -20,6 +20,10 @@ import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 
 
+# Global cache to store facilities for O(1) lookup speed
+_facility_cache = {}
+
+
 
 def export_eac_data(cutoff_datetime=None, filename=None ):
     db_name="cdr"
@@ -27,7 +31,7 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     cursor = mongo_dao.get_art_containers(db,db_name)
     size = mongo_dao.get_art_container_size(db,db_name)
     print(f"Processing {size} ART containers...")
-
+    load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
     batch_list = []
 
@@ -42,6 +46,8 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
             header = demographicsutils.get_message_header(doc)
             demographics = demographicsutils.get_patient_demographics(doc)
             birthdate = commonutils.validate_date(demographics.get("birthdate"))
+            datim_code = header.get("facilityDatimCode")
+            facility_info = get_facility_by_datim(datim_code)
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
             eac_1_date = commonutils.validate_date(eacutils.get_eac_date(1, doc))
             last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
@@ -56,8 +62,8 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
 
             record = {
                 #"touchtime": header.get("touchTime"),
-                "State": header.get("facilityState"),
-                "LGA" : header.get("facilityLga"),
+                "State": facility_info.get("State") if facility_info else None,
+                "LGA" : facility_info.get("LGA") if facility_info else None,
                 "DatimCode" : header.get("facilityDatimCode"),
                 "FacilityName": header.get("facilityName"),
                 "UniqueID": demographicsutils.get_patient_identifier(4, doc),
@@ -184,6 +190,24 @@ def save_batch_to_csv(batch_data, full_path, write_header):
     # mode='a' means Append
     # header=write_header ensures the column names only appear at the top
     df.to_csv(full_path, mode='a', index=False, header=write_header)
+
+def load_facility_cache(db, db_name="cdr"):
+    """
+    Loads all facilities into a dictionary indexed by DATIM code.
+    Run this once at the start of your ETL.
+    """
+    global _facility_cache
+    facilities = mongo_dao.get_all_facilities(db, db_name)
+    # Create a dictionary: { "DATIM_CODE": {full_json_metadata} }
+    _facility_cache = {f.get("DATIM"): f for f in facilities if f.get("DATIM")}
+    print(f"Loaded {len(_facility_cache)} facilities into memory cache.")
+
+def get_facility_by_datim(datim_code):
+    """
+    Returns the full facility JSON for a given DATIM code.
+    Returns None if the code is not found.
+    """
+    return _facility_cache.get(datim_code)
 
 
 
