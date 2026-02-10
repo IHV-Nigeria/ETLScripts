@@ -24,6 +24,10 @@ def get_eac_date(n, doc):
     eacn_date = eacn.get("encounterDatetime") if eacn else None
     return commonutils.validate_date(eacn_date)
 
+def get_nth_eac_after_date(doc,n, after_date):
+    eacn = encounterutils.get_nth_encounter_after_date(doc, EAC_FORM_ID, n, after_date)
+    return eacn
+
 def get_nth_eac_encounter(doc,n):
     eacn = encounterutils.get_nth_encounter(doc, EAC_FORM_ID, n)
     return eacn

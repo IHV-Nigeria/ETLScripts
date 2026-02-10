@@ -38,6 +38,35 @@ def get_last_encounter_date(doc, cutoff_datetime: Optional[datetime] = None):
     encounter_datetime = encounter.get('encounterDatetime') if encounter else None
     return commonutils.validate_date(encounter_datetime)
 
+def get_nth_encounter_after_date(doc, form_id, n, after_date):
+    if after_date is None:
+        return None
+
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    matching_encounters = []
+
+    for encounter in encounter_list:
+        if (encounter.get("formId") == form_id and
+            encounter.get("voided") == 0):
+
+            encounter_datetime = encounter.get("encounterDatetime")
+
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime > after_date:
+                    matching_encounters.append(encounter)
+
+    if not matching_encounters:
+        return None
+
+    # Sort by the actual datetime objects (Oldest first)
+    matching_encounters.sort(key=lambda x: x.get('encounterDatetime'))
+    
+    # Return the nth item (Index is n-1)
+    if len(matching_encounters) >= n:
+        return matching_encounters[n-1]
+    
+    return None
+
 def get_nth_encounter(doc, form_id, n):
     """
     Retrieves the nth occurrence of a specific form based on encounterDatetime.
