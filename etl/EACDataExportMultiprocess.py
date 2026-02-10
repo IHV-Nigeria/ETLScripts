@@ -112,7 +112,8 @@ def process_document(doc, cutoff_datetime):
     viral_load_1_obs = labutils.get_nth_viral_load_obs(doc, 1, cutoff_datetime)
     viral_load_2_obs = labutils.get_nth_viral_load_obs(doc, 2, cutoff_datetime)
     viral_load_3_obs = labutils.get_nth_viral_load_obs(doc, 3, cutoff_datetime)
-    current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)  
+    current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime) 
+    current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None 
     last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 
     current_pregnancy_status_obs = carecardutils.get_current_pregnancy_status_obs(doc, cutoff_datetime)
 
@@ -158,14 +159,14 @@ def process_document(doc, cutoff_datetime):
                 "ViralLoadBefore1stEACDate": obsutils.getObsDatetimeFromObs(viral_load_before_first_eac_obs),
                 "ViralLoadBefore1stEACSampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
                 "ViralLoadBefore1stEACReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
-                "EAC1date": eacutils.get_eac_date(1, doc),
-                "EAC2date": eacutils.get_eac_date(2, doc),
-                "EAC3date": eacutils.get_eac_date(3, doc),
-                "EAC4date": eacutils.get_eac_date(4, doc),
-                "EAC5date": eacutils.get_eac_date(5, doc),
-                "EAC6date": eacutils.get_eac_date(6, doc),
-                "EAC7date": eacutils.get_eac_date(7, doc),
-                "EAC8date": eacutils.get_eac_date(8, doc),
+                "EAC1date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,1,current_viral_load_obsdatetime)),
+                "EAC2date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,2,current_viral_load_obsdatetime)),
+                "EAC3date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,3,current_viral_load_obsdatetime)),
+                "EAC4date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,4,current_viral_load_obsdatetime)),
+                "EAC5date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,5,current_viral_load_obsdatetime)),
+                "EAC6date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,6,current_viral_load_obsdatetime)),
+                "EAC7date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,7,current_viral_load_obsdatetime)),
+                "EAC8date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,8,current_viral_load_obsdatetime)),
                 "ViralLoad1": obsutils.getValueNumericFromObs(viral_load_1_obs),
                 "ViralLoad1ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
                 "ViralLoad1SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
