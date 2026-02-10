@@ -43,10 +43,15 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     
     #extracted_results = []
     for doc in tqdm(cursor, total=size, desc="EAC ETL Progress"):
+            
+            datim_code = header.get("facilityDatimCode")
+            if not is_aspire_state(datim_code):
+                continue  # Skip this record and move to the next one
+
             header = demographicsutils.get_message_header(doc)
             demographics = demographicsutils.get_patient_demographics(doc)
             birthdate = commonutils.validate_date(demographics.get("birthdate"))
-            datim_code = header.get("facilityDatimCode")
+            
             facility_info = get_facility_by_datim(datim_code)
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
             eac_1_date = commonutils.validate_date(eacutils.get_eac_date(1, doc))
@@ -208,6 +213,23 @@ def get_facility_by_datim(datim_code):
     Returns None if the code is not found.
     """
     return _facility_cache.get(datim_code)
+
+# check if datim code belongs to a facility in ASPIRE states (FCT,Katsina,Nasarawa,Rivers) ignore casing and whitespace
+def is_aspire_state(datim_code):
+    aspire_states = ["FCT", "KATSINA", "NASARAWA", "RIVERS"]
+    #if datim_code is None:
+    #    return False   
+    if not datim_code:
+        return False    
+    facility = get_facility_by_datim(datim_code)
+    
+    if facility is None:
+        return False
+    if facility:
+        state = facility.get("State", "").strip().upper()
+        return state in aspire_states
+    return False
+
 
 
 
