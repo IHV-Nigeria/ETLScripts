@@ -76,6 +76,9 @@ def consumer(queue, process_id, cutoff_datetime, filename):
         if doc is None:  # Sentinel value to signal completion
             queue.task_done()
             break
+        if not is_aspire_state(doc):
+            queue.task_done()
+            continue  # Skip this record and move to the next one
         try:
              # Process the document (same logic as in the original loop)
              # You can refactor the document processing logic into a separate function for cleaner code
@@ -239,4 +242,19 @@ def get_facility_by_datim(datim_code):
     return _facility_cache.get(datim_code)
 
 
-
+# check if document belongs to a facility in ASPIRE states (FCT,Katsina,Nasarawa,Rivers) ignore casing and whitespace
+def is_aspire_state(doc):
+    aspire_states = ["FCT", "KATSINA", "NASARAWA", "RIVERS"]
+    header = demographicsutils.get_message_header(doc)
+    datim_code = header.get("facilityDatimCode")
+   
+    if not datim_code:
+        return False    
+    facility = get_facility_by_datim(datim_code)
+    
+    if facility is None:
+        return False
+    if facility:
+        state = facility.get("State", "").strip().upper()
+        return state in aspire_states
+    return False
