@@ -44,11 +44,12 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     #extracted_results = []
     for doc in tqdm(cursor, total=size, desc="EAC ETL Progress"):
             
+            header = demographicsutils.get_message_header(doc)
             datim_code = header.get("facilityDatimCode")
             if not is_aspire_state(datim_code):
                 continue  # Skip this record and move to the next one
 
-            header = demographicsutils.get_message_header(doc)
+            
             demographics = demographicsutils.get_patient_demographics(doc)
             birthdate = commonutils.validate_date(demographics.get("birthdate"))
             
