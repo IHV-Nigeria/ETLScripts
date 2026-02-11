@@ -14,6 +14,9 @@ VIRAL_LOAD_INDICATION_CONCEPT_ID: Final[int] = 164980
 VIRAL_LOAD_ORDERED_DATE_CONCEPT_ID: Final[int] = 164989
 
 
+def get_first_viral_load_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    viral_load_obs = obsutils.get_first_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, cutoff_datetime)
+    return viral_load_obs
 
 def get_nth_viral_load_obs(doc, n , cutoff_datetime: Optional[datetime] = None):
     nth_viral_load_obs = obsutils.get_nth_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, cutoff_datetime)

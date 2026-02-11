@@ -25,6 +25,7 @@ FAMILY_PLANNING_METHOD_CONCEPT_ID = 374
 FUNCTIONAL_STATUS_CONCEPT_ID = 165039
 WHO_STAGE_CONCEPT_ID = 5356
 TB_STATUS_CONCEPT_ID = 1659
+TB_DISEASE_DIAGNOSED_CONCEPT_ID = 1661
 
 CURRENT_REGIMEN_LINE_CONCEPT_ID =  	165708
 CHILD_2ND_LINE_REGIMEN_CONCEPT_ID = 164514
@@ -42,6 +43,26 @@ def get_first_weight(doc,cutoff_datetime: Optional[datetime] = None):
     weight = obs.get("valueNumeric") if obs else None
     return weight
 
+def get_last_tb_diagnosed_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    tb_diagnosed_obs = obsutils.get_last_obs_with_valuecoded_before_date(doc, CARE_CARD_FORM_ID, TB_STATUS_CONCEPT_ID, [TB_DISEASE_DIAGNOSED_CONCEPT_ID], cutoff_datetime)
+    return tb_diagnosed_obs
+
+def get_last_nth_tb_status_obs_of_last_x_tb_statuses(doc, n, x, cutoff_datetime: Optional[datetime] = None):
+    tb_status_obs = obsutils.get_nth_obs_of_last_x_obs(doc, CARE_CARD_FORM_ID, TB_STATUS_CONCEPT_ID, n, x, cutoff_datetime)
+    return tb_status_obs
+
+def get_first_who_stage_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    obs = get_first_obs(doc,CARE_CARD_FORM_ID, WHO_STAGE_CONCEPT_ID)
+    return obs
+
+def get_first_tb_status_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    obs = get_first_obs(doc,CARE_CARD_FORM_ID, TB_STATUS_CONCEPT_ID)
+    return obs
+
+def get_first_weight_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    weight_obs = get_first_obs(doc,CARE_CARD_FORM_ID, WEIGHT_KG_CONCEPT_ID)
+    return weight_obs
+
 def get_current_pregnancy_status_obs(doc, cutoff_datetime: Optional[datetime] = None): 
     pregnancy_status_obs=obsutils.get_last_obs_before_date(doc,CARE_CARD_FORM_ID,PREGNANCY_STATUS_CONCEPT_ID,cutoff_datetime)
     return pregnancy_status_obs
@@ -52,6 +73,7 @@ def get_current_pregnancy_status(doc, cutoff_datetime: Optional[datetime] = None
     obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime)
     pregnancy_status = obs.get("variableValue") if obs else None
     return pregnancy_status
+
 def get_current_pregnancy_status_datetime(doc, cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime)
     pregnancy_status_datetime = obs.get("obsDatetime") if obs else None

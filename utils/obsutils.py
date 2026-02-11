@@ -34,6 +34,33 @@ def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[dat
     
     return matching_obs[0]
 
+def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_coded_arr, cutoff_datetime: Optional[datetime] = None):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
+
+    for obs in obs_list:
+        # 1. Check basic criteria
+        if (obs.get("formId") == form_id and 
+            obs.get("conceptId") == concept_id and 
+            obs.get("voided") == 0 and
+            obs.get("valueCoded") in value_coded_arr):
+            
+            # 2. Access the datetime object directly
+            obs_dt = obs.get("obsDatetime")
+            
+            # Ensure it is a valid datetime object before comparing
+            if isinstance(obs_dt, datetime):
+                if cutoff_datetime is None or obs_dt <= cutoff_datetime:
+                    matching_obs.append(obs)
+
+    if not matching_obs:
+        return None
+
+    # 3. Sort by the actual datetime objects (Newest first)
+    matching_obs.sort(key=lambda x: x.get('obsDatetime'), reverse=True)
+    
+    return matching_obs[0]
+
 def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional[datetime] = None):
     """
     Finds the most recent non-voided observation for a specific form and concept
@@ -76,7 +103,43 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
     matching_obs.sort(key=lambda x: x['obsDatetime'], reverse=True)
     
     return matching_obs[0]
+def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_coded_arr, n, x, cutoff_datetime: Optional[datetime] = None):
+    obs_list = doc.get("messageData", {}).get("obs", [])
 
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+    
+    matching_obs = []
+
+    for obs in obs_list:
+        # 1. Check basic criteria
+        if (obs.get("formId") == form_id and 
+            obs.get("conceptId") == concept_id and 
+            obs.get("voided") == 0 and
+            obs.get("valueCoded") in value_coded_arr):
+            
+            # 2. Access the datetime object directly
+            obs_dt = obs.get("obsDatetime")
+            
+            # Ensure it is a valid datetime object before comparing
+            if isinstance(obs_dt, datetime):
+                if obs_dt <= cutoff_datetime:
+                    matching_obs.append(obs)
+
+    if not matching_obs:
+        return None
+
+    # 3. Sort by the actual datetime objects (Oldest first)
+    matching_obs.sort(key=lambda x: x['obsDatetime'], reverse=False)
+
+    # 4. Limit to last x observations
+    limited_obs_list = matching_obs[:x]
+
+    # 5. Return the nth item (Index is n-1)
+    if len(limited_obs_list) >= n:
+        return limited_obs_list[n-1]
+    
+    return None
 def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
@@ -103,9 +166,9 @@ def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: O
     if not matching_obs_list:
         return None
 
-    # 3. Sort by encounterDatetime (Newest to Oldest)
+    # 3. Sort by encounterDatetime (Oldest to Newest)
     # Using .get() for the sort key handles potential missing dates
-    matching_obs_list.sort(key=lambda x: x.get('obsDatetime'), reverse=True)
+    matching_obs_list.sort(key=lambda x: x.get('obsDatetime'))
 
     # 4. Limit to last x observations
     limited_obs_list = matching_obs_list[:x]
