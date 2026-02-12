@@ -63,6 +63,18 @@ def get_fy_and_quarter_of_obs_obsdatetime(obs):
     obs_datetime = obs.get("obsDatetime")
     return get_fy_and_quater_from_date(obs_datetime)
 
+def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) -> int: 
+    """
+    Returns the number of days between datetime1 and datetime2.
+    Result is positive if datetime2 >= datetime1, negative otherwise.
+    """
+    if datetime1 is None or datetime2 is None:
+        return None
+
+    delta = datetime2 - datetime1
+    return delta.days
+
+
 def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
     """
     Returns the number of whole calendar months between datetime1 and datetime2.

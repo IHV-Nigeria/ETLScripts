@@ -15,6 +15,28 @@ KP_TYPE_CONCEPT_ID = 166369
 DATE_TRANSFERED_IN_CONCEPT_ID = 160534
 PRIOR_ART_CONCEPT_ID = 165242
 
+OCCUPATIONAL_STATUS_CONCEPT_ID = 1542
+MARITAL_STATUS_CONCEPT_ID = 1054
+EDUCATION_LEVEL_CONCEPT_ID = 1712
+DATE_CONFIRMED_HIV_POSITIVE_CONCEPT_ID = 160554
+
+
+
+
+def get_last_marital_status_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    marital_status_obs = obsutils.get_last_obs_before_date(doc, HIV_ENROLLMENT_FORM_ID, MARITAL_STATUS_CONCEPT_ID,cutoff_datetime)
+    return marital_status_obs
+
+def get_last_occupational_status_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    occupational_status_obs = obsutils.get_last_obs_before_date(doc, HIV_ENROLLMENT_FORM_ID, OCCUPATIONAL_STATUS_CONCEPT_ID,cutoff_datetime)
+    return occupational_status_obs
+
+def get_last_education_level_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    education_level_obs = obsutils.get_last_obs_before_date(doc, HIV_ENROLLMENT_FORM_ID, EDUCATION_LEVEL_CONCEPT_ID,cutoff_datetime)
+    return education_level_obs
+def get_last_date_confirmed_hiv_positive_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    date_confirmed_hiv_positive_obs = obsutils.get_last_obs_before_date(doc, HIV_ENROLLMENT_FORM_ID, DATE_CONFIRMED_HIV_POSITIVE_CONCEPT_ID,cutoff_datetime)
+    return date_confirmed_hiv_positive_obs
 
 
 def get_date_transferred_in(doc,cutoff_datetime: Optional[datetime] = None):
