@@ -26,7 +26,7 @@ _facility_cache = {}
 
 
 
-def export_iit_episode_data(filename=None ):
+def export_iit_episode_data(patient_level_file=None, pickupinfo_filename=None, iitepisode=None):  
     db_name="cdr"
     cutoff_datetime = datetime(2025, 12, 31, 23, 59, 59)
     db = mongo_dao.get_db_connection(db_name)
@@ -38,7 +38,7 @@ def export_iit_episode_data(filename=None ):
     batch_list = []
 
     # 1. Prepare the file path (create directory and name)
-    full_path = prepare_filepath(filename)
+    full_path = prepare_filepath(patient_level_file)
     
     # Track if it's the first batch so we can write the CSV header
     is_first_batch = True
@@ -116,20 +116,13 @@ def export_iit_episode_data(filename=None ):
                 "current_pregnancy_status_date": obsutils.getObsDatetimeFromObs(current_pregnancy_status_obs) if current_pregnancy_status_obs else None,
                 "current_viral_load": obsutils.getValueNumericFromObs(current_viral_load_obs),
                 "current_viral_load_date": current_viral_load_obsdatetime,
+            }
 
                 
                         
-                          
-                           
-                
-                
-                
-              
-                
-                
-                
+            extract_drug_pickup_info(doc, cutoff_datetime, pickupinfo_filename) # This function handles its own CSV writing in batches to manage memory efficiently          
                       
-            }
+            
             batch_list.append(record)
 
             if len(batch_list) >= BATCH_SIZE:
@@ -151,6 +144,64 @@ def export_iit_episode_data(filename=None ):
     print(f"File saved to: {full_path}")
     return full_path
 
+def extract_drug_pickup_info(doc, cutoff_datetime, pickupinfo_filename):
+    arv_pickup_obs_list = pharmacyutils.get_all_arv_pickup_obs_before_date(doc, cutoff_datetime)
+    datim_code = demographicsutils.get_message_header(doc).get("facilityDatimCode")
+    patient_uuid = demographicsutils.get_patient_demographics(doc).get("patientUuid")
+    patient_unique_id = demographicsutils.get_patient_identifier(4, doc)
+
+   # 1. Prepare the file path
+    full_path = prepare_filepath(pickupinfo_filename)
+
+    # FIX: Check if the file already exists on disk. 
+    # If it exists, we NEVER want to write the header again.
+    file_exists = os.path.isfile(full_path)
+    
+    # We only write the header if the file does NOT exist yet
+    is_first_write = not file_exists
+
+    BATCH_SIZE = 50 # Increased for better performance with 700k records
+    batch_list = []
+
+    if not arv_pickup_obs_list:
+        return None
+    
+
+    for obs in arv_pickup_obs_list: 
+        pickup_date = obs.get("obsDatetime")
+        if pickup_date and pickup_date <= cutoff_datetime:
+             duration_days = pharmacyutils.get_last_drug_pickup_duration(doc, obs)
+             safe_duration = int(float(duration_days)) if duration_days else 0
+             expected_return_date=pickup_date + pd.Timedelta(days=safe_duration) if duration_days else None
+             actual_return_date = pharmacyutils.get_next_pickup_date(doc, arv_pickup_obs_list, pickup_date)
+             days_out_of_care = commonutils.get_days_diff(expected_return_date, actual_return_date) if actual_return_date else None
+             iit_start_date = expected_return_date + pd.Timedelta(days=28) if expected_return_date else None
+             # iit_flag = 1 if days_out_of_care is greater than 28, 0 if days_out_of_care is otherwise, None if days_out_of_care is None
+             iit_flag = 1 if days_out_of_care is not None and days_out_of_care > 28 else 0 if days_out_of_care is not None else None
+             record = {
+                "datim_code": datim_code,
+                "patient_uuid": patient_uuid, 
+                "patient_unique_id": patient_unique_id,
+                 "pickup_date": pickup_date,
+                 "duration_days": duration_days,
+                 "expected_return_date": expected_return_date,
+                 "actual_return_date": actual_return_date,
+                 "days_out_of_care": days_out_of_care,
+                 "iit_start_date": iit_start_date,
+                 "iit_flag": iit_flag
+                 } 
+             batch_list.append(record)   
+             if len(batch_list) >= BATCH_SIZE:
+                save_batch_to_csv(batch_list, full_path, is_first_write)
+                batch_list = [] 
+                is_first_write = False # Subsequent batches in THIS patient run shouldn't have headers either
+
+    
+    # 3. Save any remaining records
+    if batch_list:
+        save_batch_to_csv(batch_list, full_path, is_first_write)
+                 
+    return full_path
 
 def prepare_filepath(filename=None):
     """Creates the directory and generates the full path for the CSV."""

@@ -14,7 +14,7 @@ print ("Start time: ", start_time )
 #ViralLoadAndIITPattern.export_iit_vl_data(filename="ViralLoadAndIITPattern_Output_"+datetime.now().strftime("_%Y_%m_%d %H_%M_%S")+".csv")
 #EACDataExportMultiprocess.producer_consumer_etl(filename="EACDataExportMultiprocess_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv")
 #TBOutcomeStudy.export_tb_outcome_study_data(filename="TBOutcomeStudy_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv") 
-IITEpisodeExport.export_iit_episode_data(filename="IITEpisodeExport_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv") 
+IITEpisodeExport.export_iit_episode_data(patient_level_file="IITEpisodeExport_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv", pickupinfo_filename="IITEpisodeDrugPickupInfo_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv", iitepisode=True)
 
 end_time = datetime.now()
 print ("End time: ", end_time )

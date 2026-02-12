@@ -297,9 +297,34 @@ def getVariableValueFromObs(obs):
     if obs is None:
         return None
     return obs.get("variableValue")
- 
+ # get all obs with concept id in a form with form id, if you find two obs with the same concept id, get the one with the latest datetime.
+def getAllObsWithConceptIDRemoveDuplicateByDate(doc, form_id, concept_id, cutoff_datetime: Optional[datetime] = None):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    obs_dict = {}
 
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
 
+    for obs in obs_list:
+        if (obs.get("formId") == form_id and
+            obs.get("conceptId") == concept_id and
+            obs.get("voided") == 0):
+
+            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
+            if isinstance(obs_dt, datetime):
+                existing_obs = obs_dict.get(concept_id)
+                if existing_obs is None or obs_dt > commonutils.validate_date(existing_obs.get("obsDatetime")) or obs_dt <= cutoff_datetime: # type: ignore
+                    obs_dict[concept_id] = obs
+
+    # sort the obs by datetime in ascending order and return as a list. Oldest first
+    sorted_obs = sorted(obs_dict.values(), key=lambda x: commonutils.validate_date(x.get("obsDatetime")))
+    return sorted_obs
+
+    return list(obs_dict.values())
+
+   
+     
+    
 
 def get_obs_with_encounter_id(doc, concept_id, encounter_id):
     obs_list = doc.get("messageData", {}).get("obs", [])

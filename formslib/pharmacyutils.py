@@ -138,6 +138,15 @@ def get_mmd_type(doc, cutoff_datetime: Optional[datetime] = None):
     dsd_model = dsd_model_obs.get('variableValue')
     return dsd_model
 
+def get_dsd_model(last_arv_obs, doc):
+    if not last_arv_obs: return None 
+    encounter_id=last_arv_obs.get("encounterId")
+    dsd_model_obs = obsutils.get_obs_with_encounter_id(doc, DSD_MODEL_CONCEPT_ID, encounter_id) if encounter_id else None
+    if not dsd_model_obs:
+        return None 
+    dsd_model = dsd_model_obs.get('variableValue')
+    return dsd_model
+
 def get_last_dsd_model(doc, cutoff_datetime: Optional[datetime] = None):
     last_arv_obs = last_arv_pickup_obs = get_last_arv_obs(doc, cutoff_datetime)
     if not last_arv_obs:
@@ -242,3 +251,15 @@ def get_pharmacy_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
         return None
     next_appointment_date = pharmacy_next_appointment_obs.get("valueDatetime")
     return commonutils.validate_date(next_appointment_date) 
+
+def get_all_arv_pickup_obs_before_date(doc, cutoff_datetime: Optional[datetime] = None):
+    arv_pickup_obs_list = obsutils.getAllObsWithConceptIDRemoveDuplicateByDate(doc, PHARMACY_FORM_ID, ARV_WRAPPING_CONCEPT_ID,cutoff_datetime)
+    return arv_pickup_obs_list
+
+def get_next_pickup_date(doc, arv_pickup_obs_list, pickup_date):
+    future_pickups = [obs for obs in arv_pickup_obs_list if obs.get("obsDatetime") > pickup_date]
+    if not future_pickups: return None
+    future_pickups.sort(key=lambda x: x.get("obsDatetime"))
+    next_pickup_date = future_pickups[0].get("obsDatetime")
+    return commonutils.validate_date(next_pickup_date)
+
