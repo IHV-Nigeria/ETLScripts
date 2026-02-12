@@ -1,5 +1,11 @@
-#import mongo_utils as  utils
-#import constants as constants
+"""
+This ETL scripts extracts dataset for an abstract on the comperative study of patients from two tertiary hospitals in FCT Nigeria (Asokoro and National Hospital)
+with the aim of comparing TB outcomes between the two facilities. The goal is to determine the effect of taking INH on TB outcomes among PLHIV.
+Abstract Topic: : Tuberculosis Outcomes among HIV Clients Receiving and Not Receiving Isoniazid Preventive Therapy: A Comparative Study of Two Tertiary Hospitals in Nigeria
+
+Principal Investigator: Dr. Kwaghe Kwalgha Jonah 
+
+"""
 from email import utils
 import pandas as pd
 from tqdm import tqdm
