@@ -61,6 +61,14 @@ def get_nth_pickup_isoniazid_prophylaxis_obs_of_last_x_pickups(doc, n, x, cutoff
         return None
       
     return inh_pickup_obs
+def get_last_isoniazid_prophylaxis_pickup_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    inh_pickup_obs = obsutils.get_last_obs_with_valuecoded_before_date(doc, PHARMACY_FORM_ID, OI_DRUG_CONCEPT_ID,[ISONIAZID_PROPHYLAXIS_CONCEPT_ID], cutoff_datetime)
+
+    if not inh_pickup_obs:
+        return None
+      
+    return inh_pickup_obs
+
 def get_nth_pickup_obs_of_last_x_pickups(doc, n, x, cutoff_datetime: Optional[datetime] = None):
     wrapping_arv_obs = obsutils.get_nth_obs_of_last_x_obs(doc, PHARMACY_FORM_ID, ARV_WRAPPING_CONCEPT_ID, n, x, cutoff_datetime)
 

@@ -27,9 +27,12 @@ _facility_cache = {}
 
 def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
     db_name="cdr"
+    asokoro_datim_code = "KFbRZKvXpb3"
+    national_hospital_datim_code = "GW1w1chZMPR"
+    datim_codes = [asokoro_datim_code, national_hospital_datim_code]
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    cursor = mongo_dao.get_containers_by_datim_list(db, datim_codes, db_name)
+    size = mongo_dao.get_container_by_datim_list_size(db, datim_codes, db_name)
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -98,6 +101,14 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
             tb_status5_date = obsutils.getObsDatetimeFromObs(tb_status5_obs) if tb_status5_obs else None   
             last_tb_diagnosed_obs = carecardutils.get_last_tb_diagnosed_obs(doc, cutoff_datetime)
             last_tb_diagnosed_date = obsutils.getObsDatetimeFromObs(last_tb_diagnosed_obs) if last_tb_diagnosed_obs else None 
+            last_inh_pickup_obs = pharmacyutils.get_last_isoniazid_prophylaxis_pickup_obs(doc, cutoff_datetime)
+            last_inh_pickup_date = obsutils.getObsDatetimeFromObs(last_inh_pickup_obs) if last_inh_pickup_obs else None
+            last_tb_status_obs = carecardutils.get_current_tb_status_obs(doc, cutoff_datetime)
+            last_tb_status_value = obsutils.getVariableValueFromObs(last_tb_status_obs) if last_tb_status_obs else None
+            last_tb_status_date = obsutils.getObsDatetimeFromObs(last_tb_status_obs) if last_tb_status_obs else None
+            last_who_stage_obs = carecardutils.get_last_who_stage_obs(doc, cutoff_datetime)
+            last_who_stage_value = obsutils.getVariableValueFromObs(last_who_stage_obs) if last_who_stage_obs else None
+            last_who_stage_date = obsutils.getObsDatetimeFromObs(last_who_stage_obs) if last_who_stage_obs else None
 
             record = {
                 "touchtime": header.get("touchTime"),
@@ -146,25 +157,25 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
                 "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
                 "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
                 "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
-                "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
                 "LastTBDiagnosedDate": last_tb_diagnosed_date,
-                "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
-                
-               
+                "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
                 "CurrentRegimenLine": pharmacyutils.get_current_regimen_line(doc,cutoff_datetime) ,
                 "CurrentRegimen": pharmacyutils.get_current_regimen(doc,cutoff_datetime),
+                "CurrentINHDate":  last_inh_pickup_date,
+                "CurrentTBStatus": last_tb_status_value,
+                "CurrentTBStatusDate": last_tb_status_date,
+                "CurrentWHOStage": last_who_stage_value,
+                "CurrentWHOStageDate": last_who_stage_date,
+                "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
+                "CurrentViralLoadDate": current_viral_load_obsdatetime,
+                "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid")  
                 
                 
                 
                 
-                "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-                "Quater": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
                 
-                #"kpType": hivenrollmentutils.get_kp_type(doc,cutoff_datetime),
-                                         
-                #"baselineWeight": carecardutils.get_first_weight(doc,cutoff_datetime),
                 
-                #"currentAgeInMonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),
+               
                 
                 
                 
