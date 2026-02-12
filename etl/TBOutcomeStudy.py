@@ -27,8 +27,8 @@ _facility_cache = {}
 
 def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
     db_name="cdr"
-    asokoro_datim_code = "KFbRZKvXpb3"
-    national_hospital_datim_code = "GW1w1chZMPR"
+    asokoro_datim_code = "wp753KYAdno"
+    national_hospital_datim_code = "meYf9FxUI4c"
     datim_codes = [asokoro_datim_code, national_hospital_datim_code]
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_containers_by_datim_list(db, datim_codes, db_name)

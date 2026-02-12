@@ -37,7 +37,7 @@ def get_art_containers(db,db_name="ihvn"):
 
 
 # Get all containers where messageHeader.facilityDatimCode is in the provided list of datim codes   
-def get_containers_by_datim_list(db, datim_codes, db_name="cdr"):
+def get_containers_by_datim_list(db, datim_codes, db_name="ihvn"):
     """
     Retrieves all active ART containers belonging to a list of DATIM codes.
     """
