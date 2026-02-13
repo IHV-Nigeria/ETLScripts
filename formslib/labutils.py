@@ -86,3 +86,7 @@ def get_last_sample_taken_date_obs(doc, cutoff_datetime: Optional[datetime] = No
 def get_last_viral_load_obs_before(doc, cutoff_datetime):
     viral_load_obs = obsutils.get_last_obs_before_date(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , cutoff_datetime)
     return viral_load_obs
+
+def get_viral_load_after_date(doc, earliest_cutoff_datetime):
+    viral_load_obs = obsutils.get_first_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , earliest_cutoff_datetime)
+    return viral_load_obs

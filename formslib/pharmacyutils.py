@@ -1,6 +1,6 @@
 from typing import Final, Optional
 from datetime import datetime, date
-from utils import commonutils
+from utils import commonutils, encounterutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import pandas as pd
@@ -69,6 +69,10 @@ def get_last_isoniazid_prophylaxis_pickup_obs(doc, cutoff_datetime: Optional[dat
       
     return inh_pickup_obs
 
+def get_arv_wrapping_obs_by_encounter_id(doc, encounter_id):
+    arv_wrapping_obs = obsutils.get_obs_with_encounter_id(doc, ARV_WRAPPING_CONCEPT_ID, encounter_id)
+    return arv_wrapping_obs
+
 def get_nth_pickup_obs_of_last_x_pickups(doc, n, x, cutoff_datetime: Optional[datetime] = None):
     wrapping_arv_obs = obsutils.get_nth_obs_of_last_x_obs(doc, PHARMACY_FORM_ID, ARV_WRAPPING_CONCEPT_ID, n, x, cutoff_datetime)
 
@@ -133,6 +137,16 @@ def get_mmd_type(doc, cutoff_datetime: Optional[datetime] = None):
         return None
     encounter_id= last_arv_obs.get("encounterId")
     dsd_model_obs = obsutils.get_obs_with_encounter_id(doc, MMD_CONCEPT_ID, encounter_id)
+    if not dsd_model_obs:
+        return None 
+    dsd_model = dsd_model_obs.get('variableValue')
+    return dsd_model
+def get_all_pharmacy_encounters_before_date(doc, cutoff_datetime: Optional[datetime] = None):
+    encounter_list = encounterutils.get_all_encounters_by_form_id(doc, PHARMACY_FORM_ID, cutoff_datetime)
+    return encounter_list
+
+def get_dsd_model_by_encounter_id(doc, encounter_id):
+    dsd_model_obs = obsutils.get_obs_with_encounter_id(doc, DSD_MODEL_CONCEPT_ID, encounter_id)
     if not dsd_model_obs:
         return None 
     dsd_model = dsd_model_obs.get('variableValue')

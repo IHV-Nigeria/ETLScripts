@@ -5,6 +5,53 @@ from datetime import datetime, date
 import formslib.ctdutils as ctdutils
 from utils import commonutils
 
+
+def get_next_pickup_date_from_encounterlist(encounter_list, pickup_date: datetime):
+    future_pickup_dates = []
+
+    for encounter in encounter_list:
+        if encounter.get("voided") == 0:
+            encounter_datetime = encounter.get("encounterDatetime")
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime > pickup_date:
+                    future_pickup_dates.append(encounter_datetime)
+
+    if not future_pickup_dates:
+        return None
+
+    # Sort the dates to find the earliest one
+    future_pickup_dates.sort()
+    return future_pickup_dates[0]
+
+
+
+def get_all_encounters_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    matching_encounters = []
+
+    # If a cutoff date is not provided use current date as cutoff
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+
+    for encounter in encounter_list:
+        if (encounter.get("formId") == form_id and
+            encounter.get("voided") ==0):
+
+            encounter_datetime = encounter.get("encounterDatetime")
+
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime <= cutoff_datetime:
+                    matching_encounters.append(encounter)
+
+    if not matching_encounters:
+        return None
+
+    # 3. Sort by the actual datetime objects (Newest first)
+    matching_encounters.sort(key=lambda x: x.get('encounterDatetime'), reverse=False)
+    
+    return matching_encounters
+
+
 def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
     matching_encounters = []

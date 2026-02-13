@@ -15,7 +15,7 @@ def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[dat
             obs.get("voided") == 0):
             
             # 2. Access the datetime object directly
-            obs_dt = obs.get("obsDatetime")
+            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
             
             # Ensure it is a valid datetime object before comparing
             if isinstance(obs_dt, datetime):
@@ -46,7 +46,7 @@ def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_cod
             obs.get("valueCoded") in value_coded_arr):
             
             # 2. Access the datetime object directly
-            obs_dt = obs.get("obsDatetime")
+            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
             
             # Ensure it is a valid datetime object before comparing
             if isinstance(obs_dt, datetime):
