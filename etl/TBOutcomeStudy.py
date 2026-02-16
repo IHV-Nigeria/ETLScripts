@@ -24,7 +24,7 @@ import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
-
+from dao.config import MONGO_DATABASE_NAME
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
@@ -32,7 +32,7 @@ _facility_cache = {}
 
 
 def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
-    db_name="cdr"
+    db_name=MONGO_DATABASE_NAME
     asokoro_datim_code = "wp753KYAdno"
     national_hospital_datim_code = "meYf9FxUI4c"
     datim_codes = [asokoro_datim_code, national_hospital_datim_code]

@@ -17,9 +17,11 @@ import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
+from dao.config import MONGO_DATABASE_NAME
+
 
 def export_iit_vl_data(cutoff_datetime=None, filename=None ):
-    db = mongo_dao.get_db_connection("cdr")
+    db = mongo_dao.get_db_connection(MONGO_DATABASE_NAME)
     cursor = mongo_dao.get_art_containers(db)
     size = mongo_dao.get_art_container_size(db)
     print(f"Processing {size} ART containers...")
