@@ -1,12 +1,12 @@
 from pymongo import MongoClient
-import config
+from . import config
 
 def get_db_connection(db_name=config.MONGO_DATABASE_NAME):
     """Established connection to MongoDB and returns the database object."""
     client = MongoClient(f"mongodb://{config.MONGO_HOST}:{config.MONGO_PORT}/",datetime_conversion="DATETIME_AUTO")
     return client[db_name]
 
-def get_art_container_size(db,db_name="ihvn"):
+def get_art_container_size(db,db_name=config.MONGO_DATABASE_NAME):
     """Returns the count of ART containers in the database."""
     if(db is None):
         db = get_db_connection(config.MONGO_DATABASE_NAME)
@@ -46,7 +46,7 @@ def get_containers_by_datim_list(db, datim_codes, db_name=config.MONGO_DATABASE_
     
     query = {
         # 1. Filter for active ART patients
-        "messageData.patientIdentifiers": {
+            "messageData.patientIdentifiers": {
             "$elemMatch": {
                 "identifierType": 4,
                 "voided": 0
@@ -60,7 +60,7 @@ def get_containers_by_datim_list(db, datim_codes, db_name=config.MONGO_DATABASE_
     
     return db.container.find(query)
 
-def get_container_by_datim_list_size(db, datim_codes, db_name="cdr"):
+def get_container_by_datim_list_size(db, datim_codes, db_name=config.MONGO_DATABASE_NAME):
     """
     Retrieves the count of active ART containers belonging to a list of DATIM codes.
     """
