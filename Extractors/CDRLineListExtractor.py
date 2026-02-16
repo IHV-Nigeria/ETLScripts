@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-from etl import EACDataExport 
+
 
 
 import etl.CDRLineList as CDRLineList
