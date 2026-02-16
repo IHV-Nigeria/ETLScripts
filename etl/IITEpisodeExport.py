@@ -18,7 +18,7 @@ import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
-
+from dao.config import MONGO_DATABASE_NAME
 
 
 # Global cache to store facilities for O(1) lookup speed
@@ -39,7 +39,7 @@ def export_iit_episode_data(patient_baseline_file=None, iit_episode_file=None, c
 
 
 def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None):
-    db_name="cdr"
+    db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_art_containers(db,db_name)
     size = mongo_dao.get_art_container_size(db,db_name)
