@@ -1,4 +1,4 @@
-#import mongo_utils as  utils
+#import mongo_utils as utils
 #import constants as constants
 from email import utils
 import pandas as pd
@@ -31,7 +31,6 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
     target variables to extract:
     State, LGA, DatimCode, FacilityName, UniqueID, HospitalNumber, Sex, DateOfBirth,LastVisitDate,
     LastARTPickupDate, DurationOfLastARVPickup, PatientOutcome, PatientOutcomeDate, CurrentARTStatus
-    
     """
     db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
