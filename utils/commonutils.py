@@ -1,6 +1,17 @@
 from datetime import datetime, date
 from typing import Optional
+from zoneinfo import ZoneInfo
 
+
+
+
+
+
+def localize_date(utc_dt: Optional[datetime]) -> Optional[datetime]:
+    if utc_dt is None:
+        return None
+    # Convert UTC to Lagos/Nigeria time
+    return utc_dt.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Africa/Lagos"))
 
 
 
@@ -22,13 +33,13 @@ def validate_date(date_val: Optional[datetime]) -> Optional[datetime]:
     try:
         # Check if the year is within a realistic range
         if MIN_YEAR <= date_val.year <= MAX_YEAR:
-            return date_val
+            return localize_date(date_val)
         else:
             # Return 1960 for typos like 2023702
-            return PLACEHOLDER_DATE
+            return localize_date(PLACEHOLDER_DATE)
     except (AttributeError, ValueError):
         # Handles cases where the object isn't a proper datetime
-        return PLACEHOLDER_DATE
+        return localize_date(PLACEHOLDER_DATE)
 
 
 def get_fy_and_quater_from_date(input_date: datetime):

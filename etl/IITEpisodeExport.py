@@ -75,7 +75,7 @@ def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None):
             dsd_model= pharmacyutils.get_dsd_model_by_encounter_id(doc, encounter_id)   
             arv_drug_duration = pharmacyutils.get_last_drug_pickup_duration(doc, arv_wrapping_obs)  
             expected_return_date = pickup_date + pd.Timedelta(days=int(float(arv_drug_duration))) if arv_drug_duration and pickup_date else None 
-            actual_return_date = encounterutils.get_next_pickup_date_from_encounterlist(encounter_list,pickup_date) if pickup_date else None 
+            actual_return_date = encounterutils.get_next_pickup_date_from_encounterlist(doc,encounter_list,pickup_date) if pickup_date else None 
             days_out_of_care = commonutils.get_days_diff(expected_return_date, actual_return_date) if expected_return_date and actual_return_date else None
             iit_start_date = expected_return_date + pd.Timedelta(days=28) if expected_return_date else None
             iit_flag = 1 if days_out_of_care is not None and days_out_of_care > 28 else 0 if days_out_of_care is not None else None
@@ -303,6 +303,12 @@ def is_aspire_state(doc):
         return state in aspire_states
     return False
 
+def has_arv_pickup(encounter_obj, doc):
+    encounter_id = encounter_obj.get("encounterId")
+    arv_wrapping_obs = pharmacyutils.get_arv_wrapping_obs_by_encounter_id(doc, encounter_id)
+    if not arv_wrapping_obs:
+        return False  # No ARV wrapping obs for this encounter
+    return True
 
 
 
