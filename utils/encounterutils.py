@@ -2,14 +2,17 @@
 from typing import Optional
 from datetime import datetime, date
 
+from formslib import pharmacyutils
 import formslib.ctdutils as ctdutils
 from utils import commonutils
 
 
-def get_next_pickup_date_from_encounterlist(encounter_list, pickup_date: datetime):
+def get_next_pickup_date_from_encounterlist(doc,encounter_list, pickup_date: datetime):
     future_pickup_dates = []
 
     for encounter in encounter_list:
+        if not has_arv_pickup(encounter, doc):
+            continue  # Skip encounters without ARV pickups
         if encounter.get("voided") == 0:
             encounter_datetime = encounter.get("encounterDatetime")
             if isinstance(encounter_datetime, datetime):
@@ -23,7 +26,12 @@ def get_next_pickup_date_from_encounterlist(encounter_list, pickup_date: datetim
     future_pickup_dates.sort()
     return future_pickup_dates[0]
 
-
+def has_arv_pickup(encounter_obj, doc):
+    encounter_id = encounter_obj.get("encounterId")
+    arv_wrapping_obs = pharmacyutils.get_arv_wrapping_obs_by_encounter_id(doc, encounter_id)
+    if not arv_wrapping_obs:
+        return False  # No ARV wrapping obs for this encounter
+    return True
 
 def get_all_encounters_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
