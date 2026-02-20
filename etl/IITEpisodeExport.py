@@ -176,7 +176,7 @@ def export_patient_baseline_data(patient_level_file=None, cutoff_datetime=None):
 
 
             record = {
-                "touchtime": header.get("touchTime"),
+                "touchtime": commonutils.normalize_clinical_date(header.get("touchTime")),
                 "state": facility_info.get("State") if facility_info else None,
                 "lga" : facility_info.get("LGA") if facility_info else None,
                 "datim_code" : header.get("facilityDatimCode"),

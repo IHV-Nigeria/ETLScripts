@@ -77,8 +77,9 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
     """
     obs_list = doc.get("messageData", {}).get("obs", [])
 
-    if cutoff_datetime is None:
-        cutoff_datetime = datetime.now()
+    # 1. Standardize the cutoff to be Naive and WAT (+1)
+    # If None, it defaults to Now (standardized)
+    target_cutoff = commonutils.normalize_clinical_date(cutoff_datetime or datetime.now())
     
     matching_obs = []
 
@@ -88,21 +89,24 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
             obs.get("conceptId") == concept_id and 
             obs.get("voided") == 0):
             
-            # 2. Access the datetime object directly
-            obs_dt = obs.get("obsDatetime")
+            # 2. Standardize the clinical date from MongoDB
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
             
-            # Ensure it is a valid datetime object before comparing
-            if isinstance(obs_dt, datetime):
-                if obs_dt <= cutoff_datetime:
-                    matching_obs.append(obs)
+            # 3. Safe comparison between two Naive WAT datetimes
+            if obs_dt and target_cutoff and obs_dt <= target_cutoff:
+                matching_obs.append(obs)
 
     if not matching_obs:
         return None
 
-    # 3. Sort by the actual datetime objects (Newest first)
-    matching_obs.sort(key=lambda x: x['obsDatetime'], reverse=True)
+    # 4. Sort using the normalized dates to ensure stability
+    matching_obs.sort(
+        key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1), 
+        reverse=True
+    )
     
     return matching_obs[0]
+
 def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_coded_arr, n, x, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
@@ -130,7 +134,7 @@ def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_c
         return None
 
     # 3. Sort by the actual datetime objects (Oldest first)
-    matching_obs.sort(key=lambda x: x['obsDatetime'], reverse=False)
+    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1), reverse=False)
 
     # 4. Limit to last x observations
     limited_obs_list = matching_obs[:x]
@@ -168,7 +172,7 @@ def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: O
 
     # 3. Sort by encounterDatetime (Oldest to Newest)
     # Using .get() for the sort key handles potential missing dates
-    matching_obs_list.sort(key=lambda x: x.get('obsDatetime'))
+    matching_obs_list.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
 
     # 4. Limit to last x observations
     limited_obs_list = matching_obs_list[:x]
@@ -208,7 +212,7 @@ def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime]
 
     # 3. Sort by encounterDatetime (Oldest to Newest)
     # Using .get() for the sort key handles potential missing dates
-    matching_obs_list.sort(key=lambda x: x.get('obsDatetime'))
+    matching_obs_list.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
 
     # 4. Return the nth item (Index is n-1)
     # Check if the list is long enough to avoid IndexError
@@ -264,7 +268,7 @@ def get_first_obs_with_value(doc,form_id,concept_id, value_coded_arr, earliest_c
         return None
         
     # 3. Sort by the actual datetime objects (Oldest first)
-    matching_obs.sort(key=lambda x: x.get('obsDatetime'))
+    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
     
     return matching_obs[0] 
 
@@ -317,7 +321,7 @@ def getAllObsWithConceptIDRemoveDuplicateByDate(doc, form_id, concept_id, cutoff
                     obs_dict[concept_id] = obs
 
     # sort the obs by datetime in ascending order and return as a list. Oldest first
-    sorted_obs = sorted(obs_dict.values(), key=lambda x: commonutils.validate_date(x.get("obsDatetime")))
+    sorted_obs = sorted(obs_dict.values(), key=lambda x: commonutils.normalize_clinical_date(x.get("obsDatetime")) or datetime(1900,1,1))
     return sorted_obs
 
     return list(obs_dict.values())

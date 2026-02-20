@@ -1,5 +1,5 @@
-from datetime import datetime, date
-from typing import Optional
+from datetime import datetime, date, timedelta
+from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
 
@@ -74,6 +74,27 @@ def get_fy_and_quarter_of_obs_obsdatetime(obs):
     obs_datetime = obs.get("obsDatetime")
     return get_fy_and_quater_from_date(obs_datetime)
 
+
+def normalize_clinical_date(date_val: Any) -> Optional[datetime]:
+    """
+    Standardizes clinical dates for IHVN ETL.
+    1. Strips timezone info (Naive).
+    2. Adjusts UTC to WAT (UTC+1).
+    3. Returns None if input is invalid.
+    """
+    if date_val is None or not isinstance(date_val, datetime):
+        return None
+        
+    try:
+        # 1. Adjust for the +1 hour Nigeria offset identified in SQL vs Python
+        # (This corrects the 23:00 vs 00:00 discrepancy)
+        wat_date = date_val + timedelta(hours=1)
+        
+        # 2. Strip timezone info to prevent 'can't subtract naive/aware' errors
+        return wat_date.replace(tzinfo=None)
+    except Exception:
+        return None
+
 def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) -> int: 
     """
     Returns the number of days between datetime1 and datetime2.
@@ -81,8 +102,14 @@ def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) 
     """
     if datetime1 is None or datetime2 is None:
         return None
+    
+    # Use distinct names to avoid conflict with 'date' or 'datetime' types
+    clean_dt1 = datetime1.replace(tzinfo=None) if datetime1.tzinfo else datetime1
+    clean_dt2 = datetime2.replace(tzinfo=None) if datetime2.tzinfo else datetime2
 
-    delta = datetime2 - datetime1
+    # Perform subtraction on variables, not types
+    delta = clean_dt2 - clean_dt1
+
     return delta.days
 
 

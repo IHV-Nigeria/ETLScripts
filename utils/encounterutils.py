@@ -9,20 +9,23 @@ from utils import commonutils
 
 def get_next_pickup_date_from_encounterlist(doc,encounter_list, pickup_date: datetime):
     future_pickup_dates = []
+    # Ensure the anchor pickup_date is naive
+    clean_pickup_date = pickup_date.replace(tzinfo=None) if pickup_date.tzinfo else pickup_date
 
     for encounter in encounter_list:
         if encounter.get("voided") == 0:
             encounter_datetime = encounter.get("encounterDatetime")
             if isinstance(encounter_datetime, datetime):
-                if encounter_datetime > pickup_date:
-                    future_pickup_dates.append(encounter_datetime)
+                clean_encounter_datetime = encounter_datetime.replace(tzinfo=None) if encounter_datetime.tzinfo else encounter_datetime
+                if clean_encounter_datetime > clean_pickup_date:
+                    future_pickup_dates.append(clean_encounter_datetime)
 
     if not future_pickup_dates:
         return None
 
     # Sort the dates to find the earliest one
     future_pickup_dates.sort()
-    return future_pickup_dates[0]
+    return commonutils.normalize_clinical_date(future_pickup_dates[0])
 
 def has_arv_pickup(encounter_obj, doc):
     encounter_id = encounter_obj.get("encounterId")
