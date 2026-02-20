@@ -11,8 +11,6 @@ def get_next_pickup_date_from_encounterlist(doc,encounter_list, pickup_date: dat
     future_pickup_dates = []
 
     for encounter in encounter_list:
-        if not has_arv_pickup(encounter, doc):
-            continue  # Skip encounters without ARV pickups
         if encounter.get("voided") == 0:
             encounter_datetime = encounter.get("encounterDatetime")
             if isinstance(encounter_datetime, datetime):
@@ -33,6 +31,22 @@ def has_arv_pickup(encounter_obj, doc):
         return False  # No ARV wrapping obs for this encounter
     return True
 
+
+def get_all_arv_pickup_encounters(doc):
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    arv_pickup_encounters = []
+
+    for encounter in encounter_list:
+        if has_arv_pickup(encounter, doc) and encounter.get("voided") == 0:
+            arv_pickup_encounters.append(encounter)
+
+    if not arv_pickup_encounters:
+        return None
+
+    # Sort by the actual datetime objects (Newest first)
+    arv_pickup_encounters.sort(key=lambda x: x.get('encounterDatetime'), reverse=False)
+    
+    return arv_pickup_encounters
 def get_all_encounters_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
     matching_encounters = []

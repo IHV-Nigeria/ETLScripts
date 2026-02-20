@@ -59,7 +59,7 @@ def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None):
         if not is_aspire_state(doc):
             continue  # Skip this record and move to the next one
         # Extract all Pharmacy Encounters with encounter_datetime not more than cutoff datetime for this patient into a list
-        encounter_list = pharmacyutils.get_all_pharmacy_encounters_before_date(doc, cutoff_datetime)
+        encounter_list = pharmacyutils.get_all_arv_pickup_encounters_before_date(doc, cutoff_datetime)
 
         if not encounter_list:
             continue  # No pharmacy encounters, skip to next patient

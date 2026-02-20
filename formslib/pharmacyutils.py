@@ -145,6 +145,22 @@ def get_all_pharmacy_encounters_before_date(doc, cutoff_datetime: Optional[datet
     encounter_list = encounterutils.get_all_encounters_by_form_id(doc, PHARMACY_FORM_ID, cutoff_datetime)
     return encounter_list
 
+def get_all_arv_pickup_encounters_before_date(doc, cutoff_datetime: Optional[datetime] = None):
+    encounter_list = get_all_pharmacy_encounters_before_date(doc, cutoff_datetime)
+    if not encounter_list:
+        return None
+    
+    for encounter in encounter_list:
+        encounter_id = encounter.get("encounterId")
+        arv_wrapping_obs = get_arv_wrapping_obs_by_encounter_id(doc, encounter_id)
+        if not arv_wrapping_obs:
+            encounter_list.remove(encounter)
+
+    if not encounter_list:
+        return None
+
+    return encounter_list
+
 def get_dsd_model_by_encounter_id(doc, encounter_id):
     dsd_model_obs = obsutils.get_obs_with_encounter_id(doc, DSD_MODEL_CONCEPT_ID, encounter_id)
     if not dsd_model_obs:
