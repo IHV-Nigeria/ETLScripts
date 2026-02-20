@@ -22,6 +22,7 @@ def get_art_container_size():
     }
     art_containers_count = db.container.count_documents(query)
     return art_containers_count
+
 def get_art_containers():
     db = get_db_connection()
     query = {
@@ -34,14 +35,42 @@ def get_art_containers():
     }
     art_containers_cusor = db.container.find(query)
     return art_containers_cusor
+
 def get_message_header(doc):
     message_header = doc.get('messageHeader', {})
     return message_header
 
-
 def get_patient_demographics(doc):
     patient_demographics = doc.get('messageData',{}).get('demographics',{})
     return patient_demographics
+
+def normalize_datetime(dt_str):
+    """
+    Safely converts a datetime string to a timezone-naive datetime object in Africa/Lagos.
+    Skips invalid or out-of-range dates by returning None.
+    """
+    if not dt_str:
+        return None
+    try:
+        s = pd.to_datetime(dt_str, errors='raise')  # Fail fast on bad dates
+        s_ceiled = s.dt.ceil('D')
+    except Exception:
+        return None
+
+    if s.tzinfo is None:
+        s_ceiled = s_ceiled.tz_localize('UTC')
+
+    return s_ceiled.tz_convert('Africa/Lagos').replace(tzinfo=None)
+
+def format_date(date_val):
+    """
+    Converts a date-like value to 'DD-MM-YYYY' in Africa/Lagos timezone or returns None if invalid.
+    Uses normalize_datetime for robust parsing and timezone handling.
+    """
+    dt = normalize_datetime(date_val)
+    if dt is not None and not pd.isna(dt):
+        return dt.strftime('%d-%m-%Y')
+    return None
 
 def get_patient_identifier(identifier_type_id, doc):
     patient_identifiers = doc.get('messageData',{}).get('patientIdentifiers',{})
@@ -53,16 +82,14 @@ def get_patient_identifier(identifier_type_id, doc):
     for item in patient_identifiers:
         if item.get("identifierType") == identifier_type_id and item.get("voided") == 0:
             return item.get("identifier")
-
     # 4. Return None if the loop finishes without finding a match
     return None
 
 def get_patient_birthdate(doc):
     patient_demographics = get_patient_demographics(doc)
-    return patient_demographics.get('birthdate')
+    return format_date(patient_demographics.get('birthdate'))
 
 def calculateAge(birthdate: datetime):
-    
      if birthdate is None:
         return None
 
@@ -95,6 +122,7 @@ def get_current_age_at_date_in_months(doc, at_date: Optional[datetime] = None):
         return None
 
     return total_months
+
 def get_viral_load_date_fy_and_quarter(doc, cutoff_datetime: Optional[datetime] = None):
     current_viral_load_obs = get_last_obs_before_date(doc, constants.LAB_FORM_ID, constants.VIRAL_LOAD_CONCEPT_ID, cutoff_datetime)
     if current_viral_load_obs is None:
@@ -146,6 +174,7 @@ def get_current_age_at_date(doc, at_date: Optional[datetime] = None):
     return today.year - dob.year - (
         (today.month, today.day) < (dob.month, dob.day)
     )
+
 def get_patient_current_age(doc):
     birthdate = get_patient_birthdate(doc)
     return calculateAge(birthdate)
@@ -154,6 +183,7 @@ def get_first_weight(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_first_obs(doc,constants.CARE_CARD_FORM_ID, constants.WEIGHT_KG_CONCEPT_ID)
     weight = obs.get("valueNumeric") if obs else None
     return weight
+
 def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
     matching_encounters = []
@@ -179,6 +209,7 @@ def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[dateti
     matching_encounters.sort(key=lambda x: x.get('encounterDatetime'), reverse=True)
     
     return matching_encounters[0]
+
 def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
     matching_encounters = []
@@ -204,13 +235,11 @@ def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
     matching_encounters.sort(key=lambda x: x.get('encounterDatetime'), reverse=True)
     
     return matching_encounters[0]
-                
 
 def get_last_encounter_date(doc, cutoff_datetime: Optional[datetime] = None):
     encounter = get_last_encounter(doc, cutoff_datetime) 
     encounter_datetime = encounter.get('encounterDatetime') if encounter else None
-    return encounter_datetime
-
+    return format_date(encounter_datetime)
 
 def get_last_drug_pickup_duration(doc, cutoff_datetime: Optional[datetime] = None):
     obs = get_last_arv_obs(doc,cutoff_datetime)
@@ -225,8 +254,6 @@ def get_last_drug_pickup_duration(doc, cutoff_datetime: Optional[datetime] = Non
         else:
             arv_duration = None
             return arv_duration
-        
-        
     
 def get_obs_with_encounter_id(doc, concept_id, encounter_id):
     obs_list = doc.get("messageData", {}).get("obs", [])
@@ -243,8 +270,7 @@ def get_obs_with_encounter_id(doc, concept_id, encounter_id):
         return None
         
     return matching_obs[0]
-    
-    
+
 def get_obs_with_group_id(doc, form_id, encounter_id, search_obs_concept_id,obs_group_id):
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
@@ -325,9 +351,6 @@ def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[dat
     matching_obs.sort(key=lambda x: x.get('obsDatetime'))
     
     return matching_obs[0]
-                        
-
-    
 
 def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional[datetime] = None):
     """
@@ -414,6 +437,7 @@ def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: O
         return limited_obs_list[n-1]
     
     return None
+
 def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
@@ -450,8 +474,7 @@ def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime]
         return matching_obs_list[n-1]
     
     return None
-    
-    
+
 def get_nth_encounter(doc, form_id, n):
     """
     Retrieves the nth occurrence of a specific form based on encounterDatetime.
@@ -487,13 +510,6 @@ def get_nth_encounter(doc, form_id, n):
     
     return None
 
-
-
-
-
-
-# Popular Variables"
-
 def get_nth_pickup_obs_of_last_x_pickups(doc, n, x, cutoff_datetime: Optional[datetime] = None):
     wrapping_arv_obs = get_nth_obs_of_last_x_obs(doc, constants.PHARMACY_FORM_ID, constants.ARV_WRAPPING_CONCEPT_ID, n, x, cutoff_datetime)
 
@@ -506,11 +522,11 @@ def get_nth_viral_load_obs_of_last_x_viral_loads(doc, n, x, cutoff_datetime: Opt
 
     return viral_load_obs
 
-
 def get_nth_arv_pickup_obs(doc, n, cutoff_datetime: Optional[datetime] = None): 
     wrapping_arv_obs = get_nth_obs(doc, constants.PHARMACY_FORM_ID, constants.ARV_WRAPPING_CONCEPT_ID, n, cutoff_datetime)
 
     return wrapping_arv_obs
+
 def get_nth_medication_duration(doc, n, cutoff_datetime: Optional[datetime] = None):    
     wrapping_arv_obs = get_nth_arv_pickup_obs(doc, n, cutoff_datetime)
     if not wrapping_arv_obs:
@@ -523,6 +539,7 @@ def get_nth_medication_duration(doc, n, cutoff_datetime: Optional[datetime] = No
         return None
     arv_duration = medication_duration_obs.get("valueNumeric")
     return arv_duration
+
 def get_nth_appointment_date(doc, n, cutoff_datetime: Optional[datetime] = None):
     wrapping_arv_obs = get_nth_arv_pickup_obs(doc, n, cutoff_datetime)
     if not wrapping_arv_obs:
@@ -532,14 +549,14 @@ def get_nth_appointment_date(doc, n, cutoff_datetime: Optional[datetime] = None)
     if not pharmacy_next_appointment_obs:
         return None
     next_appointment_date = pharmacy_next_appointment_obs.get("valueDatetime")
-    return next_appointment_date
+    return format_date(next_appointment_date)
 
 def get_nth_arv_pickup_date(doc, n, cutoff_datetime: Optional[datetime] = None):
     wrapping_arv_obs = get_nth_arv_pickup_obs(doc, n, cutoff_datetime)
     if not wrapping_arv_obs:
         return None
     arv_pickup_date = wrapping_arv_obs.get("obsDatetime")
-    return arv_pickup_date
+    return format_date(arv_pickup_date)
 
 def get_clinical_next_appointment_date(doc, cutoff_datetime: Optional[datetime] = None):
     clinical_next_appointment_obs = get_last_obs_before_date(doc, constants.CARE_CARD_FORM_ID, constants.NEXT_APPOINTMENT_DATE_CONCEPT_ID, cutoff_datetime)
@@ -547,8 +564,7 @@ def get_clinical_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
     if not clinical_next_appointment_obs:
         return None
     next_appointment_date = clinical_next_appointment_obs.get("valueDatetime")
-    return next_appointment_date
-
+    return format_date(next_appointment_date)
 
 def get_pharmacy_next_appointment_date(doc, cutoff_datetime: Optional[datetime] = None):
     last_arv_pickup_obs = get_last_arv_obs(doc, cutoff_datetime)
@@ -559,7 +575,7 @@ def get_pharmacy_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
     if not pharmacy_next_appointment_obs:
         return None
     next_appointment_date = pharmacy_next_appointment_obs.get("valueDatetime")
-    return next_appointment_date
+    return format_date(next_appointment_date)
 
 def get_facility_dsd_model(doc, cutoff_datetime: Optional[datetime] = None):
     last_arv_obs = get_last_arv_obs(doc, cutoff_datetime)
@@ -633,22 +649,20 @@ def get_current_art_status(doc, cutoff_datetime: Optional[datetime] = None):
         return "InActive"
     else:
         return "Active"
-    
 
 def get_outcome_date(doc, cutoff_datetime: Optional[datetime] = None):
     reson_for_termination_obs = get_last_obs_before_date(doc, constants.CLIENT_TRACKING_DISCONTINUATION_FORM_ID, constants.REASON_FOR_TERMINATION_CONCEPT_ID, cutoff_datetime)
     if not reson_for_termination_obs:
         return None
     termination_date = reson_for_termination_obs.get("obsDatetime") 
-    return termination_date
+    return format_date(termination_date)
 
 def get_last_sample_taken_date(doc, cutoff_datetime: Optional[datetime] = None):
     viral_load_sample_obs = get_last_obs_before_date(doc, constants.LAB_FORM_ID, constants.SAMPLE_COLLECTION_DATE_CONCEPT_ID, cutoff_datetime)
     if not viral_load_sample_obs:
         return None
     sample_collection_date = viral_load_sample_obs.get('valueDatetime')
-    return sample_collection_date
-
+    return format_date(sample_collection_date)
 
 def get_current_viral_load_indication(doc, cutoff_datetime: Optional[datetime] = None):
     viral_load_indication_obs = get_last_obs_before_date(doc, constants.LAB_FORM_ID, constants.VIRAL_LOAD_INDICATION_CONCEPT_ID, cutoff_datetime)
@@ -676,7 +690,7 @@ def get_current_viral_load_encounter_date(doc, cutoff_datetime: Optional[datetim
     if not viral_load_obs:
         return None
     viral_load_date = viral_load_obs.get('obsDatetime')
-    return viral_load_date
+    return format_date(viral_load_date)
 
 def get_current_viral_load_sample_date(doc, cutoff_datetime: Optional[datetime] = None):
     viral_load_obs = get_last_viral_load_obs_before(doc, cutoff_datetime)
@@ -685,7 +699,7 @@ def get_current_viral_load_sample_date(doc, cutoff_datetime: Optional[datetime] 
     encounter_id = viral_load_obs.get('encounterId')
     sample_collection_obs = get_obs_with_encounter_id(doc, constants.SAMPLE_COLLECTION_DATE_CONCEPT_ID, encounter_id)
     sample_collection_date = sample_collection_obs.get('valueDatetime') if sample_collection_obs else None
-    return sample_collection_date
+    return format_date(sample_collection_date)
 
 def get_last_eac_comments(doc, cutoff_datetime: Optional[datetime] = None):
     last_eac_encounter = get_last_encounter_by_form_id(doc, constants.EAC_FORM_ID, cutoff_datetime)
@@ -703,7 +717,7 @@ def get_last_eac_session_type_datetime(doc, cutoff_datetime: Optional[datetime] 
     last_eac_encounter_id = last_eac_encounter.get("encounterId")
     last_eac_session_type_obs = get_obs_with_encounter_id(doc, constants.EAC_SESSION_TYPE_CONCEPT_ID, last_eac_encounter_id)
     eac_session_type_datetime = last_eac_session_type_obs.get("obsDatetime") if last_eac_session_type_obs else None
-    return eac_session_type_datetime
+    return format_date(eac_session_type_datetime)
 
 def get_last_eac_barriers_to_adherence(doc, cutoff_datetime: Optional[datetime] = None):
     last_eac_encounter = get_last_encounter_by_form_id(doc, constants.EAC_FORM_ID, cutoff_datetime)
@@ -722,6 +736,7 @@ def get_last_eac_regimen_plan(doc, cutoff_datetime: Optional[datetime] = None):
     last_eac_regimen_plan_obs = get_obs_with_encounter_id(doc, constants.EAC_REGIMEN_PLAN_CONCEPT_ID, last_eac_encounter_id)
     eac_regimen_plan = last_eac_regimen_plan_obs.get("variableValue") if last_eac_regimen_plan_obs else None
     return eac_regimen_plan
+
 def get_last_eac_followup_date(doc, cutoff_datetime: Optional[datetime] = None):
     last_eac_encounter = get_last_encounter_by_form_id(doc, constants.EAC_FORM_ID, cutoff_datetime)
     if not last_eac_encounter:
@@ -729,7 +744,7 @@ def get_last_eac_followup_date(doc, cutoff_datetime: Optional[datetime] = None):
     last_eac_encounter_id = last_eac_encounter.get("encounterId")
     last_eac_followup_date_obs = get_obs_with_encounter_id(doc, constants.EAC_FOLLOWUP_DATE_CONCEPT_ID, last_eac_encounter_id)
     eac_followup_date = last_eac_followup_date_obs.get("valueDatetime") if last_eac_followup_date_obs else None
-    return eac_followup_date
+    return format_date(eac_followup_date)
 
 def get_edd_for_last_pregnancy(doc, cutoff_datetime: Optional[datetime] = None):
     pregnancy_status_obs = get_last_obs_before_date(doc, constants.CARE_CARD_FORM_ID, constants.PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime)
@@ -744,6 +759,7 @@ def get_current_pregnancy_status(doc, cutoff_datetime: Optional[datetime] = None
     obs = get_last_obs_before_date(doc, constants.CARE_CARD_FORM_ID, constants.PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime)
     pregnancy_status = obs.get("variableValue") if obs else None
     return pregnancy_status
+
 def get_current_pregnancy_status_datetime(doc, cutoff_datetime: Optional[datetime] = None):
     obs = get_last_obs_before_date(doc, constants.CARE_CARD_FORM_ID, constants.PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime)
     pregnancy_status_datetime = obs.get("obsDatetime") if obs else None
@@ -753,12 +769,13 @@ def get_min_second_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = 
     second_line_concept_arr = [constants.CHILD_2ND_LINE_REGIMEN_CONCEPT_ID, constants.ADULT_2ND_LINE_REGIMEN_CONCEPT_ID]
     first_second_line_obs = get_first_obs_with_value(doc, constants.PHARMACY_FORM_ID,  second_line_concept_arr, cutoff_datetime)
     regimen_date = first_second_line_obs.get("obsDatetime") if first_second_line_obs else None
-    return regimen_date
+    return format_date(regimen_date)
+
 def get_min_third_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = None):
     third_line_concept_arr = [constants.CHILD_3RD_LINE_REGIMEN_CONCEPT_ID, constants.ADULT_3RD_LINE_REGIMEN_CONCEPT_ID]
     first_third_line_obs = get_first_obs_with_value(doc, constants.PHARMACY_FORM_ID,  third_line_concept_arr, cutoff_datetime)
     regimen_date = first_third_line_obs.get("obsDatetime") if first_third_line_obs else None
-    return regimen_date
+    return format_date(regimen_date)
 
 def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen_line_obs = get_last_obs_before_date(doc, constants.PHARMACY_FORM_ID, constants.CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
@@ -783,7 +800,6 @@ def get_patient_outcome(doc, cutoff_datetime: Optional[datetime] = None ):
 
     patient_outcome = patient_outcome_obs.get('variableValue')
     return patient_outcome
-    
 
 def get_nth_viral_reported_date(doc, n , cutoff_datetime: Optional[datetime] = None):
     nth_viral_load_obs = get_nth_obs(doc, constants.LAB_FORM_ID, constants.VIRAL_LOAD_CONCEPT_ID, n, cutoff_datetime)
@@ -795,10 +811,8 @@ def get_nth_viral_reported_date(doc, n , cutoff_datetime: Optional[datetime] = N
     
     reported_date_obs = get_obs_with_encounter_id(doc, constants.VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID, encounter_id)
     reported_date = reported_date_obs.get('valueDatetime') if reported_date_obs else None
-    return reported_date
+    return format_date(reported_date)
 
-
-    
 def get_reported_date_of_viral_load_before_first_eac(doc):
     viral_load_obs = get_last_viral_load_obs_before_first_eac(doc)
     if not viral_load_obs:
@@ -806,7 +820,7 @@ def get_reported_date_of_viral_load_before_first_eac(doc):
     encounter_id = viral_load_obs.get('encounterId')
     reported_date_obs = get_obs_with_encounter_id(doc, constants.VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID, encounter_id)
     reported_date = reported_date_obs.get('valueDatetime') if reported_date_obs else None
-    return reported_date
+    return format_date(reported_date)
     
 def get_sample_collection_date_of_viral_load_before_first_eac(doc):
     viral_load_obs = get_last_viral_load_obs_before_first_eac(doc)
@@ -816,7 +830,7 @@ def get_sample_collection_date_of_viral_load_before_first_eac(doc):
     sample_collection_date_obs = get_obs_with_encounter_id(doc, constants.SAMPLE_COLLECTION_DATE_CONCEPT_ID, encounter_id)
     sample_collection_date = sample_collection_date_obs.get('valueDatetime') if sample_collection_date_obs else None
 
-    return sample_collection_date
+    return format_date(sample_collection_date)
     
 def get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_obs):
     if not viral_load_obs:
@@ -825,7 +839,7 @@ def get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_obs):
     sample_collection_date_obs = get_obs_with_encounter_id(doc, constants.SAMPLE_COLLECTION_DATE_CONCEPT_ID, encounter_id)
     #sample_collection_date = sample_collection_date_obs.get('valueDatetime') if sample_collection_date_obs else None
 
-    return sample_collection_date_obs
+    return format_date(sample_collection_date_obs)
     
 def get_last_viral_load_before_first_eac_value(doc):
     viral_load_obs = get_last_viral_load_obs_before_first_eac(doc)
@@ -836,7 +850,7 @@ def get_last_viral_load_before_first_eac_value(doc):
 def get_last_viral_load_before_first_eac_date(doc):
     viral_load_obs = get_last_viral_load_obs_before_first_eac(doc)
     viral_load_date = viral_load_obs.get('obsDatetime') if viral_load_obs else None
-    return viral_load_date
+    return format_date(viral_load_date)
 
 def get_last_viral_load_obs_before_first_eac(doc):
     
@@ -849,17 +863,15 @@ def get_last_viral_load_obs_before_first_eac(doc):
     
     return viral_load_obs
     
-    
 def get_last_viral_load_obs_before(doc, cutoff_datetime):
     viral_load_obs = get_last_obs_before_date(doc, constants.LAB_FORM_ID, constants.VIRAL_LOAD_CONCEPT_ID , cutoff_datetime)
     
     return viral_load_obs
 
-    
 def get_eac_date(n, doc):
     eacn = get_nth_encounter(doc, constants.EAC_FORM_ID, n)
     eacn_date = eacn.get("encounterDatetime") if eacn else None
-    return eacn_date
+    return format_date(eacn_date)
 
 def get_pill_balance(doc,cutoff_datetime: Optional[datetime] = None):
     
@@ -876,10 +888,6 @@ def get_pill_balance(doc,cutoff_datetime: Optional[datetime] = None):
     pill_balance = obs_pill_balance.get('variableValue') if obs_pill_balance else None
 
     return pill_balance
-    
-   
-
-    
 
 def get_last_arv_obs(doc,cutoff_datetime: Optional[datetime] = None):
    obs = get_last_obs_before_date(doc, constants.PHARMACY_FORM_ID, constants.ARV_WRAPPING_CONCEPT_ID,cutoff_datetime) 
@@ -890,23 +898,19 @@ def get_last_arv_pickup_date(doc, cutoff_datetime: Optional[datetime] = None):
     if not obs:
         return None
     last_pickup_date = obs.get("obsDatetime")
-    return last_pickup_date
-    
-    
-    
+    return format_date(last_pickup_date)
 
 def get_art_start_date(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_last_obs_before_date(doc, constants.ART_COMMENCEMENT_FORM_ID, constants.ART_START_DATE_CONCEPT_ID,cutoff_datetime)
     # Result if true | condition | result if false
     art_start_date = obs.get("valueDatetime") if obs else None
-    return art_start_date
+    return format_date(art_start_date)
 
 def get_date_transferred_in(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_last_obs_before_date(doc, constants.HIV_ENROLLMENT_FORM_ID, constants.DATE_TRANSFERED_IN_CONCEPT_ID,cutoff_datetime)
     # Result if true | condition | result if false
     date_transferred_in = obs.get("valueDatetime") if obs else None
     return date_transferred_in
-    
 
 def get_care_entry_point(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_last_obs_before_date(doc, constants.HIV_ENROLLMENT_FORM_ID, constants.CARE_ENTRY_POINT_CONCEPT_ID,cutoff_datetime)
@@ -961,8 +965,6 @@ def get_year_diff(datetime1: datetime, datetime2: datetime) -> int:
 
     return years * sign
 
-
-    
 def get_age_art_start_months(doc,cutoff_datetime: Optional[datetime] = None):
     art_start_date = get_art_start_date(doc,cutoff_datetime)
     if art_start_date is None:
@@ -995,6 +997,7 @@ def get_pediatric_age_art_start_months(doc):
         return age_months
     else:
         return None
+
 def get_months_on_art(doc, cutoff_datetime: Optional[datetime] = None):
     art_start_date = get_art_start_date(doc,cutoff_datetime)
     if art_start_date is None:
@@ -1004,6 +1007,3 @@ def get_months_on_art(doc, cutoff_datetime: Optional[datetime] = None):
         cutoff_datetime = datetime.now()
     months_on_art=get_month_diff(art_start_date, cutoff_datetime)
     return months_on_art
-    
-    
-    

@@ -1,4 +1,4 @@
-#import mongo_utils as  utils
+#import mongo_utils as utils
 #import constants as constants
 from email import utils
 import pandas as pd
@@ -18,7 +18,7 @@ import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
-
+from dao import config
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
@@ -31,9 +31,8 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
     target variables to extract:
     State, LGA, DatimCode, FacilityName, UniqueID, HospitalNumber, Sex, DateOfBirth,LastVisitDate,
     LastARTPickupDate, DurationOfLastARVPickup, PatientOutcome, PatientOutcomeDate, CurrentARTStatus
-    
     """
-    db_name="cdr"
+    db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_art_containers(db,db_name)
     size = mongo_dao.get_art_container_size(db,db_name)
@@ -126,7 +125,7 @@ def save_batch_to_csv(batch_data, full_path, write_header):
     # header=write_header ensures the column names only appear at the top
     df.to_csv(full_path, mode='a', index=False, header=write_header)
 
-def load_facility_cache(db, db_name="cdr"):
+def load_facility_cache(db, db_name=config.MONGO_DATABASE_NAME):
     """
     Loads all facilities into a dictionary indexed by DATIM code.
     Run this once at the start of your ETL.
