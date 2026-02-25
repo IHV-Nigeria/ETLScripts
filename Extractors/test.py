@@ -23,10 +23,6 @@ print ("Start time: ", start_time )
 #ViralLoadAndIITPattern.export_iit_vl_data(filename="ViralLoadAndIITPattern_Output_"+datetime.now().strftime("_%Y_%m_%d %H_%M_%S")+".csv")
 #EACDataExportMultiprocess.producer_consumer_etl(filename="EACDataExportMultiprocess_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv")
 #TBOutcomeStudy.export_tb_outcome_study_data(filename="TBOutcomeStudy_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv") 
-#uath_datim_code = "GW1w1chZMPR"
-#adhoc_datim_code = "wp753KYAdno"
-#fmc_jabi_datim_code = "LmLBtmd8U43"
-
 uath_datim_code = "GW1w1chZMPR"
 adhoc_datim_code = "wp753KYAdno"
 fmc_jabi_datim_code = "LmLBtmd8U43"
