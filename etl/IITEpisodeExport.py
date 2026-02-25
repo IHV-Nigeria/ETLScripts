@@ -24,12 +24,12 @@ from dao.config import MONGO_DATABASE_NAME
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
 
-def export_iit_episode_data(patient_baseline_file=None, iit_episode_file=None, cutoff_datetime=None):
+def export_iit_episode_data(patient_baseline_file=None, iit_episode_file=None, cutoff_datetime=None, target_datim_codes=None):
     # Step 1: Export patient baseline data and get the file path
-    patient_baseline_path = export_patient_baseline_data(patient_baseline_file, cutoff_datetime)
+    patient_baseline_path = export_patient_baseline_data(patient_baseline_file, cutoff_datetime, target_datim_codes)
     
     # Step 2: Export drug pickup info (IIT episode data) and get the file path
-    iit_episode_path = export_drug_pickup_info(iit_episode_file, cutoff_datetime)
+    iit_episode_path = export_drug_pickup_info(iit_episode_file, cutoff_datetime, target_datim_codes)
     
     print(f"\nData export complete. Patient baseline data saved to: {patient_baseline_path}")
     print(f"IIT episode data saved to: {iit_episode_path}")
@@ -38,11 +38,11 @@ def export_iit_episode_data(patient_baseline_file=None, iit_episode_file=None, c
     
 
 
-def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None):
+def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None, target_datim_codes=None):
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    cursor = mongo_dao.get_containers_by_datim_list(db, target_datim_codes, db_name)
+    size = mongo_dao.get_container_by_datim_list_size(db, target_datim_codes, db_name)
     print(f"Processing {size} ART containers for drug pickup info...")
     load_facility_cache(db, db_name)
 
@@ -55,7 +55,7 @@ def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None):
     # Track if it's the first batch so we can write the CSV header
     is_first_batch = True
 
-    for doc in tqdm(cursor, total=size, desc="Drug Pickup Info ETL Progress"):
+    for doc in tqdm(cursor, total=size, desc="Drug Pickup Info ETL Progress"): 
         if not is_aspire_state(doc):
             continue  # Skip this record and move to the next one
         # Extract all Pharmacy Encounters with encounter_datetime not more than cutoff datetime for this patient into a list
@@ -126,12 +126,14 @@ def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None):
 
 
 
-def export_patient_baseline_data(patient_level_file=None, cutoff_datetime=None):  
+def export_patient_baseline_data(patient_level_file=None, cutoff_datetime=None, target_datim_codes=None):  
     db_name="cdr"
     cutoff_datetime = datetime(2025, 12, 31, 23, 59, 59)
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    #cursor = mongo_dao.get_art_containers(db,db_name)
+    cursor = mongo_dao.get_containers_by_datim_list(db,target_datim_codes, db_name)
+    #size = mongo_dao.get_art_container_size(db,db_name)
+    size = mongo_dao.get_container_by_datim_list_size(db, target_datim_codes, db_name)
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -144,7 +146,7 @@ def export_patient_baseline_data(patient_level_file=None, cutoff_datetime=None):
     is_first_batch = True
     
     #extracted_results = []
-    for doc in tqdm(cursor, total=size, desc="Patient Baseline ETL Progress"):
+    for doc in tqdm(cursor, total=size, desc="Patient Baseline ETL Progress"): 
             
            
             if not is_aspire_state(doc):
