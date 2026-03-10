@@ -1,6 +1,9 @@
 # Ignore everything inside the output folder
 output/*
 
+# Ignore Database configuration file postgreconfig.py
+dao/postgreconfig.py
+
 # But do not ignore the .gitkeep file (keeps the folder in Git)
 !output/.gitkeep
 
