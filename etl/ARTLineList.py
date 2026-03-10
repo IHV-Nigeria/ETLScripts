@@ -77,6 +77,13 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "sex": demographics.get("gender"),
                     "ageatstartofartyears": demographicsutils.get_age_art_start_years(doc, birthdate, art_start_date),
                     "ageatstartofartmonths": demographicsutils.get_pediatric_age_art_start_months(doc, birthdate, art_start_date),
+                    "careentrypoint": hivenrollmentutils.get_care_entry_point(doc,cutoff_datetime),
+                    "hivconfirmeddate": hivenrollmentutils.get_last_date_confirmed_hiv_positive_obs(doc,cutoff_datetime),
+                    "monthsonart": demographicsutils.get_months_on_art(doc, art_start_date, cutoff_datetime),
+                    "datetransferredin": hivenrollmentutils.get_date_transferred_in(doc,cutoff_datetime),
+                    "transferinstatus": hivenrollmentutils.get_prior_art(doc,cutoff_datetime),
+                    "artstartdate": art_start_date,
+                    
                 
         
                 }
