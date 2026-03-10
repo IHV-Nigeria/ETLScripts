@@ -68,6 +68,9 @@ def export_art_line_list_data(cutoff_datetime=None):
                 current_cd4_value = obsutils.getValueNumericFromObs(current_cd4_obs) if current_cd4_obs else None
                 current_cd4_date = obsutils.getObsDatetimeFromObs(current_cd4_obs) if current_cd4_obs else None
                 last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
+                pregnancy_status_obs= carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
+                pregnancy_status=obsutils.getVariableValueFromObs(pregnancy_status_obs) if pregnancy_status_obs else None
+                pregnancy_status_date=obsutils.getObsDatetimeFromObs(pregnancy_status_obs) if pregnancy_status_obs else None
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -103,8 +106,9 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "currentcd4countdate": current_cd4_date,
                     "lasteacdate": encounterutils.get_encounter_datetime (last_eac_encounter),
                     "currentregimenline": pharmacyutils.get_current_regimen_line(doc, cutoff_datetime),
-                    "currentregimen": pharmacyutils.get_current_regimen(doc, cutoff_datetime)
-                    
+                    "currentregimen": pharmacyutils.get_current_regimen(doc, cutoff_datetime),
+                    "pregnancystatus": pregnancy_status,
+                    "pregnancystatusdate": pregnancy_status_date,
                 
         
                 }
