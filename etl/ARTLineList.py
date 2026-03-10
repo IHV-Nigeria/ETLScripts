@@ -60,8 +60,13 @@ def export_art_line_list_data(cutoff_datetime=None):
                 art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
                 hivconfirmeddateobs=hivenrollmentutils.get_last_date_confirmed_hiv_positive_obs(doc,cutoff_datetime)
                 hivconfirmeddate = obsutils.getValueDatetimeFromObs(hivconfirmeddateobs)
-            
-
+                last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
+                initial_cd4_count_obs=artcommence.get_cd4_count_obs(doc, cutoff_datetime)
+                initial_cd4_count_value=obsutils.getValueNumericFromObs(initial_cd4_count_obs)
+                initial_cd4_count_date = obsutils.getObsDatetimeFromObs(initial_cd4_count_obs)
+                current_cd4_obs = labutils.get_current_cd4_count_obs(doc, cutoff_datetime)
+                current_cd4_value = obsutils.getValueNumericFromObs(current_cd4_obs) if current_cd4_obs else None
+                current_cd4_date = obsutils.getObsDatetimeFromObs(current_cd4_obs) if current_cd4_obs else None
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -87,7 +92,14 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "artstartdate": art_start_date,
                     "lastpickupdate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
                     "lastvisitdate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-
+                    "daysofarvrefil": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
+                    "pillbalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
+                    "initialregimenline": artcommence.get_current_regimen_line(doc,cutoff_datetime),
+                    "initialregimen": artcommence.get_current_regimen(doc,cutoff_datetime),
+                    "initialcd4count": initial_cd4_count_value,
+                    "initialcd4countdate": initial_cd4_count_date,
+                    "currentcd4count": current_cd4_value,
+                    "currentcd4countdate": current_cd4_date,
                 
         
                 }

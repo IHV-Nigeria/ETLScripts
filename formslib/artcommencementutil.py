@@ -42,6 +42,10 @@ def get_cd4_count_at_art_start(doc, cutoff_datetime: Optional[datetime] = None):
     cd4_count_at_art_start = obs.get("valueNumeric") if obs else None
     return cd4_count_at_art_start
 
+def get_cd4_count_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, CD4_COUNT_AT_ART_START_CONCEPT_ID, cutoff_datetime)
+    return obs
+
 def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen_line_obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, REGIMEN_LINE_AT_ART_START_CONCEPT_ID, cutoff_datetime)
     if(current_regimen_line_obs is None):

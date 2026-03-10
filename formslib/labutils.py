@@ -12,6 +12,7 @@ SAMPLE_COLLECTION_DATE_CONCEPT_ID: Final[int] = 159951
 VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID: Final[int] = 165414
 VIRAL_LOAD_INDICATION_CONCEPT_ID: Final[int] = 164980
 VIRAL_LOAD_ORDERED_DATE_CONCEPT_ID: Final[int] = 164989
+CD4_COUNT_CONCEPT_ID: Final[int] = 5497
 
 
 def get_first_viral_load_obs(doc, cutoff_datetime: Optional[datetime] = None):
@@ -22,6 +23,9 @@ def get_nth_viral_load_obs(doc, n , cutoff_datetime: Optional[datetime] = None):
     nth_viral_load_obs = obsutils.get_nth_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, cutoff_datetime)
     return nth_viral_load_obs
 
+def get_current_cd4_count_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    cd4_count_obs = obsutils.get_last_obs_before_date(doc, LAB_FORM_ID, CD4_COUNT_CONCEPT_ID, cutoff_datetime)
+    return cd4_count_obs
 
 def get_nth_viral_sample_collection_obs(doc, nth_viral_load_obs):
     if nth_viral_load_obs is None:

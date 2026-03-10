@@ -30,7 +30,7 @@ CREATE TABLE art_line_list (
     -- Visit Details
     lastpickupdate TIMESTAMP,
     lastvisitdate TIMESTAMP,
-    daysofarvrefil INTEGER,
+    daysofarvrefil NUMERIC(10, 2),
     pillbalance NUMERIC(10, 2),
     
     -- Regimen Details
