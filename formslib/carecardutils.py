@@ -103,3 +103,17 @@ def get_clinical_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
 def get_last_delivery_edd_obs(doc, cutoff_datetime: Optional[datetime] = None):
     last_delivery_edd_obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, EDD_CONCEPT_ID, cutoff_datetime)
     return last_delivery_edd_obs
+
+def get_lmp_for_last_pregnancy(doc, pregnancy_status_obs):
+    if not pregnancy_status_obs:
+        return None
+    encounter_id = pregnancy_status_obs.get("encounterId")
+    lmp_obs = obsutils.get_obs_with_encounter_id(doc, LMP_DATE_CONCEPT_ID, encounter_id)
+    return lmp_obs
+
+def get_gestation_weeks_for_last_pregnancy_obs(doc, pregnancy_status_obs):
+    if not pregnancy_status_obs:
+        return None
+    encounter_id = pregnancy_status_obs.get("encounterId")
+    gestation_weeks_obs = obsutils.get_obs_with_encounter_id(doc, GESTATION_WEEKS_CONCEPT_ID, encounter_id)
+    return gestation_weeks_obs

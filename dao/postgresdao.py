@@ -1,5 +1,5 @@
 # import postgreconfig to ensure the file is created and available for use
-import postgreconfig as postgres_config
+from . import postgreconfig as postgres_config
 import psycopg2
 from psycopg2 import Error
 from psycopg2.extras import execute_values

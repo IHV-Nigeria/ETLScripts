@@ -50,7 +50,7 @@ CREATE TABLE art_line_list (
     edd TIMESTAMP,
     lastdeliverydate TIMESTAMP,
     lmp TIMESTAMP,
-    gestationageweeks INTEGER,
+    gestationageweeks NUMERIC(10,2),
     
     -- Viral Load Data
     currentviralload NUMERIC(15, 2),

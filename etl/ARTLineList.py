@@ -75,6 +75,13 @@ def export_art_line_list_data(cutoff_datetime=None):
                 edd_date=obsutils.getValueDatetimeFromObs(edd_obs) if edd_obs else None
                 last_delivery_edd_obs=carecardutils.get_last_delivery_edd_obs(doc, cutoff_datetime)
                 last_delivery_edd_date=obsutils.getValueDatetimeFromObs(last_delivery_edd_obs) if last_delivery_edd_obs else None
+                lmp_obs=carecardutils.get_lmp_for_last_pregnancy(doc, pregnancy_status_obs) if pregnancy_status_obs else None
+                lmp_date=obsutils.getValueDatetimeFromObs(lmp_obs) if lmp_obs else None
+                gestation_weeks_obs=carecardutils.get_gestation_weeks_for_last_pregnancy_obs(doc, pregnancy_status_obs) if pregnancy_status_obs else None
+                gestation_age_weeks=obsutils.getValueNumericFromObs(gestation_weeks_obs) if gestation_weeks_obs else None
+                viral_load_obs=labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
+                viral_load_value=obsutils.getValueNumericFromObs(viral_load_obs) if viral_load_obs else None
+                viral_load_date=obsutils.getObsDatetimeFromObs(viral_load_obs) if viral_load_obs else None
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -115,6 +122,10 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "pregnancystatusdate": pregnancy_status_date,
                     "edd": edd_date,
                     "lastdeliverydate": last_delivery_edd_date,
+                    "lmp": lmp_date,
+                    "gestationageweeks": gestation_age_weeks,
+                    "currentviralload": viral_load_value,
+                    "viralloadencounterdate": viral_load_date,
 
 
                 
