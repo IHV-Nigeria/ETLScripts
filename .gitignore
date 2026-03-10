@@ -12,3 +12,4 @@ __pycache__/
 *.pyc
 
 dao/config.py
+dao/postgreconfig.py

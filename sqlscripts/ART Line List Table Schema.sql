@@ -1,7 +1,7 @@
 CREATE TABLE art_line_list (
     -- Location & Facility Info
 	recordid SERIAL PRIMARY KEY,
-	patientuuid UUID UNIQUE,
+	patientuuid TEXT UNIQUE,
 	cuttoffperiod TIMESTAMP,
 	touchtime TIMESTAMP,
     state VARCHAR(100),
