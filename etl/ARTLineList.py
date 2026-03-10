@@ -71,6 +71,10 @@ def export_art_line_list_data(cutoff_datetime=None):
                 pregnancy_status_obs= carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
                 pregnancy_status=obsutils.getVariableValueFromObs(pregnancy_status_obs) if pregnancy_status_obs else None
                 pregnancy_status_date=obsutils.getObsDatetimeFromObs(pregnancy_status_obs) if pregnancy_status_obs else None
+                edd_obs=carecardutils.get_edd_for_last_pregnancy(doc, pregnancy_status_obs) if pregnancy_status_obs else None
+                edd_date=obsutils.getValueDatetimeFromObs(edd_obs) if edd_obs else None
+                last_delivery_edd_obs=carecardutils.get_last_delivery_edd_obs(doc, cutoff_datetime)
+                last_delivery_edd_date=obsutils.getValueDatetimeFromObs(last_delivery_edd_obs) if last_delivery_edd_obs else None
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -109,6 +113,10 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "currentregimen": pharmacyutils.get_current_regimen(doc, cutoff_datetime),
                     "pregnancystatus": pregnancy_status,
                     "pregnancystatusdate": pregnancy_status_date,
+                    "edd": edd_date,
+                    "lastdeliverydate": last_delivery_edd_date,
+
+
                 
         
                 }

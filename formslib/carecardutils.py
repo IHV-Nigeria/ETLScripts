@@ -99,3 +99,7 @@ def get_clinical_next_appointment_date(doc, cutoff_datetime: Optional[datetime] 
         return None
     next_appointment_date = clinical_next_appointment_obs.get("valueDatetime")
     return commonutils.validate_date(next_appointment_date) 
+
+def get_last_delivery_edd_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    last_delivery_edd_obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, EDD_CONCEPT_ID, cutoff_datetime)
+    return last_delivery_edd_obs
