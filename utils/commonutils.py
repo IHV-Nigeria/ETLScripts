@@ -116,18 +116,27 @@ def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) 
 def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
     """
     Returns the number of whole calendar months between datetime1 and datetime2.
-    Result is positive if datetime2 >= datetime1, negative otherwise.
     """
+    if datetime1 is None or datetime2 is None:
+        return 0
+
+    # STRIP TIMEZONES: Convert both to naive to prevent the comparison error
+    if datetime1.tzinfo is not None:
+        datetime1 = datetime1.replace(tzinfo=None)
+    if datetime2.tzinfo is not None:
+        datetime2 = datetime2.replace(tzinfo=None)
+
     if datetime1 > datetime2:
-        datetime1, datetime2 = datetime2, datetime1
+        dt_start, dt_end = datetime2, datetime1
         sign = -1
     else:
+        dt_start, dt_end = datetime1, datetime2
         sign = 1
 
-    months = (datetime2.year - datetime1.year) * 12 + (datetime2.month - datetime1.month)
+    months = (dt_end.year - dt_start.year) * 12 + (dt_end.month - dt_start.month)
 
     # Adjust if end day is before start day
-    if datetime2.day < datetime1.day:
+    if dt_end.day < dt_start.day:
         months -= 1
 
     return months * sign

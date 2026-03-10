@@ -1,6 +1,7 @@
 
 from datetime import datetime, date
 from typing import Optional
+import utils.commonutils as commonutils
 
 from utils.commonutils import get_month_diff, get_year_diff
 
@@ -125,7 +126,7 @@ def get_months_on_art(doc, art_start_date, cutoff_datetime: Optional[datetime] =
         return None
     
     if cutoff_datetime is None:
-        cutoff_datetime = datetime.now()
+        cutoff_datetime = commonutils.validate_date(datetime.now())
     months_on_art=get_month_diff(art_start_date, cutoff_datetime)
     return months_on_art
     

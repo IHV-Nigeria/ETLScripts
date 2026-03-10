@@ -58,13 +58,15 @@ def export_art_line_list_data(cutoff_datetime=None):
                 birthdate = commonutils.validate_date(demographics.get("birthdate"))
                 facility_info = get_facility_by_datim(datim_code)
                 art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-            
+                hivconfirmeddateobs=hivenrollmentutils.get_last_date_confirmed_hiv_positive_obs(doc,cutoff_datetime)
+                hivconfirmeddate = obsutils.getValueDatetimeFromObs(hivconfirmeddateobs)
             
 
 
                 record = {
                     "touchtime": header.get("touchTime"),
                     "patientuuid": demographics.get("patientUuid"),
+                    "cuttoffperiod": cutoff_datetime,
                     "state": facility_info.get("State") if facility_info else None,
                     "lga" : facility_info.get("LGA") if facility_info else None,
                     "datimcode" : header.get("facilityDatimCode"),
@@ -78,12 +80,14 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "ageatstartofartyears": demographicsutils.get_age_art_start_years(doc, birthdate, art_start_date),
                     "ageatstartofartmonths": demographicsutils.get_pediatric_age_art_start_months(doc, birthdate, art_start_date),
                     "careentrypoint": hivenrollmentutils.get_care_entry_point(doc,cutoff_datetime),
-                    "hivconfirmeddate": hivenrollmentutils.get_last_date_confirmed_hiv_positive_obs(doc,cutoff_datetime),
+                    "hivconfirmeddate": hivconfirmeddate,
                     "monthsonart": demographicsutils.get_months_on_art(doc, art_start_date, cutoff_datetime),
                     "datetransferredin": hivenrollmentutils.get_date_transferred_in(doc,cutoff_datetime),
                     "transferinstatus": hivenrollmentutils.get_prior_art(doc,cutoff_datetime),
                     "artstartdate": art_start_date,
-                    
+                    "lastpickupdate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
+                    "lastvisitdate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
+
                 
         
                 }

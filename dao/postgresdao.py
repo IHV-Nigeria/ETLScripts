@@ -62,9 +62,10 @@ def save_to_postgres(conn, table_name, batch_data):
         execute_values(cur, query, values)
         
         conn.commit()
-        print(f"Successfully inserted {len(batch_data)} records into {table_name}.")
+        #print(f"Successfully inserted {len(batch_data)} records into {table_name}.")
         
     except (Exception, psycopg2.DatabaseError) as error:
         print(f"Error: {error}")
+        
         if conn:
             conn.rollback()
