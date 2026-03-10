@@ -67,6 +67,7 @@ def export_art_line_list_data(cutoff_datetime=None):
                 current_cd4_obs = labutils.get_current_cd4_count_obs(doc, cutoff_datetime)
                 current_cd4_value = obsutils.getValueNumericFromObs(current_cd4_obs) if current_cd4_obs else None
                 current_cd4_date = obsutils.getObsDatetimeFromObs(current_cd4_obs) if current_cd4_obs else None
+                last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -100,6 +101,10 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "initialcd4countdate": initial_cd4_count_date,
                     "currentcd4count": current_cd4_value,
                     "currentcd4countdate": current_cd4_date,
+                    "lasteacdate": encounterutils.get_encounter_datetime (last_eac_encounter),
+                    "currentregimenline": pharmacyutils.get_current_regimen_line(doc, cutoff_datetime),
+                    "currentregimen": pharmacyutils.get_current_regimen(doc, cutoff_datetime)
+                    
                 
         
                 }
