@@ -82,6 +82,18 @@ def export_art_line_list_data(cutoff_datetime=None):
                 viral_load_obs=labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
                 viral_load_value=obsutils.getValueNumericFromObs(viral_load_obs) if viral_load_obs else None
                 viral_load_date=obsutils.getObsDatetimeFromObs(viral_load_obs) if viral_load_obs else None
+                viral_load_sample_collection_obs=labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
+                viral_load_sample_collection_date=obsutils.getValueDatetimeFromObs(viral_load_sample_collection_obs) if viral_load_sample_collection_obs else None
+                viral_load_reported_date_obs=labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
+                viral_load_reported_date=obsutils.getValueDatetimeFromObs(viral_load_reported_date_obs) if viral_load_reported_date_obs else None
+                viral_load_result_date_obs=labutils.get_result_date_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
+                viral_load_result_date=obsutils.getValueDatetimeFromObs(viral_load_result_date_obs) if viral_load_result_date_obs else None
+                viral_load_assay_date_obs=labutils.get_assay_date_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
+                viral_load_assay_date=obsutils.getValueDatetimeFromObs(viral_load_assay_date_obs) if viral_load_assay_date_obs else None
+                viral_load_approval_date_obs=labutils.get_approval_date_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
+                viral_load_approval_date=obsutils.getValueDatetimeFromObs(viral_load_approval_date_obs) if viral_load_approval_date_obs else None
+                viral_load_indication_obs=labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
+                viral_load_indication=obsutils.getVariableValueFromObs(viral_load_indication_obs) if viral_load_indication_obs else None
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -126,6 +138,15 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "gestationageweeks": gestation_age_weeks,
                     "currentviralload": viral_load_value,
                     "viralloadencounterdate": viral_load_date,
+                    "viralloadsamplecollectiondate": viral_load_sample_collection_date,
+                    "viralloadreporteddate": viral_load_reported_date,
+                    "resultdate": viral_load_result_date,
+                    "assaydate": viral_load_assay_date,
+                    "approvaldate": viral_load_approval_date, 
+                    "viralloadindication": viral_load_indication,
+
+
+
 
 
                 

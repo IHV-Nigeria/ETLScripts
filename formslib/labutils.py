@@ -13,6 +13,9 @@ VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID: Final[int] = 165414
 VIRAL_LOAD_INDICATION_CONCEPT_ID: Final[int] = 164980
 VIRAL_LOAD_ORDERED_DATE_CONCEPT_ID: Final[int] = 164989
 CD4_COUNT_CONCEPT_ID: Final[int] = 5497
+VIRAL_LOAD_RESULT_DATE_CONCEPT_ID: Final[int] = 166423
+VIRAL_LOAD_ASSAY_DATE_CONCEPT_ID: Final[int] = 166424
+VIRAL_LOAD_APPROVAL_DATE_CONCEPT_ID: Final[int] = 166425
 
 
 def get_first_viral_load_obs(doc, cutoff_datetime: Optional[datetime] = None):
@@ -69,6 +72,28 @@ def get_reported_date_obs_of_viral_load_obs(doc, viral_load_obs):
     
     return reported_date_obs
 
+def get_result_date_obs_of_viral_load_obs(doc, viral_load_obs):
+    if not viral_load_obs:
+        return None
+    encounter_id = viral_load_obs.get('encounterId')
+    result_date_obs = obsutils.get_obs_with_encounter_id(doc, VIRAL_LOAD_RESULT_DATE_CONCEPT_ID, encounter_id)
+    
+    return result_date_obs
+def get_assay_date_obs_of_viral_load_obs(doc, viral_load_obs):
+    if not viral_load_obs:
+        return None
+    encounter_id = viral_load_obs.get('encounterId')
+    assay_date_obs = obsutils.get_obs_with_encounter_id(doc, VIRAL_LOAD_ASSAY_DATE_CONCEPT_ID, encounter_id)
+    
+    return assay_date_obs
+
+def get_approval_date_obs_of_viral_load_obs(doc, viral_load_obs):
+    if not viral_load_obs:
+        return None
+    encounter_id = viral_load_obs.get('encounterId')
+    approval_date_obs = obsutils.get_obs_with_encounter_id(doc, VIRAL_LOAD_APPROVAL_DATE_CONCEPT_ID, encounter_id)
+    
+    return approval_date_obs
 
 def get_viral_load_indication_obs_of_viral_load_obs(doc, viral_load_obs):
     if not viral_load_obs:
