@@ -100,6 +100,7 @@ def export_art_line_list_data(cutoff_datetime=None):
                 weight_date=obsutils.getObsDatetimeFromObs(weight_obs) if weight_obs else None
                 tb_status_obs=carecardutils.get_current_tb_status_obs(doc,cutoff_datetime) 
                 tb_status=obsutils.getVariableValueFromObs(tb_status_obs) if tb_status_obs else None
+                tb_status_date=obsutils.getObsDatetimeFromObs(tb_status_obs) if tb_status_obs else None
 
 
                 record = {
@@ -175,7 +176,8 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "validcapture": "Yes" if biometricutils.has_biometric_captured(doc) else "", # Put yes by default. The new_template column is missing in the CDR
                     "currentweight_kg": weight_kg,
                     "currentweightdate": weight_date,
-                    "tbstatus": tb_status
+                    "tbstatus": tb_status,
+                    "tbstatusdate": tb_status_date
 
 
 
