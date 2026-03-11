@@ -172,7 +172,7 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "treatmentsupporterphoneno": "", # Placeholder for treatment supporter phone number if needed in the future
                     "biometriccaptured": "Yes" if biometricutils.has_biometric_captured(doc) else "No", # Yes or No based on whether biometric data exists for the patient
                     "biometriccapturedate": biometricutils.get_biometric_capture_date(doc), # Date when biometric data was captured, if available
-                    "validcapture": "Yes", # Put yes by default. The new_template column is missing in the CDR
+                    "validcapture": "Yes" if biometricutils.has_biometric_captured(doc) else "", # Put yes by default. The new_template column is missing in the CDR
                     "currentweight_kg": weight_kg,
                     "currentweightdate": weight_date,
                     "tbstatus": tb_status
