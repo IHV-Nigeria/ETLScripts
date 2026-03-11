@@ -144,6 +144,19 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "assaydate": viral_load_assay_date,
                     "approvaldate": viral_load_approval_date, 
                     "viralloadindication": viral_load_indication,
+                    "patientoutcome": ctdutils.get_patient_outcome (doc,cutoff_datetime),
+                    "patientoutcomedate":  ctdutils.get_outcome_date (doc,cutoff_datetime),
+                    "currentartstatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
+                    "dispensingmodality": pharmacyutils.get_last_dsd_model(doc,cutoff_datetime),
+                    "facilitydispensingmodality": pharmacyutils.get_facility_dsd_model(doc,cutoff_datetime),
+                    "ddddispensingmodality": pharmacyutils.get_ddd_dsd_model(doc,cutoff_datetime),
+                    "mmdtype": pharmacyutils.get_mmd_type(doc,cutoff_datetime),
+                    "datereturnedtocare": ctdutils.get_date_returned_to_care(doc,cutoff_datetime),
+                    "dateoftermination": ctdutils.get_date_of_termination(doc,cutoff_datetime)
+
+
+
+
 
 
 
