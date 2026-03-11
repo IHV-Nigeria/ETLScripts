@@ -95,6 +95,12 @@ def export_art_line_list_data(cutoff_datetime=None):
                 viral_load_approval_date=obsutils.getValueDatetimeFromObs(viral_load_approval_date_obs) if viral_load_approval_date_obs else None
                 viral_load_indication_obs=labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
                 viral_load_indication=obsutils.getVariableValueFromObs(viral_load_indication_obs) if viral_load_indication_obs else None
+                weight_obs=carecardutils.get_current_weight_obs(doc,cutoff_datetime)
+                weight_kg=obsutils.getValueNumericFromObs(weight_obs) if weight_obs else None
+                weight_date=obsutils.getObsDatetimeFromObs(weight_obs) if weight_obs else None
+                tb_status_obs=carecardutils.get_current_tb_status_obs(doc,cutoff_datetime) 
+                tb_status=obsutils.getVariableValueFromObs(tb_status_obs) if tb_status_obs else None
+
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -165,7 +171,14 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "nextofkinphoneno": "", # Placeholder for next of kin phone number if needed in the future
                     "treatmentsupporterphoneno": "", # Placeholder for treatment supporter phone number if needed in the future
                     "biometriccaptured": "Yes" if biometricutils.has_biometric_captured(doc) else "No", # Yes or No based on whether biometric data exists for the patient
-                    "biometriccapturedate": biometricutils.get_biometric_capture_date(doc) # Date when biometric data was captured, if available
+                    "biometriccapturedate": biometricutils.get_biometric_capture_date(doc), # Date when biometric data was captured, if available
+                    "validcapture": "Yes", # Put yes by default. The new_template column is missing in the CDR
+                    "currentweight_kg": weight_kg,
+                    "currentweightdate": weight_date,
+                    "tbstatus": tb_status
+
+
+
 
 
 

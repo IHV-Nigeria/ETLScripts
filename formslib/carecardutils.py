@@ -73,7 +73,11 @@ def get_current_pregnancy_status_obs(doc, cutoff_datetime: Optional[datetime] = 
 
 def get_current_tb_status_obs(doc, cutoff_datetime: Optional[datetime] = None):
     tb_status_obs=obsutils.get_last_obs_before_date(doc,CARE_CARD_FORM_ID,TB_STATUS_CONCEPT_ID,cutoff_datetime)
-    return tb_status_obs     
+    return tb_status_obs 
+
+def get_current_weight_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    weight_obs=obsutils.get_last_obs_before_date(doc,CARE_CARD_FORM_ID,WEIGHT_KG_CONCEPT_ID,cutoff_datetime)
+    return weight_obs    
 
 def get_current_pregnancy_status(doc, cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime)
