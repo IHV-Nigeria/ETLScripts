@@ -8,6 +8,7 @@ import os
 
 import dao.mongodbdao as mongo_dao
 import dao.postgresdao as postgres_dao
+from utils import biometricutils
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
 import formslib.hivenrollmentutil as hivenrollmentutils
@@ -152,7 +153,26 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "ddddispensingmodality": pharmacyutils.get_ddd_dsd_model(doc,cutoff_datetime),
                     "mmdtype": pharmacyutils.get_mmd_type(doc,cutoff_datetime),
                     "datereturnedtocare": ctdutils.get_date_returned_to_care(doc,cutoff_datetime),
-                    "dateoftermination": ctdutils.get_date_of_termination(doc,cutoff_datetime)
+                    "dateoftermination": ctdutils.get_date_of_termination(doc,cutoff_datetime),
+                    "pharmacynextappointment": pharmacyutils.get_pharmacy_next_appointment_date(doc,cutoff_datetime),
+                    "clinicalnextappointment": carecardutils.get_clinical_next_appointment_date(doc,cutoff_datetime),
+                    "currentageyears": demographicsutils.get_current_age_at_date(doc,cutoff_datetime),
+                    "currentagemonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),""
+                    "dateofbirth": birthdate,
+                    "markasdeseased": False,
+                    "markasdeseaseddeathdate": None, # Placeholder for any additional fields that may be added in the future
+                    "registrationphoneno": "", # Placeholder for registration phone number if needed in the future
+                    "nextofkinphoneno": "", # Placeholder for next of kin phone number if needed in the future
+                    "treatmentsupporterphoneno": "", # Placeholder for treatment supporter phone number if needed in the future
+                    "biometriccaptured": "Yes" if biometricutils.has_biometric_captured(doc) else "No", # Yes or No based on whether biometric data exists for the patient
+                    "biometriccapturedate": biometricutils.get_biometric_capture_date(doc) # Date when biometric data was captured, if available
+
+
+
+
+
+
+
 
 
 

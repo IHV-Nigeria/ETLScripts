@@ -32,6 +32,11 @@ def get_patient_birthdate(doc):
     patient_demographics = get_patient_demographics(doc)
     return patient_demographics.get('birthdate')
 
+def get_marked_as_deseased_status(doc):
+    patient_demographics = get_patient_demographics(doc)
+    marked_as_deseased_status = patient_demographics.get('death')
+    return marked_as_deseased_status
+
 def calculateAge(birthdate: datetime):
     
      if birthdate is None:
