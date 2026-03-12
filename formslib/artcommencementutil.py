@@ -21,6 +21,8 @@ PREGNANCY_STATUS_AT_ART_START_CONCEPT_ID = 165050
 CD4_COUNT_AT_ART_START_CONCEPT_ID = 164429
 BASELINE_INH_START_DATE_CONCEPT_ID = 164852
 BASELINE_INH_STOP_DATE_CONCEPT_ID = 166096
+BASELINE_TB_TREATMENT_START_DATE_CONCEPT_ID = 1113
+BASELINE_TB_TREATMENT_STOP_DATE_CONCEPT_ID = 159431
 
 
 def get_art_start_date(doc,cutoff_datetime: Optional[datetime] = None):
@@ -72,3 +74,12 @@ def get_baseline_inh_stop_date(doc, cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, BASELINE_INH_STOP_DATE_CONCEPT_ID, cutoff_datetime)
     baseline_inh_stop_date = obsutils.getValueDatetimeFromObs(obs) if obs else None
     return baseline_inh_stop_date
+
+def get_baseline_tb_treatment_start_date(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, BASELINE_TB_TREATMENT_START_DATE_CONCEPT_ID, cutoff_datetime)
+    baseline_tb_treatment_start_date = obsutils.getValueDatetimeFromObs(obs) if obs else None
+    return baseline_tb_treatment_start_date
+def get_baseline_tb_treatment_stop_date(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, BASELINE_TB_TREATMENT_STOP_DATE_CONCEPT_ID, cutoff_datetime)
+    baseline_tb_treatment_stop_date = obsutils.getValueDatetimeFromObs(obs) if obs else None
+    return baseline_tb_treatment_stop_date

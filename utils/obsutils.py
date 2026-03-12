@@ -38,6 +38,10 @@ def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_cod
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
 
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+    cutoff_datetime=commonutils.normalize_clinical_date(cutoff_datetime)
+
     for obs in obs_list:
         # 1. Check basic criteria
         if (obs.get("formId") == form_id and 
@@ -46,7 +50,7 @@ def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_cod
             obs.get("valueCoded") in value_coded_arr):
             
             # 2. Access the datetime object directly
-            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
             
             # Ensure it is a valid datetime object before comparing
             if isinstance(obs_dt, datetime):

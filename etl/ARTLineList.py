@@ -102,6 +102,8 @@ def export_art_line_list_data(cutoff_datetime=None):
                 tb_status_obs=carecardutils.get_current_tb_status_obs(doc,cutoff_datetime) 
                 tb_status=obsutils.getVariableValueFromObs(tb_status_obs) if tb_status_obs else None
                 tb_status_date=obsutils.getObsDatetimeFromObs(tb_status_obs) if tb_status_obs else None
+                last_inh_pickup_obs=pharmacyutils.get_last_isoniazid_prophylaxis_pickup_obs(doc,cutoff_datetime)
+                last_inh_pickup_date=obsutils.getObsDatetimeFromObs(last_inh_pickup_obs)
 
 
                 record = {
@@ -184,9 +186,9 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "currentinhstartdate": iptutils.get_inh_start_date(doc, cutoff_datetime),
                     "currentinhoutcome": iptutils.get_inh_outcome(doc, cutoff_datetime),
                     "currentinhoutcomedate": iptutils.get_inh_outcome_date(doc, cutoff_datetime),
-                    "lastinhdispenseddate": None,
-                    "baselinetbtreatmentstartdate": None,
-                    "baselinetbtreatmentstopdate": None,
+                    "lastinhdispenseddate": last_inh_pickup_date,
+                    "baselinetbtreatmentstartdate": artcommence.get_baseline_tb_treatment_start_date(doc,cutoff_datetime),
+                    "baselinetbtreatmentstopdate": artcommence.get_baseline_tb_treatment_stop_date(doc,cutoff_datetime)
 
 
 
