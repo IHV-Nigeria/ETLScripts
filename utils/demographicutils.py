@@ -33,7 +33,6 @@ def get_patient_birthdate(doc):
     return patient_demographics.get('birthdate')
 
 def calculateAge(birthdate: datetime):
-    
      if birthdate is None:
         return None
 
