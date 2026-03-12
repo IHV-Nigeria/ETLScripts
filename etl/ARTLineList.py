@@ -8,6 +8,8 @@ import os
 
 import dao.mongodbdao as mongo_dao
 import dao.postgresdao as postgres_dao
+from formslib import iptutils
+from utils import biometricutils
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
 import formslib.hivenrollmentutil as hivenrollmentutils
@@ -39,7 +41,7 @@ def export_art_line_list_data(cutoff_datetime=None):
         return
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
-    BATCH_SIZE = 500 # Increased for 700k records
+    BATCH_SIZE = 100 # Increased for 700k records
     batch_list = []
     total_inserted = 0
 
@@ -94,6 +96,15 @@ def export_art_line_list_data(cutoff_datetime=None):
                 viral_load_approval_date=obsutils.getValueDatetimeFromObs(viral_load_approval_date_obs) if viral_load_approval_date_obs else None
                 viral_load_indication_obs=labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, viral_load_obs) if viral_load_obs else None
                 viral_load_indication=obsutils.getVariableValueFromObs(viral_load_indication_obs) if viral_load_indication_obs else None
+                weight_obs=carecardutils.get_current_weight_obs(doc,cutoff_datetime)
+                weight_kg=obsutils.getValueNumericFromObs(weight_obs) if weight_obs else None
+                weight_date=obsutils.getObsDatetimeFromObs(weight_obs) if weight_obs else None
+                tb_status_obs=carecardutils.get_current_tb_status_obs(doc,cutoff_datetime) 
+                tb_status=obsutils.getVariableValueFromObs(tb_status_obs) if tb_status_obs else None
+                tb_status_date=obsutils.getObsDatetimeFromObs(tb_status_obs) if tb_status_obs else None
+                last_inh_pickup_obs=pharmacyutils.get_last_isoniazid_prophylaxis_pickup_obs(doc,cutoff_datetime)
+                last_inh_pickup_date=obsutils.getObsDatetimeFromObs(last_inh_pickup_obs)
+
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -152,7 +163,43 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "ddddispensingmodality": pharmacyutils.get_ddd_dsd_model(doc,cutoff_datetime),
                     "mmdtype": pharmacyutils.get_mmd_type(doc,cutoff_datetime),
                     "datereturnedtocare": ctdutils.get_date_returned_to_care(doc,cutoff_datetime),
-                    "dateoftermination": ctdutils.get_date_of_termination(doc,cutoff_datetime)
+                    "dateoftermination": ctdutils.get_date_of_termination(doc,cutoff_datetime),
+                    "pharmacynextappointment": pharmacyutils.get_pharmacy_next_appointment_date(doc,cutoff_datetime),
+                    "clinicalnextappointment": carecardutils.get_clinical_next_appointment_date(doc,cutoff_datetime),
+                    "currentageyears": demographicsutils.get_current_age_at_date(doc,cutoff_datetime),
+                    "currentagemonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),""
+                    "dateofbirth": birthdate,
+                    "markasdeseased": False,
+                    "markasdeseaseddeathdate": None, # Placeholder for any additional fields that may be added in the future
+                    "registrationphoneno": "", # Placeholder for registration phone number if needed in the future
+                    "nextofkinphoneno": "", # Placeholder for next of kin phone number if needed in the future
+                    "treatmentsupporterphoneno": "", # Placeholder for treatment supporter phone number if needed in the future
+                    "biometriccaptured": "Yes" if biometricutils.has_biometric_captured(doc) else "No", # Yes or No based on whether biometric data exists for the patient
+                    "biometriccapturedate": biometricutils.get_biometric_capture_date(doc), # Date when biometric data was captured, if available
+                    "validcapture": "Yes" if biometricutils.has_biometric_captured(doc) else "", # Put yes by default. The new_template column is missing in the CDR
+                    "currentweight_kg": weight_kg,
+                    "currentweightdate": weight_date,
+                    "tbstatus": tb_status,
+                    "tbstatusdate": tb_status_date,
+                    "baselineinhstartdate": artcommence.get_baseline_inh_start_date(doc, cutoff_datetime),
+                    "baselineinhstopdate": artcommence.get_baseline_inh_stop_date(doc, cutoff_datetime),
+                    "currentinhstartdate": iptutils.get_inh_start_date(doc, cutoff_datetime),
+                    "currentinhoutcome": iptutils.get_inh_outcome(doc, cutoff_datetime),
+                    "currentinhoutcomedate": iptutils.get_inh_outcome_date(doc, cutoff_datetime),
+                    "lastinhdispenseddate": last_inh_pickup_date,
+                    "baselinetbtreatmentstartdate": artcommence.get_baseline_tb_treatment_start_date(doc,cutoff_datetime),
+                    "baselinetbtreatmentstopdate": artcommence.get_baseline_tb_treatment_stop_date(doc,cutoff_datetime)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
