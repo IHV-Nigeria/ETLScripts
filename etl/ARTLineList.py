@@ -8,6 +8,7 @@ import os
 
 import dao.mongodbdao as mongo_dao
 import dao.postgresdao as postgres_dao
+from formslib import iptutils
 from utils import biometricutils
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
@@ -40,7 +41,7 @@ def export_art_line_list_data(cutoff_datetime=None):
         return
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
-    BATCH_SIZE = 500 # Increased for 700k records
+    BATCH_SIZE = 100 # Increased for 700k records
     batch_list = []
     total_inserted = 0
 
@@ -177,7 +178,16 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "currentweight_kg": weight_kg,
                     "currentweightdate": weight_date,
                     "tbstatus": tb_status,
-                    "tbstatusdate": tb_status_date
+                    "tbstatusdate": tb_status_date,
+                    "baselineinhstartdate": artcommence.get_baseline_inh_start_date(doc, cutoff_datetime),
+                    "baselineinhstopdate": artcommence.get_baseline_inh_stop_date(doc, cutoff_datetime),
+                    "currentinhstartdate": iptutils.get_inh_start_date(doc, cutoff_datetime),
+                    "currentinhoutcome": iptutils.get_inh_outcome(doc, cutoff_datetime),
+                    "currentinhoutcomedate": iptutils.get_inh_outcome_date(doc, cutoff_datetime),
+                    "lastinhdispenseddate": None,
+                    "baselinetbtreatmentstartdate": None,
+                    "baselinetbtreatmentstopdate": None,
+
 
 
 

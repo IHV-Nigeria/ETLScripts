@@ -19,6 +19,8 @@ CHILD_FIRST_LINE_REGIMEN_CONCEPT_ID = 164507
 WHO_STAGE_AT_ART_START_CONCEPT_ID = 5356
 PREGNANCY_STATUS_AT_ART_START_CONCEPT_ID = 165050
 CD4_COUNT_AT_ART_START_CONCEPT_ID = 164429
+BASELINE_INH_START_DATE_CONCEPT_ID = 164852
+BASELINE_INH_STOP_DATE_CONCEPT_ID = 166096
 
 
 def get_art_start_date(doc,cutoff_datetime: Optional[datetime] = None):
@@ -61,3 +63,12 @@ def get_current_regimen_line(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen_line = obs.get("variableValue") if obs else None
     return current_regimen_line
 
+def get_baseline_inh_start_date(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, BASELINE_INH_START_DATE_CONCEPT_ID, cutoff_datetime)
+    baseline_inh_start_date = obsutils.getValueDatetimeFromObs(obs) if obs else None
+    return baseline_inh_start_date
+
+def get_baseline_inh_stop_date(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, ART_COMMENCEMENT_FORM_ID, BASELINE_INH_STOP_DATE_CONCEPT_ID, cutoff_datetime)
+    baseline_inh_stop_date = obsutils.getValueDatetimeFromObs(obs) if obs else None
+    return baseline_inh_stop_date
