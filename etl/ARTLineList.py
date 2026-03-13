@@ -207,10 +207,6 @@ def export_art_line_list_data(cutoff_datetime=None):
 
 
 
-
-
-                
-        
                 }
                 batch_list.append(record)
 
@@ -244,7 +240,7 @@ def export_art_line_list_data(cutoff_datetime=None):
 
 
 
-def load_facility_cache(db, db_name="cdr"):
+def load_facility_cache(db, db_name=MONGO_DATABASE_NAME):
     """
     Loads all facilities into a dictionary indexed by DATIM code.
     Run this once at the start of your ETL.

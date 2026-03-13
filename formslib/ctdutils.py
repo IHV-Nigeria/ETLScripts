@@ -4,7 +4,6 @@ from utils import commonutils
 import utils.obsutils as obsutils
 
 
-
 # Constants for Client Tracking
 CLIENT_TRACKING_DISCONTINUATION_FORM_ID = 13
 REASON_FOR_TERMINATION_CONCEPT_ID = 165470

@@ -11,7 +11,7 @@ def localize_date(utc_dt: Optional[datetime]) -> Optional[datetime]:
     if utc_dt is None:
         return None
     # Convert UTC to Lagos/Nigeria time
-    return utc_dt.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Africa/Lagos"))
+    return utc_dt.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Africa/Lagos")).replace(tzinfo=None)
 
 
 
@@ -33,7 +33,7 @@ def validate_date(date_val: Optional[datetime]) -> Optional[datetime]:
     try:
         # Check if the year is within a realistic range
         if MIN_YEAR <= date_val.year <= MAX_YEAR:
-            return localize_date(date_val)
+            return localize_date(date_val).date()
         else:
             # Return 1960 for typos like 2023702
             return localize_date(PLACEHOLDER_DATE)

@@ -25,7 +25,7 @@ _facility_cache = {}
 
 
 
-def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
+def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
     """
     Main function to export CDR Line List data to CSV. Processes ART containers in batches and saves to CSV incrementally.
     target variables to extract:
@@ -50,7 +50,7 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
     #extracted_results = []
     for doc in tqdm(cursor, total=size, desc="CDR Line List ETL Progress"):
             
-           
+
             if not is_aspire_state(doc):
                 continue  # Skip this record and move to the next one
 
@@ -60,8 +60,8 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
             birthdate = commonutils.validate_date(demographics.get("birthdate"))
             facility_info = get_facility_by_datim(datim_code)
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 
-           
+            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
+
 
 
             record = {
@@ -82,7 +82,7 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
                 "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
                 "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
                 "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
-                               
+
             }
             batch_list.append(record)
 
@@ -91,11 +91,11 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None ):
                 batch_list = [] # Clear memory
                 is_first_batch = False # Next batches append without headers
 
-    
+
     # 3. Save any remaining records (the last partial batch)
     if batch_list:
         save_batch_to_csv(batch_list, full_path, is_first_batch)
-                 
+
     db.client.close()
     print(f"\nFinal export complete. Total records processed: {size}")
     print(f"File saved to: {full_path}")
@@ -107,14 +107,14 @@ def prepare_filepath(filename=None):
     output_dir = './output'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     if filename:
         if not filename.endswith('.csv'):
             filename = f"{filename}_{timestamp}.csv"
     else:
         filename = f"EACExport_{timestamp}.csv"
-        
+
     return os.path.join(output_dir, filename)
 
 

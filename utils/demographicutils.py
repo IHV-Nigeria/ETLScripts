@@ -38,7 +38,6 @@ def get_marked_as_deseased_status(doc):
     return marked_as_deseased_status
 
 def calculateAge(birthdate: datetime):
-    
      if birthdate is None:
         return None
 
