@@ -116,6 +116,19 @@ def get_last_viral_load_obs_before(doc, cutoff_datetime):
     viral_load_obs = obsutils.get_last_obs_before_date(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , cutoff_datetime)
     return viral_load_obs
 
+def get_first_viral_load_obs_between_dates(doc, start_datetime, end_datetime):
+    viral_load_obs = obsutils.get_first_obs_between_dates(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , start_datetime, end_datetime)
+    return viral_load_obs
+
+def get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime):
+    suppression_threshold = 1000
+    viral_load_obs = obsutils.get_first_unsuppressed_viral_load_between_dates(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , start_datetime, end_datetime, suppression_threshold)
+    return viral_load_obs
+
+def get_first_viral_load_after_date(doc, cutoff_datetime):
+    viral_load_obs = obsutils.get_first_obs_after_date(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , cutoff_datetime)
+    return viral_load_obs
+
 def get_viral_load_after_date(doc, earliest_cutoff_datetime):
     viral_load_obs = obsutils.get_first_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , earliest_cutoff_datetime)
     return viral_load_obs

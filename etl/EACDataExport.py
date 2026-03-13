@@ -35,6 +35,10 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     BATCH_SIZE = 1000
     batch_list = []
 
+    start_datetime = commonutils.normalize_clinical_date(datetime(2022, 10, 1))
+    # end_datetime = commonutils.normalize_clinical_date(datetime.now())
+    end_datetime = commonutils.normalize_clinical_date(datetime(2023, 9, 1))
+
     # 1. Prepare the file path (create directory and name)
     full_path = prepare_filepath(filename)
     
@@ -61,13 +65,20 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
             viral_load_2_obs = labutils.get_nth_viral_load_obs(doc, 2, cutoff_datetime)
             viral_load_3_obs = labutils.get_nth_viral_load_obs(doc, 3, cutoff_datetime)
             current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime) 
+            #current_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
             current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None 
             last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 
             current_pregnancy_status_obs=carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
-
+            first_unsuppressed_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
+            first_unsuppressed_viral_load_value = obsutils.getValueNumericFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
+            first_unsuppressed_viral_load_datetime = obsutils.getObsDatetimeFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
+            last_eac_encounter_datetime = encounterutils.get_encounter_datetime(last_eac_encounter) if last_eac_encounter else None
+            viral_load_after_last_eac_obs = labutils.get_first_viral_load_after_date(doc, last_eac_encounter_datetime) if last_eac_encounter_datetime else None
+            viral_load_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+            viral_load_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
 
             record = {
-                #"touchtime": header.get("touchTime"),
+                "touchtime": header.get("touchTime"),
                 "State": facility_info.get("State") if facility_info else None,
                 "LGA" : facility_info.get("LGA") if facility_info else None,
                 "DatimCode" : header.get("facilityDatimCode"),
@@ -141,7 +152,10 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
                 "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
                 "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
                 "Quater": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
-                
+                "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
+                "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
+                "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
+                "viralLoadAfterLastEACDate": viral_load_after_last_eac_datetime,
                 #"kpType": hivenrollmentutils.get_kp_type(doc,cutoff_datetime),
                                          
                 #"baselineWeight": carecardutils.get_first_weight(doc,cutoff_datetime),

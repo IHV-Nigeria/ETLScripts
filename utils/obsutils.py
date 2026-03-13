@@ -279,17 +279,18 @@ def get_first_obs_with_value(doc,form_id,concept_id, value_coded_arr, earliest_c
 def getValueDatetimeFromObs(obs):
     if obs is None:
         return None
-    return commonutils.validate_date(obs.get("valueDatetime"))
+    return commonutils.normalize_clinical_date(obs.get("valueDatetime"))
 
 def getObsDatetimeFromObs(obs):
     if obs is None:
         return None
-    return commonutils.validate_date(obs.get("obsDatetime"))
+    return commonutils.normalize_clinical_date(obs.get("obsDatetime"))
 
 def getValueNumericFromObs(obs):
     if obs is None:
         return None
-    return obs.get("valueNumeric")
+    value_numeric = obs.get("valueNumeric")
+    return float(value_numeric) if value_numeric is not None else None
 
 def getValueCodedFromObs(obs):
     if obs is None:
@@ -332,7 +333,29 @@ def getAllObsWithConceptIDRemoveDuplicateByDate(doc, form_id, concept_id, cutoff
 
    
      
+def get_first_obs_after_date(doc, form_id, concept_id, cutoff_datetime: Optional[datetime] = None):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
+
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+
+    for obs in obs_list:
+        if (obs.get("formId") == form_id and
+            obs.get("conceptId") == concept_id and
+            obs.get("voided") == 0):
+
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+            if isinstance(obs_dt, datetime) and obs_dt > cutoff_datetime:
+                matching_obs.append(obs)
+
+    if not matching_obs:
+        return None
+
+    # Sort by the actual datetime objects (Oldest first)
+    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
     
+    return matching_obs[0]    
 
 def get_obs_with_encounter_id(doc, concept_id, encounter_id):
     obs_list = doc.get("messageData", {}).get("obs", [])
@@ -350,5 +373,53 @@ def get_obs_with_encounter_id(doc, concept_id, encounter_id):
         
     return matching_obs[0]
 
+def get_first_obs_between_dates(doc, form_id, concept_id, start_datetime, end_datetime):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
 
-   
+    end_datetime=commonutils.normalize_clinical_date(end_datetime)
+    start_datetime=commonutils.normalize_clinical_date(start_datetime)  
+
+    for obs in obs_list:
+        if (obs.get("formId") == form_id and
+            obs.get("conceptId") == concept_id and
+            obs.get("voided") == 0):
+
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+            if isinstance(obs_dt, datetime) and start_datetime and end_datetime:
+                if start_datetime <= obs_dt <= end_datetime:
+                    matching_obs.append(obs)
+
+
+    if not matching_obs:
+        return None
+
+    # Sort by datetime in ascending order and return the first one
+    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get("obsDatetime")) or datetime(1900,1,1))
+    return matching_obs[0]
+
+def get_first_unsuppressed_viral_load_between_dates(doc, form_id, concept_id, start_datetime, end_datetime, suppression_threshold):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
+
+    end_datetime=commonutils.normalize_clinical_date(end_datetime)
+    start_datetime=commonutils.normalize_clinical_date(start_datetime)  
+
+    for obs in obs_list:
+        if (obs.get("formId") == form_id and
+            obs.get("conceptId") == concept_id and
+            obs.get("voided") == 0):
+
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+            value_numeric = float(obs.get("valueNumeric")) if obs.get("valueNumeric") is not None else None  # convert to float
+            if isinstance(obs_dt, datetime) and start_datetime and end_datetime and value_numeric is not None:
+                if start_datetime <= obs_dt <= end_datetime and value_numeric >= suppression_threshold:
+                    matching_obs.append(obs)
+
+
+    if not matching_obs:
+        return None
+
+    # Sort by datetime in ascending order and return the first one
+    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get("obsDatetime")) or datetime(1900,1,1))
+    return matching_obs[0]

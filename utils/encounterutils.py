@@ -121,7 +121,7 @@ def get_nth_encounter_after_date(doc, form_id, n, after_date):
         if (encounter.get("formId") == form_id and
             encounter.get("voided") == 0):
 
-            encounter_datetime = encounter.get("encounterDatetime")
+            encounter_datetime = commonutils.normalize_clinical_date(encounter.get("encounterDatetime"))
 
             if isinstance(encounter_datetime, datetime):
                 if encounter_datetime > after_date:
@@ -131,7 +131,7 @@ def get_nth_encounter_after_date(doc, form_id, n, after_date):
         return None
 
     # Sort by the actual datetime objects (Oldest first)
-    matching_encounters.sort(key=lambda x: x.get('encounterDatetime'))
+    matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1))
     
     # Return the nth item (Index is n-1)
     if len(matching_encounters) >= n:
@@ -178,7 +178,7 @@ def get_encounter_datetime(encounter):
         return None
     encounter_datetime = encounter.get('encounterDatetime')
     
-    return commonutils.validate_date(encounter_datetime)
+    return commonutils.normalize_clinical_date(encounter_datetime)
 
 def get_encounter_id(encounter):
     if encounter is None:
@@ -199,7 +199,7 @@ def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
         if (encounter.get("formId") != ctdutils.CLIENT_TRACKING_DISCONTINUATION_FORM_ID and
             encounter.get("voided") ==0):
 
-            encounter_datetime = encounter.get("encounterDatetime")
+            encounter_datetime = commonutils.normalize_clinical_date(encounter.get("encounterDatetime"))
 
             if isinstance(encounter_datetime, datetime):
                 if encounter_datetime <= cutoff_datetime:
@@ -209,7 +209,7 @@ def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
         return None
 
     # 3. Sort by the actual datetime objects (Newest first)
-    matching_encounters.sort(key=lambda x: x.get('encounterDatetime'), reverse=True)
+    matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1), reverse=True)
     
     return matching_encounters[0]
                 
