@@ -30,14 +30,15 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_art_containers(db,db_name)
     size = mongo_dao.get_art_container_size(db,db_name)
+    cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime) if cutoff_datetime else commonutils.normalize_clinical_date(datetime.now())
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
     batch_list = []
 
-    start_datetime = commonutils.normalize_clinical_date(datetime(2022, 10, 1))
+    start_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1))
     # end_datetime = commonutils.normalize_clinical_date(datetime.now())
-    end_datetime = commonutils.normalize_clinical_date(datetime(2023, 9, 1))
+    end_datetime = commonutils.normalize_clinical_date(datetime.now)
 
     # 1. Prepare the file path (create directory and name)
     full_path = prepare_filepath(filename)
@@ -55,10 +56,10 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
             header = demographicsutils.get_message_header(doc)
             datim_code = header.get("facilityDatimCode")
             demographics = demographicsutils.get_patient_demographics(doc)
-            birthdate = commonutils.validate_date(demographics.get("birthdate"))
+            birthdate = commonutils.normalize_clinical_date(demographics.get("birthdate"))
             facility_info = get_facility_by_datim(datim_code)
-            art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-            eac_1_date = commonutils.validate_date(eacutils.get_eac_date(1, doc))
+            art_start_date = commonutils.normalize_clinical_date(artcommence.get_art_start_date(doc, cutoff_datetime))
+            eac_1_date = commonutils.normalize_clinical_date(eacutils.get_eac_date(1, doc))
             last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
             viral_load_before_first_eac_obs = labutils.get_last_viral_load_obs_before(doc, eac_1_date)
             viral_load_1_obs = labutils.get_nth_viral_load_obs(doc, 1, cutoff_datetime)
