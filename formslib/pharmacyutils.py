@@ -9,6 +9,8 @@ import pandas as pd
 PHARMACY_FORM_ID = 27
 ARV_MEDICATION_DURATION_CONCEPT_ID = 159368
 ARV_WRAPPING_CONCEPT_ID = 162240
+MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID = 1443
+MEDICATION_FREQUENCY_CONCEPT_ID = 165723
 
 PREGNANCY_STATUS_CONCEPT_ID = 165050
 DSD_STATUS_CONCEPT_ID = 167126
@@ -52,7 +54,41 @@ def get_last_drug_pickup_duration(doc,last_arv_obs):
         return None
            
     return arv_duration
-        
+
+
+def get_medication_frequency(doc, last_arv_obs):
+    if last_arv_obs is None:
+        return None 
+    
+    obs_group_id = last_arv_obs.get("obsId")
+    encounter_id = last_arv_obs.get("encounterId")
+    form_id = last_arv_obs.get("formId")
+
+    obs_medication_frequency = obsutils.get_obs_with_group_id(doc, form_id, encounter_id, MEDICATION_FREQUENCY_CONCEPT_ID,obs_group_id)
+    if obs_medication_frequency is None:
+        return None
+    medication_frequency = obs_medication_frequency.get("variableValue")
+    if medication_frequency is None:
+        return None
+           
+    return medication_frequency
+
+def get_medication_quantity_dispensed(doc, last_arv_obs):
+    if last_arv_obs is None:
+        return None 
+    
+    obs_group_id = last_arv_obs.get("obsId")
+    encounter_id = last_arv_obs.get("encounterId")
+    form_id = last_arv_obs.get("formId")
+
+    obs_medication_quantity = obsutils.get_obs_with_group_id(doc, form_id, encounter_id, MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID,obs_group_id)
+    if obs_medication_quantity is None:
+        return None
+    medication_quantity = obs_medication_quantity.get("valueNumeric")
+    if medication_quantity is None:
+        return None
+           
+    return medication_quantity
 
 def get_nth_pickup_isoniazid_prophylaxis_obs_of_last_x_pickups(doc, n, x, cutoff_datetime: Optional[datetime] = None):
     inh_pickup_obs = obsutils.get_nth_obs_of_last_x_obs_with_valuecoded(doc, PHARMACY_FORM_ID, OI_DRUG_CONCEPT_ID,[ISONIAZID_PROPHYLAXIS_CONCEPT_ID], n, x, cutoff_datetime)
@@ -257,6 +293,47 @@ def get_min_third_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = N
     first_third_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID,  third_line_concept_arr, cutoff_datetime)
     regimen_date = first_third_line_obs.get("obsDatetime") if first_third_line_obs else None
     return commonutils.validate_date(regimen_date)  
+
+def get_min_first_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    first_line_concept_arr = [ADULT_1ST_LINE_REGIMEN_CONCEPT_ID, CHILD_FIRST_LINE_REGIMEN_CONCEPT_ID]
+    first_first_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID,  first_line_concept_arr, cutoff_datetime)
+    first_first_line_value = first_first_line_obs.get("valueCoded") if first_first_line_obs else None
+    first_first_line_encounter_id = first_first_line_obs.get("encounterId") if first_first_line_obs else None
+    first_line_regimen_obs = obsutils.get_obs_with_encounter_id(doc, first_first_line_value, first_first_line_encounter_id) if first_first_line_value and first_first_line_encounter_id else None
+    #first_first_line_regimen= first_line_regimen_obs.get("variableValue") if first_line_regimen_obs else None
+    return first_line_regimen_obs
+
+def get_initial_first_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    first_line_concept_arr = [ADULT_1ST_LINE_REGIMEN_CONCEPT_ID, CHILD_FIRST_LINE_REGIMEN_CONCEPT_ID]
+    initial_first_line_obs = obsutils.get_first_obs_with_values(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID,  first_line_concept_arr, cutoff_datetime)
+    
+    return initial_first_line_obs
+
+def get_quantity_of_arv_dispensed_last_visit(doc, cutoff_datetime: Optional[datetime] = None):
+    last_arv_obs = get_last_arv_obs(doc, cutoff_datetime)
+    if not last_arv_obs:
+        return None
+    
+    encounter_id = last_arv_obs.get("encounterId")
+    form_id = last_arv_obs.get("formId")
+
+    quantity_obs = obsutils.get_obs_with_group_id(doc, form_id, encounter_id, ARV_MEDICATION_DURATION_CONCEPT_ID, last_arv_obs.get("obsId"))
+    
+    if not quantity_obs:
+        return None
+    
+    quantity_dispensed = quantity_obs.get("valueNumeric")
+    return quantity_dispensed
+
+def get_min_second_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    second_line_concept_arr = [CHILD_2ND_LINE_REGIMEN_CONCEPT_ID, ADULT_2ND_LINE_REGIMEN_CONCEPT_ID]
+    first_second_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, second_line_concept_arr, cutoff_datetime)
+    first_second_line_value = first_second_line_obs.get("valueCoded") if first_second_line_obs else None
+    first_second_line_encounter_id = first_second_line_obs.get("encounterId") if first_second_line_obs else None
+    second_line_regimen_obs = obsutils.get_obs_with_encounter_id(doc, first_second_line_value, first_second_line_encounter_id) if first_second_line_value and first_second_line_encounter_id else None
+    #second_line_regimen= second_line_regimen_obs.get("variableValue") if second_line_regimen_obs else None
+    return second_line_regimen_obs
+    
 
 def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen_line_obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)

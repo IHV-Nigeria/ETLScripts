@@ -36,12 +36,24 @@ CHILD_3RD_LINE_REGIMEN_CONCEPT_ID = 165703
 
 NEXT_APPOINTMENT_DATE_CONCEPT_ID = 5096
 
+CERVICAL_CANCER_SCREENING_STATUS_CONCEPT_ID = 167139
+CERVICAL_CANCER_TREATMENT_METHOD_CONCEPT_ID = 167150
+
 
 
 def get_first_weight(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_first_obs(doc,CARE_CARD_FORM_ID, WEIGHT_KG_CONCEPT_ID)
     weight = obs.get("valueNumeric") if obs else None
     return weight
+
+def get_cervical_cancer_screening_status_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, CERVICAL_CANCER_SCREENING_STATUS_CONCEPT_ID, cutoff_datetime)
+    return obs
+
+def get_cervical_cancer_treatment_provided_obs(doc,cervical_cancer_screening_status_encounter_id):
+    obs = obsutils.get_obs_with_encounter_id(doc, CERVICAL_CANCER_TREATMENT_METHOD_CONCEPT_ID, cervical_cancer_screening_status_encounter_id)
+    return obs
+
 
 def get_last_who_stage_obs(doc,cutoff_datetime: Optional[datetime] = None):
     who_stage_obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, WHO_STAGE_CONCEPT_ID, cutoff_datetime)

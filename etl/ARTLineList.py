@@ -8,7 +8,7 @@ import os
 
 import dao.mongodbdao as mongo_dao
 import dao.postgresdao as postgres_dao
-from formslib import iptutils
+from formslib import iptutils, otzutils
 from utils import biometricutils
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
@@ -45,6 +45,10 @@ def export_art_line_list_data(cutoff_datetime=None):
     batch_list = []
     total_inserted = 0
 
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+    previous_quarter_end_date = commonutils.get_previous_quarter_end_date(cutoff_datetime)
+
     
     try:
         #extracted_results = []
@@ -57,12 +61,12 @@ def export_art_line_list_data(cutoff_datetime=None):
                 header = demographicsutils.get_message_header(doc)
                 datim_code = header.get("facilityDatimCode")
                 demographics = demographicsutils.get_patient_demographics(doc)
-                birthdate = commonutils.validate_date(demographics.get("birthdate"))
+                birthdate = commonutils.normalize_clinical_date(demographics.get("birthdate"))
                 facility_info = get_facility_by_datim(datim_code)
-                art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
+                art_start_date = commonutils.normalize_clinical_date(artcommence.get_art_start_date(doc, cutoff_datetime))
                 hivconfirmeddateobs=hivenrollmentutils.get_last_date_confirmed_hiv_positive_obs(doc,cutoff_datetime)
                 hivconfirmeddate = obsutils.getValueDatetimeFromObs(hivconfirmeddateobs)
-                last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
+                #last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
                 initial_cd4_count_obs=artcommence.get_cd4_count_obs(doc, cutoff_datetime)
                 initial_cd4_count_value=obsutils.getValueNumericFromObs(initial_cd4_count_obs)
                 initial_cd4_count_date = obsutils.getObsDatetimeFromObs(initial_cd4_count_obs)
@@ -104,7 +108,37 @@ def export_art_line_list_data(cutoff_datetime=None):
                 tb_status_date=obsutils.getObsDatetimeFromObs(tb_status_obs) if tb_status_obs else None
                 last_inh_pickup_obs=pharmacyutils.get_last_isoniazid_prophylaxis_pickup_obs(doc,cutoff_datetime)
                 last_inh_pickup_date=obsutils.getObsDatetimeFromObs(last_inh_pickup_obs)
+                otz_enrollment_date = otzutils.get_otz_enrollment_date(doc, cutoff_datetime)
+                initial_first_line_obs=pharmacyutils.get_min_first_line_regimen_obs(doc,cutoff_datetime)
+                initial_second_line_obs=pharmacyutils.get_min_second_line_regimen_obs(doc,cutoff_datetime)
+                initial_first_line_regimen=obsutils.getVariableValueFromObs(initial_first_line_obs) if initial_first_line_obs else None
+                initial_second_line_regimen=obsutils.getVariableValueFromObs(initial_second_line_obs) if initial_second_line_obs else None 
+                initial_first_line_regimen_date=obsutils.getObsDatetimeFromObs(initial_first_line_obs) if initial_first_line_obs else None
+                initial_second_line_regimen_date=obsutils.getObsDatetimeFromObs(initial_second_line_obs) if initial_second_line_obs else None
+                last_arv_pickup_obs=pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
+                last_arv_pickup_date=obsutils.getObsDatetimeFromObs(last_arv_pickup_obs) if last_arv_pickup_obs else None
+                last_arv_pickup_obsid=obsutils.getObsIDFromObs(last_arv_pickup_obs) if last_arv_pickup_obs else None
+                arv_duration_days=pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs) if last_arv_pickup_obs else None
+                pill_balance=pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs) if last_arv_pickup_obs else None
 
+                initial_first_line_obs=pharmacyutils.get_initial_first_line_regimen_obs(doc,cutoff_datetime)
+                initial_first_line_regimen_datex=obsutils.getObsDatetimeFromObs(initial_first_line_obs) if initial_first_line_obs else None
+
+                last_arv_pickup_obs_previous_quarter=pharmacyutils.get_last_arv_obs(doc, previous_quarter_end_date)
+                last_arv_pickup_date_previous_quarter=obsutils.getObsDatetimeFromObs(last_arv_pickup_obs_previous_quarter) if last_arv_pickup_obs_previous_quarter else None
+                arv_duration_days_previous_quarter=pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs_previous_quarter) if last_arv_pickup_obs_previous_quarter else None
+                patient_outcome_previous_quarter=ctdutils.get_patient_outcome (doc,previous_quarter_end_date)
+                patient_outcome_previous_quarter_date=ctdutils.get_outcome_date (doc,previous_quarter_end_date)
+                art_status_previous_quarter=pharmacyutils.get_current_art_status(doc, previous_quarter_end_date)
+                arv_quantity_dispensed_previous_quarter=pharmacyutils.get_medication_quantity_dispensed(doc, last_arv_pickup_obs_previous_quarter) if last_arv_pickup_obs_previous_quarter else None
+                arv_frequency_dispensed_previous_quarter=pharmacyutils.get_medication_frequency(doc, last_arv_pickup_obs_previous_quarter) if last_arv_pickup_obs_previous_quarter else None
+                pill_balance_previous_quarter=pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs_previous_quarter) if last_arv_pickup_obs_previous_quarter else None
+                cervical_cancer_screening_status_obs=carecardutils.get_cervical_cancer_screening_status_obs(doc, cutoff_datetime)
+                cervical_cancer_screening_status_value=obsutils.getVariableValueFromObs(cervical_cancer_screening_status_obs) if cervical_cancer_screening_status_obs else None
+                cervical_cancer_screening_status_date=obsutils.getObsDatetimeFromObs(cervical_cancer_screening_status_obs) if cervical_cancer_screening_status_obs else None
+                cervical_cancer_treatment_provided_obs=carecardutils.get_cervical_cancer_treatment_provided_obs(doc, cervical_cancer_screening_status_obs.get("encounterId") if cervical_cancer_screening_status_obs else None)
+                cervical_cancer_treatment_provided_value=obsutils.getVariableValueFromObs(cervical_cancer_treatment_provided_obs) if cervical_cancer_treatment_provided_obs else None
+                cervical_cancer_treatment_provided_date=obsutils.getObsDatetimeFromObs(cervical_cancer_treatment_provided_obs) if cervical_cancer_treatment_provided_obs else None
 
                 record = {
                     "touchtime": header.get("touchTime"),
@@ -128,10 +162,10 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "datetransferredin": hivenrollmentutils.get_date_transferred_in(doc,cutoff_datetime),
                     "transferinstatus": hivenrollmentutils.get_prior_art(doc,cutoff_datetime),
                     "artstartdate": art_start_date,
-                    "lastpickupdate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
+                    "lastpickupdate": last_arv_pickup_date,
                     "lastvisitdate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-                    "daysofarvrefil": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
-                    "pillbalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
+                    "daysofarvrefil":arv_duration_days,
+                    "pillbalance": pill_balance,
                     "initialregimenline": artcommence.get_current_regimen_line(doc,cutoff_datetime),
                     "initialregimen": artcommence.get_current_regimen(doc,cutoff_datetime),
                     "initialcd4count": initial_cd4_count_value,
@@ -188,23 +222,30 @@ def export_art_line_list_data(cutoff_datetime=None):
                     "currentinhoutcomedate": iptutils.get_inh_outcome_date(doc, cutoff_datetime),
                     "lastinhdispenseddate": last_inh_pickup_date,
                     "baselinetbtreatmentstartdate": artcommence.get_baseline_tb_treatment_start_date(doc,cutoff_datetime),
-                    "baselinetbtreatmentstopdate": artcommence.get_baseline_tb_treatment_stop_date(doc,cutoff_datetime)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    "baselinetbtreatmentstopdate": artcommence.get_baseline_tb_treatment_stop_date(doc,cutoff_datetime),
+                    "lastviralloadsamplecollectionformdate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_obs)),
+                    "lastsampletakendate": obsutils.getValueDatetimeFromObs(labutils.get_last_sample_taken_date_obs(doc,cutoff_datetime)),
+                    "otzenrollmentdate": otz_enrollment_date,
+                    "otzoutcomedate": otzutils.get_otz_outcome_date(doc, cutoff_datetime),
+                    "enrollmentdate": demographicsutils.get_hiv_enrollment_date(doc),
+                    "initialfirstlineregimen": initial_first_line_regimen,
+                    "initialfirstlineregimendate": initial_first_line_regimen_datex,
+                    "initialsecondlineregimen": initial_second_line_regimen,
+                    "initialsecondlineregimendate": initial_second_line_regimen_date,
+                    "lastpickupdatepreviousquarter":  last_arv_pickup_date_previous_quarter, # Placeholder for last pickup date in the previous quarter if needed in the future
+                    "drugdurationpreviousquarter": arv_duration_days_previous_quarter, # Placeholder for drug duration in the previous quarter if needed in the future
+                    "patientoutcomepreviousquarter":  patient_outcome_previous_quarter, # Placeholder for patient outcome in the previous quarter if needed in the future
+                    "patientoutcomedatepreviousquarter": patient_outcome_previous_quarter_date, # Placeholder for patient outcome date in the previous quarter if needed in the future
+                    "artstatuspreviousquarter": art_status_previous_quarter, # Placeholder for ART status in the previous quarter if needed in the future
+                    "quantityofarvdispensedlastvisit": arv_quantity_dispensed_previous_quarter, # Placeholder for quantity of ARVs dispensed at last visit if needed in the future
+                    "frequencyofarvdispensedlastvisit": arv_frequency_dispensed_previous_quarter, # Placeholder for frequency of ARVs dispensed at last visit if needed in the future
+                    "currentartstatuswithpillbalance": None, # Placeholder for current ART status with pill balance if needed in the future
+                    "recapturedate": biometricutils.get_biometric_recapture_date(doc), # Placeholder for recapture date if needed in the future
+                    "recapturecount": biometricutils.get_biometric_recapture_count(doc), # Placeholder for recapture count if needed in the future
+                    "cervicalcancerscreeningstatus": cervical_cancer_screening_status_value , # Placeholder for cervical cancer screening status if needed in the future
+                    "cervicalcancerscreeningstatusdate": cervical_cancer_screening_status_date, # Placeholder for cervical cancer screening date if needed in the future
+                    "cervicalcancertreatmentprovided": cervical_cancer_treatment_provided_value, # Placeholder for cervical cancer treatment provided if needed in the future
+                    "cervicalcancertreatmentprovideddate": cervical_cancer_treatment_provided_date, # Placeholder for cervical cancer treatment provided date if needed in the future
 
 
                 }
