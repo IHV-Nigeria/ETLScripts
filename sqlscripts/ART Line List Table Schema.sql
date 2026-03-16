@@ -121,13 +121,13 @@ CREATE TABLE art_line_list (
     
     -- Previous Quarter Reporting
     lastpickupdatepreviousquarter TIMESTAMP,
-    drugdurationpreviousquarter INTEGER,
+    drugdurationpreviousquarter NUMERIC(10, 2),
     patientoutcomepreviousquarter VARCHAR(100),
     patientoutcomedatepreviousquarter TIMESTAMP,
     artstatuspreviousquarter VARCHAR(100),
     
     -- Visit Details Continued
-    quantityofarvdispensedlastvisit INTEGER,
+    quantityofarvdispensedlastvisit NUMERIC(10, 2),
     frequencyofarvdispensedlastvisit VARCHAR(100),
     currentartstatuswithpillbalance VARCHAR(100),
     

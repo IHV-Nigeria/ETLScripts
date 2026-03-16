@@ -4,6 +4,41 @@ from datetime import datetime, date
 from utils import commonutils
 
 
+def get_first_obs_with_values(doc, form_id, concept_id, value_coded_arr, earliest_cutoff_datetime: Optional[datetime] = None):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
+
+    # Normalize the cutoff date once at the start
+    target_cutoff = commonutils.normalize_clinical_date(earliest_cutoff_datetime or datetime(1900,1,1))
+    
+    for obs in obs_list:
+        # Check basic criteria
+        if (obs.get("formId") == form_id and 
+            obs.get("conceptId") == concept_id and 
+            obs.get("voided") == 0 ):
+
+            #valueCoded= int(float(obs.get("valueCoded"))) if obs.get("valueCoded") is not None else None
+            #if valueCoded not in value_coded_arr:
+            #   continue
+            
+            # Normalize the observation date
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))      
+            
+            if isinstance(obs_dt, datetime):
+                # Compare two normalized, naive WAT datetimes
+                 if obs_dt and target_cutoff and obs_dt >= target_cutoff:
+                    matching_obs.append(obs)
+
+    if not matching_obs:
+        return None
+        
+    # 4. Sort using the normalized dates to ensure stability
+    matching_obs.sort(
+        key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1), 
+        reverse=False
+    )
+    
+    return matching_obs[0]
 def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
@@ -15,7 +50,7 @@ def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[dat
             obs.get("voided") == 0):
             
             # 2. Access the datetime object directly
-            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
             
             # Ensure it is a valid datetime object before comparing
             if isinstance(obs_dt, datetime):
@@ -30,7 +65,7 @@ def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[dat
         return None
         
     # 3. Sort by the actual datetime objects (Oldest first)
-    matching_obs.sort(key=lambda x: x.get('obsDatetime'))
+    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
     
     return matching_obs[0]
 
@@ -64,6 +99,7 @@ def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_cod
     matching_obs.sort(key=lambda x: x.get('obsDatetime'), reverse=True)
     
     return matching_obs[0]
+
 
 def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional[datetime] = None):
     """
@@ -237,7 +273,7 @@ def get_obs_with_group_id(doc, form_id, encounter_id, search_obs_concept_id,obs_
             obs.get("voided") == 0 ):
 
             # 2. Access the datetime object directly
-            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
             if isinstance(obs_dt, datetime):
                 matching_obs.append(obs)
                 
@@ -249,32 +285,44 @@ def get_first_obs_with_value(doc,form_id,concept_id, value_coded_arr, earliest_c
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
 
+    # FIX 1: Normalize the cutoff date once at the start
+    target_cutoff = commonutils.normalize_clinical_date(earliest_cutoff_datetime)
+    
+    # FIX 2: Ensure value_coded_arr is a list of strings if your JSON stores them as strings
+    # Or cast the obs.get("valueCoded") to int below.
+    
     for obs in obs_list:
-        # 1. Check basic criteria
+        # Check basic criteria
+        # Add int() cast to valueCoded to be safe against string/int mismatches
+        raw_val = obs.get("valueCoded")
+        try:
+            val_as_int = int(float(raw_val)) if raw_val is not None else None
+        except (ValueError, TypeError):
+            val_as_int = None
+
         if (obs.get("formId") == form_id and 
             obs.get("conceptId") == concept_id and 
             obs.get("voided") == 0 and
-            obs.get("valueCoded") in value_coded_arr):
+            val_as_int in value_coded_arr):
             
-            # 2. Access the datetime object directly
-            obs_dt = commonutils.validate_date(obs.get("obsDatetime"))      
+            # Normalize the observation date
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))      
             
-            # Ensure it is a valid datetime object before comparing
             if isinstance(obs_dt, datetime):
-                # 2. Check the optional earliest cutoff
-                # If None, the condition is always True. 
-                # If provided, obs_dt must be >= cutoff.
-                if earliest_cutoff_datetime is None or obs_dt >= earliest_cutoff_datetime:
+                # FIX 3: Compare two normalized, naive WAT datetimes
+                if target_cutoff is None or obs_dt >= target_cutoff:
+                    # Store normalized date to avoid re-calculating during sort
+                    obs['_normalized_dt'] = obs_dt
                     matching_obs.append(obs)
-                
 
     if not matching_obs:
         return None
         
-    # 3. Sort by the actual datetime objects (Oldest first)
-    matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
+    # Sort by the pre-calculated normalized datetime
+    matching_obs.sort(key=lambda x: x['_normalized_dt'])
     
-    return matching_obs[0] 
+    return matching_obs[0]
+
 
 def getValueDatetimeFromObs(obs):
     if obs is None:
@@ -301,6 +349,11 @@ def getValueTextFromObs(obs):
     if obs is None:
         return None
     return obs.get("valueText")
+
+def getObsIDFromObs(obs):
+    if obs is None:
+        return None
+    return obs.get("obsId")
 
 def getVariableValueFromObs(obs):
     if obs is None:

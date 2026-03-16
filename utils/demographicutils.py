@@ -30,7 +30,15 @@ def get_patient_identifier(identifier_type_id, doc):
 
 def get_patient_birthdate(doc):
     patient_demographics = get_patient_demographics(doc)
-    return patient_demographics.get('birthdate')
+    return commonutils.normalize_clinical_date(patient_demographics.get('birthdate'))
+
+def get_hiv_enrollment_date(doc):
+    patient_programs = doc.get('messageData', {}).get('patientPrograms', [])
+    for program in patient_programs:
+        if program.get('programId') == 1:
+            return commonutils.normalize_clinical_date(program.get('dateEnrolled'))
+    return None
+
 
 def get_marked_as_deseased_status(doc):
     patient_demographics = get_patient_demographics(doc)

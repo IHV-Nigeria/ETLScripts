@@ -119,6 +119,9 @@ def normalize_clinical_date(date_val: Any) -> Optional[datetime]:
     """
     if date_val is None or not isinstance(date_val, datetime):
         return None
+    
+    #if date_val.tzinfo is not None:
+    #   date_val = date_val.replace(tzinfo=None)
         
     try:
         # 1. Adjust for the +1 hour Nigeria offset identified in SQL vs Python
@@ -147,7 +150,30 @@ def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) 
 
     return delta.days
 
+def get_previous_quarter_end_date(input_date: datetime) -> datetime:
+    """
+    Given an input date, returns the last date of the previous quarter.
+    Quarters are defined as:
+    Q1: Jan 1 - Mar 31
+    Q2: Apr 1 - Jun 30
+    Q3: Jul 1 - Sep 30
+    Q4: Oct 1 - Dec 31
+    """
+    if input_date is None:
+        return None
 
+    month = input_date.month
+    year = input_date.year
+
+    if month >= 1 and month <= 3:
+        return datetime(year - 1, 12, 31)
+    elif month >= 4 and month <= 6:
+        return datetime(year, 3, 31)
+    elif month >= 7 and month <= 9:
+        return datetime(year, 6, 30)
+    else: # month >=10 and month <=12
+        return datetime(year, 9, 30)
+    
 def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
     """
     Returns the number of whole calendar months between datetime1 and datetime2.
