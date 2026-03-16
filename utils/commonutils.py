@@ -1,15 +1,47 @@
 from datetime import datetime, date, timedelta
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
+import pandas as pd
 
 
+def normalize_datetime(dt_str):
+    """
+    Safely converts a datetime string to a timezone-naive datetime object in Africa/Lagos.
+    Skips invalid or out-of-range dates by returning None.
+    """
+    if not dt_str:
+        return None
+    try:
+        dt = pd.to_datetime(dt_str, errors='raise')  # Fail fast on bad dates
+    except Exception:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.tz_localize('UTC')
+
+    return dt.tz_convert('Africa/Lagos').replace(tzinfo=None)
 
 
+def format_date(date_val):
+    """
+    Converts a date-like value to 'DD-MM-YYYY' in Africa/Lagos timezone or returns None if invalid.
+    Uses normalize_datetime for robust parsing and timezone handling.
+    """
+    dt = normalize_datetime(date_val)
+    if dt is not None and not pd.isna(dt):
+        formatted_string = dt.strftime('%d-%m-%Y')
+        return datetime.strptime(formatted_string, "%d-%m-%Y")
+    return None
 
 
 def localize_date(utc_dt: Optional[datetime]) -> Optional[datetime]:
     if utc_dt is None:
         return None
+
+    # Always work with datetime
+    if isinstance(utc_dt, date) and not isinstance(utc_dt, datetime):
+        utc_dt = datetime.combine(utc_dt, datetime.min.time())
+
     # Convert UTC to Lagos/Nigeria time
     return utc_dt.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Africa/Lagos")).replace(tzinfo=None)
 
@@ -17,7 +49,7 @@ def localize_date(utc_dt: Optional[datetime]) -> Optional[datetime]:
 
 
 
-def validate_date(date_val: Optional[datetime]) -> Optional[datetime]:
+def validate_date(date_val: Optional[datetime]) -> None | date | datetime:
     """
     Validates clinical dates. If the date is a typo (e.g., year 2023702),
     it returns 1960-01-01 to prevent script crashes while flagging the error.
@@ -33,13 +65,16 @@ def validate_date(date_val: Optional[datetime]) -> Optional[datetime]:
     try:
         # Check if the year is within a realistic range
         if MIN_YEAR <= date_val.year <= MAX_YEAR:
-            return localize_date(date_val).date()
+            if isinstance(date_val, datetime):
+                return format_date(date_val)
+            else:
+                return format_date(date_val)
         else:
             # Return 1960 for typos like 2023702
-            return localize_date(PLACEHOLDER_DATE)
+            return format_date(date_val)
     except (AttributeError, ValueError):
         # Handles cases where the object isn't a proper datetime
-        return localize_date(PLACEHOLDER_DATE)
+        return format_date(date_val)
 
 
 def get_fy_and_quater_from_date(input_date: datetime):

@@ -70,8 +70,8 @@ def export_ctd_line_list_data(cutoff_datetime=None):
 
                 "id": demographics.get("patientUuid"),
                 "cuttoffperiod": cutoff_datetime,
-                "create_date": demographics.get("dateCreated"),
-                "update_date": header.get("touchTime"),
+                "create_date": commonutils.format_date(demographics.get("dateCreated")),
+                "update_date": commonutils.format_date(header.get("touchTime")),
                 "state": facility_info.get("State") if facility_info else None,
                 "lga" : facility_info.get("LGA") if facility_info else None,
                 "facility_name": header.get("facilityName"),
@@ -89,8 +89,6 @@ def export_ctd_line_list_data(cutoff_datetime=None):
                 "pill_balance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
                 "viral_load_sample_collection_date": last_sample_collection_date,
                 "last_viral_load": last_viral_load,
-
-
             }
             batch_list.append(record)
 
