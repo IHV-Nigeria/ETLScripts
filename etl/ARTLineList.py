@@ -89,9 +89,12 @@ def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
 
 def upsert_art_line_list_data(cutoff_datetime=None):
     db_name=MONGO_DATABASE_NAME
+    #datims = ["LmLBtmd8U43"]
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_art_containers(db,db_name)
     size = mongo_dao.get_art_container_size(db,db_name)
+    #cursor = mongo_dao.get_containers_by_datim_list(db,datims,db_name)
+    #size = mongo_dao.get_container_by_datim_list_size(db,datims,db_name)
     conn=postgres_dao.connect_to_postgresqldb()
     if conn is None:
         print("Failed to connect to PostgreSQL. Data not saved.")
