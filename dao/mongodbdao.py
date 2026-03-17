@@ -1,3 +1,5 @@
+import re
+
 from pymongo import MongoClient
 from . import config
 
@@ -35,6 +37,50 @@ def get_art_containers(db,db_name=config.MONGO_DATABASE_NAME):
     art_containers_cusor = db.container.find(query)
     return art_containers_cusor
 
+
+def get_art_container_for_patientidentifiers_size(db, patient_identifiers, db_name=config.MONGO_DATABASE_NAME):
+    """Returns the count of ART containers matching the specific identifiers."""
+    if db is None:
+        db = get_db_connection(db_name)
+        
+    query = {
+        "messageData.patientIdentifiers": {
+            "$elemMatch": {
+                "identifierType": 4,
+                "voided": 0,
+                "identifier": {"$in": patient_identifiers}
+            }
+        }
+    }
+    # count_documents is the preferred method in modern PyMongo
+    return db.container.count_documents(query)
+
+
+
+def get_art_containers_for_patientidentifiers(db, patient_identifiers, db_name=config.MONGO_DATABASE_NAME):
+    """
+    Retrieves patient JSON documents where at least one patient identifier
+    matches the provided list and has an identifierType of 4.
+    """
+    if db is None:
+        db = get_db_connection(db_name)
+    
+    # Use $elemMatch to ensure both criteria (type and value) 
+    # are met within the SAME identifier object.
+    # Use $in to match the identifier against the provided list.
+    query = {
+        "messageData.patientIdentifiers": {
+            "$elemMatch": {
+                "identifierType": 4,
+                "voided": 0,
+                "identifier": {"$in": patient_identifiers}
+            }
+        }
+    }
+    
+    # The collection name is 'container' as per your original code
+    art_containers_cursor = db.container.find(query)
+    return art_containers_cursor
 
 # Get all containers where messageHeader.facilityDatimCode is in the provided list of datim codes   
 def get_containers_by_datim_list(db, datim_codes, db_name=config.MONGO_DATABASE_NAME):

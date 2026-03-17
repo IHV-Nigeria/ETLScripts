@@ -19,7 +19,9 @@ import etl.CDRLineList as CDRLineList
 start_time = datetime.now()
 print ("Start time: ", start_time )
 
-EACDataExport.export_eac_data(filename="EACDataExport_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv")
+#cutoff_date = datetime(2024, 10, 1, 0, 0, 0)    
+
+EACDataExport.export_eac_data(cutoff_datetime=None, filename="EACDataExport_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv")
 
 end_time = datetime.now()
 print ("End time: ", end_time )

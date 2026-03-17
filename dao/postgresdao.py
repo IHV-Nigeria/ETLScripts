@@ -31,6 +31,53 @@ def connect_to_postgresqldb():
         return None
 
 
+def batch_upsert_art_line_list(conn, records_list):
+    """
+    Performs batch upsert and returns counts of inserts and updates.
+    """
+    if not records_list:
+        return {"inserted": 0, "updated": 0, "skipped": 0}
+
+    columns = list(records_list[0].keys())
+    update_columns = [col for col in columns if col not in ['recordid', 'patientuuid']]
+    update_clause = ", ".join([f"{col} = EXCLUDED.{col}" for col in update_columns])
+
+    # The RETURNING xmax clause allows us to see what the DB did
+    sql = f"""
+        INSERT INTO art_line_list ({", ".join(columns)})
+        VALUES %s
+        ON CONFLICT (patientuuid) 
+        DO UPDATE SET 
+            {update_clause}
+        WHERE EXCLUDED.touchtime > art_line_list.touchtime
+        RETURNING (xmax = 0) AS is_insert;
+    """
+
+    values = [[r[col] for col in columns] for r in records_list]
+    
+    ins_count = 0
+    upd_count = 0
+    
+    try:
+        with conn.cursor() as cur:
+            # execute_values with fetchall allows us to capture the RETURNING results
+            execute_values(cur, sql, values, fetch=True)
+            results = cur.fetchall()
+            
+            for row in results:
+                if row[0]: # is_insert is True
+                    ins_count += 1
+                else: # is_insert is False (it was an update)
+                    upd_count += 1
+                    
+            conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Database Error: {e}")
+        raise e
+
+    return {"inserted": ins_count, "updated": upd_count}
+
 def save_to_postgres(conn, table_name, batch_data):
     if conn is None:
         print("Failed to connect to PostgreSQL. Data not saved.")
