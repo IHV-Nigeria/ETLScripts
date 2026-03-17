@@ -127,7 +127,7 @@ def export_drug_pickup_info(pickupinfo_filename=None, cutoff_datetime=None, targ
 
 
 def export_patient_baseline_data(patient_level_file=None, cutoff_datetime=None, target_datim_codes=None):  
-    db_name="cdr"
+    db_name=MONGO_DATABASE_NAME
     cutoff_datetime = datetime(2025, 12, 31, 23, 59, 59)
     db = mongo_dao.get_db_connection(db_name)
     #cursor = mongo_dao.get_art_containers(db,db_name)

@@ -74,8 +74,8 @@ def export_eac_data(cutoff_datetime=None, filename=None):
             #viral_load_1_obs = labutils.get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, 1, 3,cutoff_datetime)
             #viral_load_2_obs = labutils.get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, 2, 3,cutoff_datetime)
             #viral_load_3_obs = labutils.get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, 3, 3,cutoff_datetime)
-            
-            current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime) 
+
+            current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
             #current_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
             current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None 
             last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 
