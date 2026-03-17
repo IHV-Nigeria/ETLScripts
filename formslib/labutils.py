@@ -26,6 +26,10 @@ def get_nth_viral_load_obs(doc, n , cutoff_datetime: Optional[datetime] = None):
     nth_viral_load_obs = obsutils.get_nth_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, cutoff_datetime)
     return nth_viral_load_obs
 
+def get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, n, x, cutoff_datetime: Optional[datetime] = None):
+    viral_load_obs = obsutils.get_nth_obs_of_last_x_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, x, cutoff_datetime)
+    return viral_load_obs
+
 def get_current_cd4_count_obs(doc, cutoff_datetime: Optional[datetime] = None):
     cd4_count_obs = obsutils.get_last_obs_before_date(doc, LAB_FORM_ID, CD4_COUNT_CONCEPT_ID, cutoff_datetime)
     return cd4_count_obs

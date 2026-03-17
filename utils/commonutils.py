@@ -182,11 +182,13 @@ def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
         return 0
 
     # STRIP TIMEZONES: Convert both to naive to prevent the comparison error
-    if datetime1.tzinfo is not None:
-        datetime1 = datetime1.replace(tzinfo=None)
-    if datetime2.tzinfo is not None:
-        datetime2 = datetime2.replace(tzinfo=None)
-
+    #if datetime1.tzinfo is not None:
+    #    datetime1 = datetime1.replace(tzinfo=None)
+    #if datetime2.tzinfo is not None:
+    #    datetime2 = datetime2.replace(tzinfo=None)
+    
+    datetime1 = normalize_clinical_date(datetime1)
+    datetime2 = normalize_clinical_date(datetime2)
     if datetime1 > datetime2:
         dt_start, dt_end = datetime2, datetime1
         sign = -1
@@ -207,6 +209,8 @@ def get_year_diff(datetime1: datetime, datetime2: datetime) -> int:
     Returns the number of whole calendar years between datetime1 and datetime2.
     Result is positive if datetime2 >= datetime1, negative otherwise.
     """
+    datetime1 = normalize_clinical_date(datetime1)
+    datetime2 = normalize_clinical_date(datetime2)
     if datetime1 > datetime2:
         datetime1, datetime2 = datetime2, datetime1
         sign = -1

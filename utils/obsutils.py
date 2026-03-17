@@ -184,7 +184,59 @@ def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_c
         return limited_obs_list[n-1]
     
     return None
+
 def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: Optional[datetime] = None):
+    """
+    Retrieves the nth observation from the most recent x observations.
+    Example: 3rd viral load of the latest 3.
+    """
+    observations = doc.get('messageData', {}).get('obs', [])
+    filtered_obs = []
+
+    for ob in observations:
+        # Match IDs and ensure not voided
+        if (ob.get('formId') == form_id and 
+            ob.get('conceptId') == concept_id and 
+            ob.get('voided') == 0):
+            
+            # Use the helper logic to get a python datetime
+            raw_date = ob.get('obsDatetime')
+            obs_dt = None
+            if isinstance(raw_date, dict) and '$date' in raw_date:
+                obs_dt = datetime.fromisoformat(raw_date['$date'].replace('Z', '+00:00'))
+            elif isinstance(raw_date, str):
+                obs_dt = datetime.fromisoformat(raw_date.replace('Z', '+00:00'))
+            
+            if obs_dt:
+                if cutoff_datetime:
+                    if obs_dt >= cutoff_datetime:
+                        filtered_obs.append((obs_dt, ob))
+                else:
+                    filtered_obs.append((obs_dt, ob))
+
+    if not filtered_obs:
+        return None
+
+    # Step 1: Sort by date DESCENDING to get the latest ones first
+    filtered_obs.sort(key=lambda item: item[0], reverse=True)
+
+    # Step 2: Take the latest 'x' observations
+    latest_x_subset = filtered_obs[:x]
+
+    # Step 3: Sort the subset ASCENDING so n=1 is the oldest of the batch 
+    # and n=3 is the newest of the batch.
+    latest_x_subset.sort(key=lambda item: item[0])
+
+    # Step 4: Return the nth (n-1 for 0-based indexing)
+    try:
+        if 0 < n <= len(latest_x_subset):
+            return latest_x_subset[n-1][1]
+    except (IndexError, TypeError):
+        return None
+
+    return None
+
+def get_nth_obs_of_last_x_obs2(doc, form_id, concept_id, n, x, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
     if not obs_list:
@@ -225,10 +277,107 @@ def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: O
     return None
 
 def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime] = None):
+    """
+    Retrieves the nth observation for a specific form and concept,
+    sorted by date, starting from a particular start datetime.
+    """
+    # 1. Access observations array
+    observations = doc.get('messageData', {}).get('obs', [])
+    
+    filtered_obs = []
+    
+    for ob in observations:
+        # 2. Match form and concept IDs
+        if ob.get('formId') == form_id and ob.get('conceptId') == concept_id:
+            
+            # 3. FIX: Safely extract and parse the datetime
+            raw_date = ob.get('obsDatetime')
+            obs_dt = None
+            
+            if isinstance(raw_date, dict) and '$date' in raw_date:
+                # Handle MongoDB format: {"$date": "2023-07-12T23:00:00.000Z"}
+                date_str = raw_date['$date']
+                # Replace 'Z' with +00:00 for fromisoformat compatibility
+                obs_dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            elif isinstance(raw_date, datetime):
+                # If it's already a datetime (e.g., if using a modern MongoDB driver directly)
+                obs_dt = raw_date
+            elif isinstance(raw_date, str):
+                # If it's stored as a simple string
+                obs_dt = datetime.fromisoformat(raw_date.replace('Z', '+00:00'))
+            
+            # 4. Filter and Append
+            if obs_dt:
+                if cutoff_datetime:
+                    if obs_dt >= cutoff_datetime:
+                        filtered_obs.append((obs_dt, ob))
+                else:
+                    filtered_obs.append((obs_dt, ob))
+    
+    # 5. Sort by datetime ascending
+    filtered_obs.sort(key=lambda x: x[0],reverse=True)
+    
+    # 6. Return nth result (1-indexed)
+    try:
+        if 0 < n <= len(filtered_obs):
+            return filtered_obs[n-1][1]
+    except (IndexError, TypeError):
+        return None
+    
+    return None
+
+def get_nth_obs3(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime] = None):
+    """
+    Retrieves the nth observation for a specific form and concept,
+    sorted by date, starting from a particular start datetime.
+    """
+    # 1. Access the list of observations from the patient document
+    # Based on the structure: doc['messageData']['obs']
+    observations = doc.get('messageData', {}).get('obs', [])
+    
+    filtered_obs = []
+    
+    for ob in observations:
+        # 2. Check if the observation matches the form and concept IDs
+        if ob.get('formId') == form_id and ob.get('conceptId') == concept_id:
+            
+            # 3. Parse the obsDatetime
+            # MongoDB JSON exports often use {'$date': 'ISO-String'}
+            raw_date = ob.get('obsDatetime')
+            if isinstance(raw_date, dict) and '$date' in raw_date:
+                obs_dt = datetime.fromisoformat(raw_date['$date'].replace('Z', '+00:00'))
+            else:
+                # Fallback if it's already a string or datetime object
+                obs_dt = raw_date 
+            
+            # 4. Apply the cutoff filter (e.g., start of FY25)
+            if cutoff_datetime:
+                if obs_dt >= cutoff_datetime:
+                    filtered_obs.append((obs_dt, ob))
+            else:
+                filtered_obs.append((obs_dt, ob))
+    
+    # 5. Sort the matching observations by date (Ascending)
+    filtered_obs.sort(key=lambda x: x[0])
+    
+    # 6. Return the nth element (n-1 because list indexing starts at 0)
+    # Returns None if there aren't enough observations
+    try:
+        if len(filtered_obs) >= n:
+            return filtered_obs[n-1][1]
+    except (IndexError, TypeError):
+        return None
+    
+    return None
+
+def get_nth_obs2(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
     if not obs_list:
         return None
+    
+    #target_cutoff = commonutils.normalize_clinical_date(cutoff_datetime or datetime(1900,1,1)) 
+    cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime or datetime(2024,10,1)) if cutoff_datetime else None
 
     matching_obs_list = []
 
@@ -238,7 +387,7 @@ def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime]
             e.get("conceptId") == concept_id and 
             e.get("voided") == 0):
             
-            obs_dt = e.get('obsDatetime')
+            obs_dt = commonutils.normalize_clinical_date(e.get('obsDatetime'))
             
             # 2. Check if the date exists and handle the optional cutoff
             if isinstance(obs_dt, datetime):
@@ -452,6 +601,48 @@ def get_first_obs_between_dates(doc, form_id, concept_id, start_datetime, end_da
     return matching_obs[0]
 
 def get_first_unsuppressed_viral_load_between_dates(doc, form_id, concept_id, start_datetime, end_datetime, suppression_threshold):
+    # 1. Retrieve the obs list safely
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
+
+    # 2. Normalize input boundaries
+    # Using your commonutils or native datetime if commonutils isn't available
+    norm_start = commonutils.normalize_clinical_date(start_datetime)
+    norm_end = commonutils.normalize_clinical_date(end_datetime)
+
+    for obs in obs_list:
+        # 3. Basic Filter: Form, Concept, and Voided status
+        if (obs.get("formId") == form_id and
+            obs.get("conceptId") == concept_id and
+            obs.get("voided") == 0):
+
+            # 4. Normalize the observation date
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+            
+            # 5. Robust numeric conversion
+            try:
+                raw_val = obs.get("valueNumeric")
+                value_numeric = float(raw_val) if raw_val is not None else None
+            except (ValueError, TypeError):
+                value_numeric = None
+
+            # 6. Apply combined filters
+            if isinstance(obs_dt, datetime) and norm_start and norm_end and value_numeric is not None:
+                if norm_start <= obs_dt <= norm_end and value_numeric >= suppression_threshold:
+                    # Store as a tuple (date, obs) for easier sorting
+                    matching_obs.append((obs_dt, obs))
+
+    if not matching_obs:
+        return None
+
+    # 7. Sort by the actual datetime objects (index 0 of our tuple)
+    # This ensures matching_obs[0] is the chronologically EARLIEST
+    matching_obs.sort(key=lambda x: x[0])
+    
+    # Return the observation part of the first tuple
+    return matching_obs[0][1]
+
+def get_first_unsuppressed_viral_load_between_dates2(doc, form_id, concept_id, start_datetime, end_datetime, suppression_threshold):
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
 

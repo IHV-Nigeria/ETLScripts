@@ -25,20 +25,26 @@ _facility_cache = {}
 
 
 
-def export_eac_data(cutoff_datetime=None, filename=None ):
+def export_eac_data(cutoff_datetime=None, filename=None):
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = 700_000 #mongo_dao.get_art_container_size(db,db_name)
-    cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime) if cutoff_datetime else commonutils.normalize_clinical_date(datetime.now())
+    #pepfarids=["RIV65721878","RIV65302342","RIV65300488","RIV57502335"]
+    #pepfarids=['RIV65302342','RIV65300488','RIV57502335']
+    cursor = mongo_dao.get_art_containers(db, db_name)
+    #size = mongo_dao.get_art_container_size(db, db_name)
+    size=725000
+    #size=4
+    #cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime) if cutoff_datetime else None
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
     batch_list = []
 
+    cutoff_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1)) if cutoff_datetime else None
+
     start_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1))
     # end_datetime = commonutils.normalize_clinical_date(datetime.now())
-    end_datetime = commonutils.normalize_clinical_date(datetime.now)
+    end_datetime = commonutils.normalize_clinical_date(datetime.now())
 
     # 1. Prepare the file path (create directory and name)
     full_path = prepare_filepath(filename)
@@ -65,7 +71,11 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
             viral_load_1_obs = labutils.get_nth_viral_load_obs(doc, 1, cutoff_datetime)
             viral_load_2_obs = labutils.get_nth_viral_load_obs(doc, 2, cutoff_datetime)
             viral_load_3_obs = labutils.get_nth_viral_load_obs(doc, 3, cutoff_datetime)
-            current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime) 
+            #viral_load_1_obs = labutils.get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, 1, 3,cutoff_datetime)
+            #viral_load_2_obs = labutils.get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, 2, 3,cutoff_datetime)
+            #viral_load_3_obs = labutils.get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, 3, 3,cutoff_datetime)
+
+            current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
             #current_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
             current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None 
             last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 

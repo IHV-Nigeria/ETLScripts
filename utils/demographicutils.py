@@ -138,7 +138,7 @@ def get_months_on_art(doc, art_start_date, cutoff_datetime: Optional[datetime] =
         return None
     
     if cutoff_datetime is None:
-        cutoff_datetime = commonutils.validate_date(datetime.now())
+        cutoff_datetime = commonutils.normalize_clinical_date(datetime.now())
     months_on_art=get_month_diff(art_start_date, cutoff_datetime)
     return months_on_art
     
