@@ -1,7 +1,7 @@
 CREATE TABLE art_line_list (
     -- Location & Facility Info
 	recordid SERIAL PRIMARY KEY,
-	patientuuid TEXT UNIQUE,
+    patientuuid TEXT,
 	cuttoffperiod TIMESTAMP,
 	touchtime TIMESTAMP,
     state VARCHAR(100),
@@ -137,5 +137,6 @@ CREATE TABLE art_line_list (
     cervicalcancerscreeningstatus VARCHAR(100),
     cervicalcancerscreeningstatusdate TIMESTAMP,
     cervicalcancertreatmentprovided VARCHAR(100),
-    cervicalcancertreatmentprovideddate TIMESTAMP
+    cervicalcancertreatmentprovideddate TIMESTAMP,
+    CONSTRAINT uq_art_line_list_patientuuid_datimcode UNIQUE (patientuuid, datimcode)
 );

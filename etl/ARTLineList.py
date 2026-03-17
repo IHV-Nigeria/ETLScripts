@@ -27,6 +27,65 @@ from dao.config import MONGO_DATABASE_NAME
 _facility_cache = {}
 
 
+def _to_naive_datetime(value):
+    """
+    Converts datetime/date values to naive datetime for safe comparisons.
+    """
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=None) if value.tzinfo else value
+    if isinstance(value, date):
+        return datetime.combine(value, datetime.min.time())
+    return None
+
+
+def _extract_upsert_doc_key(doc):
+    header = demographicsutils.get_message_header(doc)
+    demographics = demographicsutils.get_patient_demographics(doc)
+    return {
+        "patientuuid": demographics.get("patientUuid"),
+        "datimcode": header.get("facilityDatimCode"),
+        "touchtime": _to_naive_datetime(header.get("touchTime"))
+    }
+
+
+def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
+    """
+    Prefilters stale docs in batch before expensive conversion by comparing touchtime.
+    """
+    keyed_docs = []
+    invalid_key_count = 0
+
+    for doc in doc_batch:
+        key_data = _extract_upsert_doc_key(doc)
+        patientuuid = key_data.get("patientuuid")
+        datimcode = key_data.get("datimcode")
+        if not patientuuid or not datimcode:
+            invalid_key_count += 1
+            continue
+        keyed_docs.append((doc, patientuuid, datimcode, key_data.get("touchtime")))
+
+    if not keyed_docs:
+        return [], {"stale": 0, "invalid": invalid_key_count}
+
+    key_pairs = [(item[1], item[2]) for item in keyed_docs]
+    existing_touchtime_map = postgres_dao.get_art_line_list_existing_touchtimes(conn, key_pairs)
+
+    stale_count = 0
+    records = []
+    for doc, patientuuid, datimcode, incoming_touchtime in keyed_docs:
+        existing_touchtime = _to_naive_datetime(existing_touchtime_map.get((patientuuid, datimcode)))
+
+        if existing_touchtime is not None and incoming_touchtime is not None and incoming_touchtime <= existing_touchtime:
+            stale_count += 1
+            continue
+
+        records.append(convert_doc_to_record(doc, cutoff_datetime))
+
+    return records, {"stale": stale_count, "invalid": invalid_key_count}
+
+
 
 def upsert_art_line_list_data(cutoff_datetime=None):
     db_name=MONGO_DATABASE_NAME
@@ -39,9 +98,14 @@ def upsert_art_line_list_data(cutoff_datetime=None):
         return
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
-    BATCH_SIZE = 100 # Increased for 700k records
+    BATCH_SIZE = 2000 # Increased for 700k records
     batch_list = []
-    total_inserted = 0
+    doc_batch = []
+    inserted_count = 0
+    updated_count = 0
+    skipped_count = 0
+    prefilter_stale_count = 0
+    prefilter_invalid_key_count = 0
 
     if cutoff_datetime is None:
         cutoff_datetime = datetime.now()
@@ -56,22 +120,38 @@ def upsert_art_line_list_data(cutoff_datetime=None):
                 if not is_aspire_state(doc):
                     continue  # Skip this record and move to the next one
 
-                record = convert_doc_to_record(doc, cutoff_datetime)
-                batch_list.append(record)
+                doc_batch.append(doc)
 
-                if len(batch_list) >= BATCH_SIZE:
+                if len(doc_batch) >= BATCH_SIZE:
+                    batch_list, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime)
+                    prefilter_stale_count += prefilter_result.get('stale', 0)
+                    prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
+
+                    if not batch_list:
+                        doc_batch.clear()
+                        continue
+
                     #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
-                    postgres_dao.batch_upsert_art_line_list(conn, batch_list)   
-                    total_inserted += len(batch_list)
+                    result_arr= postgres_dao.batch_upsert_art_line_list(conn, batch_list)   
+                    inserted_count += result_arr.get('inserted', 0)
+                    updated_count += result_arr.get('updated', 0)
+                    skipped_count += result_arr.get('skipped', 0)
                     batch_list.clear() # clear() is slightly more memory efficient than []
+                    doc_batch.clear()
                 
    
          # Final Batch
+        if doc_batch:
+            batch_list, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime)
+            prefilter_stale_count += prefilter_result.get('stale', 0)
+            prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
+
         if batch_list:
             #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
-            postgres_dao.batch_upsert_art_line_list(conn, batch_list)   
-            total_inserted += len(batch_list)
-                 
+            result_arr = postgres_dao.batch_upsert_art_line_list(conn, batch_list)   
+            inserted_count += result_arr.get('inserted', 0)
+            updated_count += result_arr.get('updated', 0)
+            skipped_count += result_arr.get('skipped', 0)
     except Exception as e:
         print(f"Critical error during ETL: {e}")
         conn.rollback()
@@ -79,7 +159,9 @@ def upsert_art_line_list_data(cutoff_datetime=None):
         # ALWAYS close connections
         conn.close()
         # db.client.close() # Depending on your mongo_dao implementation
-        print(f"\nETL Complete. Records Skipped: {size - total_inserted}. Records Inserted: {total_inserted}")
+        total_skipped = skipped_count + prefilter_stale_count + prefilter_invalid_key_count
+        print(f"\nETL Complete. Records Skipped: {total_skipped}. Records Inserted: {inserted_count}. Records Updated: {updated_count}")
+        print(f"Prefiltered stale docs: {prefilter_stale_count}. Prefiltered invalid keys: {prefilter_invalid_key_count}. Upsert-level skips: {skipped_count}")
   
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
 
@@ -99,7 +181,7 @@ def initialize_art_line_list_data(cutoff_datetime=None):
         return
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
-    BATCH_SIZE = 100 # Increased for 700k records
+    BATCH_SIZE = 2000 # Increased for 700k records
     batch_list = []
     total_inserted = 0
 
@@ -137,7 +219,7 @@ def initialize_art_line_list_data(cutoff_datetime=None):
         # ALWAYS close connections
         conn.close()
         # db.client.close() # Depending on your mongo_dao implementation
-        print(f"\nETL Complete. Records Skipped: {size - total_inserted}. Records Inserted: {total_inserted}")
+        print(f"\nETL Complete. Records Skipped:  Records Inserted: {total_inserted}")  
   
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
     
