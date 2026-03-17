@@ -29,7 +29,7 @@ def export_eac_data(cutoff_datetime=None, filename=None ):
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    size = 700_000 #mongo_dao.get_art_container_size(db,db_name)
     cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime) if cutoff_datetime else commonutils.normalize_clinical_date(datetime.now())
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
