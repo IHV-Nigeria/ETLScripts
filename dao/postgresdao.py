@@ -38,31 +38,40 @@ def batch_upsert_art_line_list(conn, records_list):
     if not records_list:
         return {"inserted": 0, "updated": 0, "skipped": 0}
 
-    columns = list(records_list[0].keys())
-    update_columns = [col for col in columns if col not in ['recordid', 'patientuuid']]
+    valid_records = [
+        r for r in records_list
+        if r.get('patientuuid') is not None and r.get('datimcode') is not None
+    ]
+    skipped_count = len(records_list) - len(valid_records)
+
+    if not valid_records:
+        return {"inserted": 0, "updated": 0, "skipped": skipped_count}
+
+    columns = list(valid_records[0].keys())
+    update_columns = [col for col in columns if col not in ['recordid', 'patientuuid', 'datimcode']]
     update_clause = ", ".join([f"{col} = EXCLUDED.{col}" for col in update_columns])
 
     # The RETURNING xmax clause allows us to see what the DB did
     sql = f"""
         INSERT INTO art_line_list ({", ".join(columns)})
         VALUES %s
-        ON CONFLICT (patientuuid) 
+        ON CONFLICT (patientuuid, datimcode)
         DO UPDATE SET 
             {update_clause}
-        WHERE EXCLUDED.touchtime > art_line_list.touchtime
+        WHERE art_line_list.touchtime IS NULL
+           OR (EXCLUDED.touchtime IS NOT NULL AND EXCLUDED.touchtime > art_line_list.touchtime)
         RETURNING (xmax = 0) AS is_insert;
     """
 
-    values = [[r[col] for col in columns] for r in records_list]
+    values = [[r[col] for col in columns] for r in valid_records]
     
     ins_count = 0
     upd_count = 0
     
     try:
         with conn.cursor() as cur:
-            # execute_values with fetchall allows us to capture the RETURNING results
-            execute_values(cur, sql, values, fetch=True)
-            results = cur.fetchall()
+            # execute_values with fetch=True returns the RETURNING rows.
+            results = execute_values(cur, sql, values, fetch=True) or []
             
             for row in results:
                 if row[0]: # is_insert is True
@@ -76,7 +85,36 @@ def batch_upsert_art_line_list(conn, records_list):
         print(f"Database Error: {e}")
         raise e
 
-    return {"inserted": ins_count, "updated": upd_count}
+    skipped_count += max(0, len(valid_records) - len(results))
+    return {"inserted": ins_count, "updated": upd_count, "skipped": skipped_count}
+
+
+def get_art_line_list_existing_touchtimes(conn, key_pairs):
+    """
+    Returns a dictionary keyed by (patientuuid, datimcode) with existing touchtime.
+    """
+    if conn is None or not key_pairs:
+        return {}
+
+    unique_key_pairs = list({(k[0], k[1]) for k in key_pairs if k[0] is not None and k[1] is not None})
+    if not unique_key_pairs:
+        return {}
+
+    sql = """
+        SELECT k.patientuuid, k.datimcode, a.touchtime
+        FROM (VALUES %s) AS k(patientuuid, datimcode)
+        LEFT JOIN art_line_list a
+          ON a.patientuuid = k.patientuuid
+         AND a.datimcode = k.datimcode;
+    """
+
+    try:
+        with conn.cursor() as cur:
+            rows = execute_values(cur, sql, unique_key_pairs, fetch=True) or []
+            return {(row[0], row[1]): row[2] for row in rows}
+    except Exception as e:
+        print(f"Failed to fetch existing ART touchtimes: {e}")
+        raise e
 
 def save_to_postgres(conn, table_name, batch_data):
     if conn is None:
