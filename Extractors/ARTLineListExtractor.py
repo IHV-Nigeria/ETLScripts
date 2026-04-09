@@ -15,9 +15,9 @@ print ("Start time: ", start_time )
 
 cutoff_date = datetime(2025, 12, 31, 23, 59, 59)
 
-#ARTLineList.initialize_art_line_list_data(cutoff_datetime=cutoff_date)
+# ARTLineList.initialize_art_line_list_data()
 
-ARTLineList.upsert_art_line_list_data(cutoff_datetime=cutoff_date)
+ARTLineList.upsert_art_line_list_data()
 
 end_time = datetime.now()
 print ("End time: ", end_time )
