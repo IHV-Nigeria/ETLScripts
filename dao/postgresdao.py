@@ -3,6 +3,7 @@ from . import config as postgres_config
 import psycopg2
 from psycopg2 import Error
 from psycopg2.extras import execute_values
+import logging
 
 def connect_to_postgresqldb():
     connection = None
@@ -32,6 +33,7 @@ def connect_to_postgresqldb():
 
 
 def batch_upsert_art_line_list(conn, records_list):
+    logging.basicConfig(filename='postgresql_errors.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
     """
     Performs batch upsert and returns counts of inserts and updates.
     """
@@ -81,6 +83,7 @@ def batch_upsert_art_line_list(conn, records_list):
                     
             conn.commit()
     except Exception as e:
+        logging.error(f"Error processing batch: {e}. Batch details: {values}")
         conn.rollback()
         print(f"Database Error: {e}")
         raise e

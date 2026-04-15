@@ -1,11 +1,5 @@
-#import mongo_utils as  utils
-#import constants as constants
-from email import utils
-import pandas as pd
 from tqdm import tqdm
 from datetime import datetime, date
-import os
-
 import dao.mongodbdao as mongo_dao
 import dao.postgresdao as postgres_dao
 from formslib import iptutils, otzutils
@@ -22,6 +16,8 @@ import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 from dao.config import MONGO_DATABASE_NAME
+import logging
+
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
@@ -40,6 +36,7 @@ def _to_naive_datetime(value):
     return None
 
 
+
 def _extract_upsert_doc_key(doc):
     header = demographicsutils.get_message_header(doc)
     demographics = demographicsutils.get_patient_demographics(doc)
@@ -48,6 +45,7 @@ def _extract_upsert_doc_key(doc):
         "datimcode": header.get("facilityDatimCode"),
         "touchtime": _to_naive_datetime(header.get("touchTime"))
     }
+
 
 
 def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
@@ -88,6 +86,8 @@ def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
 
 
 def upsert_art_line_list_data(cutoff_datetime=None):
+    logging.basicConfig(filename='etl_errors.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
     db_name=MONGO_DATABASE_NAME
     #datims = ["LmLBtmd8U43"]
     db = mongo_dao.get_db_connection(db_name)
@@ -109,6 +109,7 @@ def upsert_art_line_list_data(cutoff_datetime=None):
     skipped_count = 0
     prefilter_stale_count = 0
     prefilter_invalid_key_count = 0
+    error_count = 0
 
     if cutoff_datetime is None:
         cutoff_datetime = datetime.now()
@@ -118,8 +119,7 @@ def upsert_art_line_list_data(cutoff_datetime=None):
     try:
         #extracted_results = []
         for doc in tqdm(cursor, total=size, desc="ART Line List ETL Progress"):
-            
-           
+            try:
                 if not is_aspire_state(doc):
                     continue  # Skip this record and move to the next one
 
@@ -135,29 +135,34 @@ def upsert_art_line_list_data(cutoff_datetime=None):
                         continue
 
                     #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
-                    result_arr= postgres_dao.batch_upsert_art_line_list(conn, batch_list)   
+                    result_arr= postgres_dao.batch_upsert_art_line_list(conn, batch_list)
                     inserted_count += result_arr.get('inserted', 0)
                     updated_count += result_arr.get('updated', 0)
                     skipped_count += result_arr.get('skipped', 0)
                     batch_list.clear() # clear() is slightly more memory efficient than []
                     doc_batch.clear()
-                
-   
-         # Final Batch
-        if doc_batch:
-            batch_list, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime)
-            prefilter_stale_count += prefilter_result.get('stale', 0)
-            prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
 
-        if batch_list:
-            #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
-            result_arr = postgres_dao.batch_upsert_art_line_list(conn, batch_list)   
-            inserted_count += result_arr.get('inserted', 0)
-            updated_count += result_arr.get('updated', 0)
-            skipped_count += result_arr.get('skipped', 0)
+
+                 # Final Batch
+                if doc_batch:
+                    batch_list, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime)
+                    prefilter_stale_count += prefilter_result.get('stale', 0)
+                    prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
+
+                if batch_list:
+                    #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
+                    result_arr = postgres_dao.batch_upsert_art_line_list(conn, batch_list)
+                    inserted_count += result_arr.get('inserted', 0)
+                    updated_count += result_arr.get('updated', 0)
+                    skipped_count += result_arr.get('skipped', 0)
+            except Exception as e:
+                logging.error(f"Error processing batch: {e}. Batch details: {batch_list}")
+                error_count += 1
+                continue
+                # Continue to next batch without rollback
     except Exception as e:
-        print(f"Critical error during ETL: {e}")
-        conn.rollback()
+        logging.error(f"Error processing batch: {e}. Batch details: {batch_list}")
+
     finally:
         # ALWAYS close connections
         conn.close()
@@ -165,10 +170,10 @@ def upsert_art_line_list_data(cutoff_datetime=None):
         total_skipped = skipped_count + prefilter_stale_count + prefilter_invalid_key_count
         print(f"\nETL Complete. Records Skipped: {total_skipped}. Records Inserted: {inserted_count}. Records Updated: {updated_count}")
         print(f"Prefiltered stale docs: {prefilter_stale_count}. Prefiltered invalid keys: {prefilter_invalid_key_count}. Upsert-level skips: {skipped_count}")
+        print(f"Total batch errors during processing: {error_count}")
   
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
 
-    
 
 
 def initialize_art_line_list_data(cutoff_datetime=None):
@@ -322,6 +327,7 @@ def convert_doc_to_record(doc, cutoff_datetime):
     cervical_cancer_treatment_provided_obs=carecardutils.get_cervical_cancer_treatment_provided_obs(doc, cervical_cancer_screening_status_obs.get("encounterId") if cervical_cancer_screening_status_obs else None)
     cervical_cancer_treatment_provided_value=obsutils.getVariableValueFromObs(cervical_cancer_treatment_provided_obs) if cervical_cancer_treatment_provided_obs else None
     cervical_cancer_treatment_provided_date=obsutils.getObsDatetimeFromObs(cervical_cancer_treatment_provided_obs) if cervical_cancer_treatment_provided_obs else None
+
     record = {
                "touchtime": header.get("touchTime"),
                "patientuuid": demographics.get("patientUuid"),
@@ -335,7 +341,7 @@ def convert_doc_to_record(doc, cutoff_datetime):
                "ancnoidentifier": "", # Placeholder for ANC number if needed in the future
                "ancnoconceptid": "", # Placeholder for ANC number concept ID if needed in the future
                "htsno":"", # Placeholder for HTS number if needed in the future
-               "sex": demographics.get("gender"),
+               "sex": str(demographics.get("gender")) if demographics.get("gender") else None,
                "ageatstartofartyears": demographicsutils.get_age_art_start_years(doc, birthdate, art_start_date),
                "ageatstartofartmonths": demographicsutils.get_pediatric_age_art_start_months(doc, birthdate, art_start_date),
                "careentrypoint": hivenrollmentutils.get_care_entry_point(doc,cutoff_datetime),
@@ -346,8 +352,8 @@ def convert_doc_to_record(doc, cutoff_datetime):
                "artstartdate": art_start_date,
                "lastpickupdate": last_arv_pickup_date,
                "lastvisitdate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-               "daysofarvrefil":arv_duration_days,
-               "pillbalance": pill_balance,
+               "daysofarvrefil": int(round(float(arv_duration_days))) if arv_duration_days else None,
+               "pillbalance": int(round(float(pill_balance))) if pill_balance else None,
                "initialregimenline": artcommence.get_current_regimen_line(doc,cutoff_datetime),
                "initialregimen": artcommence.get_current_regimen(doc,cutoff_datetime),
                "initialcd4count": initial_cd4_count_value,

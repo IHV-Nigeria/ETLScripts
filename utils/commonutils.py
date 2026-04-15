@@ -3,6 +3,12 @@ from typing import Any, Optional
 from zoneinfo import ZoneInfo
 import pandas as pd
 
+def normalize_int_values(value):
+    try:
+        return int(round(float(value)))
+    except (ValueError, TypeError):
+        return None
+
 
 def normalize_datetime(dt_str):
     """
