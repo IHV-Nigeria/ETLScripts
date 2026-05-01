@@ -1,6 +1,5 @@
-from typing import Optional
-from datetime import datetime, date
-
+from typing import Optional, List, Dict
+from datetime import datetime
 from utils import commonutils
 
 
@@ -39,6 +38,7 @@ def get_first_obs_with_values(doc, form_id, concept_id, value_coded_arr, earlies
     )
     
     return matching_obs[0]
+
 def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
@@ -68,6 +68,106 @@ def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[dat
     matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1))
     
     return matching_obs[0]
+
+
+def get_obs_by_concept_ids(doc, concept_ids: List[int]) -> list:
+    """
+    Returns all observations whose conceptId is in concept_ids.
+    """
+
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    results = []
+
+    concept_ids = set(concept_ids)  # faster lookup
+
+    for obs in obs_list:
+        if obs.get("voided") != 0:
+            continue
+
+        if obs.get("conceptId") not in concept_ids:
+            continue
+
+        obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+        if not isinstance(obs_dt, datetime):
+            continue
+
+        obs["_parsed_obs_datetime"] = obs_dt
+        results.append(obs)
+
+    # Sort chronologically
+    results.sort(key=lambda x: x["_parsed_obs_datetime"])
+
+    return results
+
+
+def get_last_uninterrupted_obs_from_list(obs_list: List[dict]) -> Optional[dict]:
+    """
+    Given a sorted list of regimen obs (oldest -> newest),
+    returns the FIRST obs of the LAST uninterrupted run
+    of the NEWEST conceptId.
+    """
+
+    if not obs_list:
+        return None
+
+    # Ensure list is sorted (defensive, but safe)
+    obs_list = [
+        obs for obs in obs_list
+        if isinstance(obs.get("_parsed_obs_datetime"), datetime)
+    ]
+    if not obs_list:
+        return None
+
+    obs_list.sort(key=lambda x: x["_parsed_obs_datetime"])
+
+    # 1. Identify newest conceptId
+    newest_obs = obs_list[-1]
+    current_concept_id = newest_obs.get("conceptId")
+
+    # 2. Walk backward to find start of uninterrupted run
+    start_obs = newest_obs
+    for obs in reversed(obs_list):
+        if obs.get("conceptId") == current_concept_id:
+            start_obs = obs
+        else:
+            break
+
+    return start_obs
+
+
+def get_last_occurrence_of_previous_regimen(obs_list: List[dict]) -> Optional[dict]:
+    """
+    Given a sorted list of regimen obs (oldest -> newest),
+    returns the LAST occurrence of the PREVIOUS regimen
+    before the current regimen started.
+    """
+
+    if not obs_list:
+        return None
+
+    # Defensive: ensure datetime exists
+    obs_list = [
+        obs for obs in obs_list
+        if isinstance(obs.get("_parsed_obs_datetime"), datetime)
+    ]
+    if not obs_list:
+        return None
+
+    # Ensure correct order
+    obs_list.sort(key=lambda x: x["_parsed_obs_datetime"])
+
+    # 1. Identify current regimen conceptId
+    current_concept_id = obs_list[-1].get("conceptId")
+
+    # 2. Walk backward to find last obs of previous regimen
+    for obs in reversed(obs_list):
+        if obs.get("conceptId") != current_concept_id:
+            return obs
+
+    # No previous regimen exists
+    return None
+
+
 
 def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_coded_arr, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])

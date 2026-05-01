@@ -75,6 +75,7 @@ def get_last_eac_regimen_plan(doc, last_eac_encounter, cutoff_datetime: Optional
     last_eac_regimen_plan_obs = obsUtils.get_obs_with_encounter_id(doc, EAC_REGIMEN_PLAN_CONCEPT_ID, last_eac_encounter_id)
     eac_regimen_plan = obsUtils.getVariableValueFromObs(last_eac_regimen_plan_obs) if last_eac_regimen_plan_obs else None
     return eac_regimen_plan
+
 def get_last_eac_followup_date(doc, last_eac_encounter, cutoff_datetime: Optional[datetime] = None):
     if not last_eac_encounter:
         return None

@@ -1,9 +1,13 @@
 from typing import Final, Optional
 from datetime import datetime, date
+
+from formslib.artcommencementutil import REGIMEN_LINE_AT_ART_START_CONCEPT_ID
 from formslib.eacutils import get_eac_date
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import pandas as pd
+
+from formslib.pharmacyutils import PHARMACY_FORM_ID
 
 # Constants for Lab forms
 LAB_FORM_ID: Final[int] = 21
@@ -112,9 +116,6 @@ def get_last_sample_taken_date_obs(doc, cutoff_datetime: Optional[datetime] = No
     if not viral_load_sample_obs:
         return None
     return viral_load_sample_obs
-
-
-    
     
 def get_last_viral_load_obs_before(doc, cutoff_datetime):
     viral_load_obs = obsutils.get_last_obs_before_date(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID , cutoff_datetime)

@@ -77,8 +77,8 @@ def export_eac_data(cutoff_datetime=None, filename=None):
 
             current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
             #current_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
-            current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None 
-            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 
+            current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None
+            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
             current_pregnancy_status_obs=carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
             first_unsuppressed_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
             first_unsuppressed_viral_load_value = obsutils.getValueNumericFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
@@ -87,6 +87,9 @@ def export_eac_data(cutoff_datetime=None, filename=None):
             viral_load_after_last_eac_obs = labutils.get_first_viral_load_after_date(doc, last_eac_encounter_datetime) if last_eac_encounter_datetime else None
             viral_load_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
             viral_load_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+            regimen_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+            regimen_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+
 
             record = {
                 "touchtime": header.get("touchTime"),
@@ -162,18 +165,13 @@ def export_eac_data(cutoff_datetime=None, filename=None):
                 "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
                 "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
                 "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-                "Quater": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
+                "Quarter": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
                 "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
                 "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
                 "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
                 "viralLoadAfterLastEACDate": viral_load_after_last_eac_datetime,
-                #"kpType": hivenrollmentutils.get_kp_type(doc,cutoff_datetime),
-                                         
-                #"baselineWeight": carecardutils.get_first_weight(doc,cutoff_datetime),
-                
-                #"currentAgeInMonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),
-                
-                
+                "regimenAfterEAC": regimen_after_last_eac_value,
+                "regimenAfterEACDate": regimen_after_last_eac_datetime
                 
                       
             }

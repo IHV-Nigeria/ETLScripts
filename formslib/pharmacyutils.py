@@ -1,4 +1,4 @@
-from typing import Final, Optional
+from typing import Final, Optional, List, Dict
 from datetime import datetime, date
 from utils import commonutils, encounterutils
 import utils.obsutils as obsutils
@@ -287,12 +287,28 @@ def get_min_second_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = 
     second_line_concept_arr = [CHILD_2ND_LINE_REGIMEN_CONCEPT_ID, ADULT_2ND_LINE_REGIMEN_CONCEPT_ID]
     first_second_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, second_line_concept_arr, cutoff_datetime)
     regimen_date = first_second_line_obs.get("obsDatetime") if first_second_line_obs else None
-    return commonutils.validate_date(regimen_date)  
+    return commonutils.validate_date(regimen_date)
+
+def get_min_second_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    second_line_concept_arr = [CHILD_2ND_LINE_REGIMEN_CONCEPT_ID, ADULT_2ND_LINE_REGIMEN_CONCEPT_ID]
+    first_second_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, second_line_concept_arr, cutoff_datetime)
+    return first_second_line_obs
+
 def get_min_third_line_regimen_date(doc, cutoff_datetime: Optional[datetime] = None):
     third_line_concept_arr = [CHILD_3RD_LINE_REGIMEN_CONCEPT_ID, ADULT_3RD_LINE_REGIMEN_CONCEPT_ID]
     first_third_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID,  third_line_concept_arr, cutoff_datetime)
     regimen_date = first_third_line_obs.get("obsDatetime") if first_third_line_obs else None
-    return commonutils.validate_date(regimen_date)  
+    return commonutils.validate_date(regimen_date)
+
+
+def get_min_third_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    third_line_concept_arr = [CHILD_3RD_LINE_REGIMEN_CONCEPT_ID, ADULT_3RD_LINE_REGIMEN_CONCEPT_ID]
+    first_third_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, third_line_concept_arr, cutoff_datetime)
+    first_third_line_value = first_third_line_obs.get("valueCoded") if first_third_line_obs else None
+    first_third_line_encounter_id = first_third_line_obs.get("encounterId") if first_third_line_obs else None
+    third_line_regimen_obs = obsutils.get_obs_with_encounter_id(doc, first_third_line_value, first_third_line_encounter_id) if first_third_line_value and first_third_line_encounter_id else None
+
+    return third_line_regimen_obs
 
 def get_min_first_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
     first_line_concept_arr = [ADULT_1ST_LINE_REGIMEN_CONCEPT_ID, CHILD_FIRST_LINE_REGIMEN_CONCEPT_ID]
@@ -325,7 +341,7 @@ def get_quantity_of_arv_dispensed_last_visit(doc, cutoff_datetime: Optional[date
     quantity_dispensed = quantity_obs.get("valueNumeric")
     return quantity_dispensed
 
-def get_min_second_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+def get_min_second_line_obs(doc, cutoff_datetime: Optional[datetime] = None):
     second_line_concept_arr = [CHILD_2ND_LINE_REGIMEN_CONCEPT_ID, ADULT_2ND_LINE_REGIMEN_CONCEPT_ID]
     first_second_line_obs = obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, second_line_concept_arr, cutoff_datetime)
     first_second_line_value = first_second_line_obs.get("valueCoded") if first_second_line_obs else None
@@ -333,6 +349,7 @@ def get_min_second_line_regimen_obs(doc, cutoff_datetime: Optional[datetime] = N
     second_line_regimen_obs = obsutils.get_obs_with_encounter_id(doc, first_second_line_value, first_second_line_encounter_id) if first_second_line_value and first_second_line_encounter_id else None
     #second_line_regimen= second_line_regimen_obs.get("variableValue") if second_line_regimen_obs else None
     return second_line_regimen_obs
+
     
 
 def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
@@ -345,10 +362,54 @@ def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen = current_regimen_obs.get("variableValue") if current_regimen_obs else None
     return current_regimen
 
+def get_current_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    current_regimen_line_obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
+    if(current_regimen_line_obs is None):
+        return None
+    valueCoded = current_regimen_line_obs.get("valueCoded")
+    encounter_id = current_regimen_line_obs.get("encounterId")
+    current_regimen_obs = obsutils.get_obs_with_encounter_id(doc, valueCoded, encounter_id)
+    return current_regimen_obs
+
+def get_initial_regimen(doc, cutoff_datetime: Optional[datetime] = None):
+    initial_regimen_line_obs = obsutils.get_first_obs(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
+    if(initial_regimen_line_obs is None):
+        return None
+    valueCoded = initial_regimen_line_obs.get("valueCoded")
+    encounter_id = initial_regimen_line_obs.get("encounterId")
+    initial_regimen_obs = obsutils.get_obs_with_encounter_id(doc, valueCoded, encounter_id)
+    initial_regimen = initial_regimen_obs.get("variableValue") if initial_regimen_obs else None
+    return initial_regimen
+
 def get_current_regimen_line(doc, cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
     current_regimen_line = obs.get("variableValue") if obs else None
     return current_regimen_line
+
+def get_current_regimen_line_concept_id(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
+    current_regimen_line_concept_id = obs.get("conceptId") if obs else None
+    return current_regimen_line_concept_id
+
+def get_current_regimen_line_start_obs(doc) -> Optional[dict]:
+    regimen_obs = get_all_regimen_obs(doc)
+    obs = obsutils.get_last_uninterrupted_obs_from_list(regimen_obs)
+    return obs
+
+def get_current_regimen_line_start_date(doc) -> Optional[datetime]:
+    obs = get_current_regimen_line_start_obs(doc)
+    obs_datetime = commonutils.validate_date(obs.get("obsDatetime")) if obs else None
+    return obs_datetime
+
+def get_previous_regimen_last_obs(doc) -> Optional[dict]:
+    regimen_obs = get_all_regimen_obs(doc)
+    regimen_obs = obsutils.get_last_occurrence_of_previous_regimen(regimen_obs)
+    return regimen_obs
+
+def get_previous_regimen_last_date(doc) -> Optional[datetime]:
+    obs = get_previous_regimen_last_obs(doc)
+    regimen_datetime = commonutils.validate_date(obs.get("obsDatetime")) if obs else None
+    return regimen_datetime
 
 def get_pharmacy_next_appointment_date(doc, cutoff_datetime: Optional[datetime] = None):
     last_arv_pickup_obs = get_last_arv_obs(doc, cutoff_datetime)
@@ -371,4 +432,19 @@ def get_next_pickup_date(doc, arv_pickup_obs_list, pickup_date):
     future_pickups.sort(key=lambda x: x.get("obsDatetime"))
     next_pickup_date = future_pickups[0].get("obsDatetime")
     return commonutils.validate_date(next_pickup_date)
+
+def get_first_regimen_after_date(doc, cutoff_datetime):
+    regimen = obsutils.get_first_obs_after_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID , cutoff_datetime)
+    return regimen
+
+def get_first_regimen_line(doc, cutoff_datetime: Optional[datetime] = None):
+    regimen = obsutils.get_first_obs(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID)
+    return regimen
+
+def get_all_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    regimen_concept_ids = [ADULT_1ST_LINE_REGIMEN_CONCEPT_ID, CHILD_FIRST_LINE_REGIMEN_CONCEPT_ID, CHILD_2ND_LINE_REGIMEN_CONCEPT_ID,
+                           ADULT_2ND_LINE_REGIMEN_CONCEPT_ID, ADULT_3RD_LINE_REGIMEN_CONCEPT_ID, CHILD_3RD_LINE_REGIMEN_CONCEPT_ID]
+    regimen_obs_list = obsutils.get_obs_by_concept_ids(doc, regimen_concept_ids)
+    return regimen_obs_list
+
 
