@@ -210,7 +210,7 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
         doc (dict): The patient JSON document.
         form_id (int): The specific formId (e.g., 14 for Care Card).
         concept_id (int): The specific conceptId (e.g., 5089 for Weight).
-        cutoff_date (datetime): The Python datetime object for the cutoff.
+        cutoff_datetime (datetime): The Python datetime object for the cutoff.
         
     Returns:
         dict: The most recent observation object, or None if not found.
@@ -232,8 +232,9 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
             # 2. Standardize the clinical date from MongoDB
             obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
             
-            # 3. Safe comparison between two Naive WAT datetimes
-            if obs_dt and target_cutoff and obs_dt <= target_cutoff:
+            # 3. Safe comparison between two normalized datetimes.
+            # Include observations exactly at the cutoff.
+            if isinstance(obs_dt, datetime) and target_cutoff and obs_dt <= target_cutoff:
                 matching_obs.append(obs)
 
     if not matching_obs:
@@ -608,6 +609,12 @@ def getVariableValueFromObs(obs):
     if obs is None:
         return None
     return obs.get("variableValue")
+
+def getVariableNameFromObs(obs):
+    if obs is None:
+        return None
+    return obs.get("variableName")
+
  # get all obs with concept id in a form with form id, if you find two obs with the same concept id, get the one with the latest datetime.
 def getAllObsWithConceptIDRemoveDuplicateByDate(doc, form_id, concept_id, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])

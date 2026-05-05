@@ -362,6 +362,96 @@ def get_current_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen = current_regimen_obs.get("variableValue") if current_regimen_obs else None
     return current_regimen
 
+
+
+def get_unique_regimen_list(doc, cutoff_datetime: Optional[datetime] = None):
+    regimen_concept_ids = {
+        ADULT_1ST_LINE_REGIMEN_CONCEPT_ID,
+        ADULT_2ND_LINE_REGIMEN_CONCEPT_ID,
+        ADULT_3RD_LINE_REGIMEN_CONCEPT_ID,
+        CHILD_FIRST_LINE_REGIMEN_CONCEPT_ID,
+        CHILD_2ND_LINE_REGIMEN_CONCEPT_ID,
+        CHILD_3RD_LINE_REGIMEN_CONCEPT_ID,
+    }
+
+    target_cutoff = commonutils.normalize_clinical_date(cutoff_datetime or datetime.now())
+    obs_list = doc.get("messageData", {}).get("obs", [])
+
+    filtered_obs = []
+    for obs in obs_list:
+        if obs.get("voided") != 0:
+            continue
+        if obs.get("formId") != PHARMACY_FORM_ID:
+            continue
+        if obs.get("conceptId") not in regimen_concept_ids:
+            continue
+
+        value_coded = obs.get("valueCoded")
+        if value_coded is None:
+            continue
+
+        obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+        if not isinstance(obs_dt, datetime):
+            continue
+        if target_cutoff and obs_dt <= target_cutoff:
+            filtered_obs.append((obs_dt, obs))
+
+    # Sort oldest to newest so dedup keeps the first occurrence.
+    filtered_obs.sort(key=lambda item: item[0])
+
+    unique_obs = []
+    seen_pairs = set()
+    for _, obs in filtered_obs:
+        pair_key = (obs.get("conceptId"), obs.get("valueCoded"))
+        if pair_key in seen_pairs:
+            continue
+        seen_pairs.add(pair_key)
+        unique_obs.append(obs)
+
+    return unique_obs
+
+
+def get_unique_regimen_by_pos(obsList, index):
+    if not isinstance(obsList, list) or not obsList:
+        return None
+
+    if not isinstance(index, int) or index < 0:
+        return None
+
+    # Walk newest->oldest and return the nth DISTINCT regimen.
+    # Distinctness is based on valueCoded so repeated same regimen is collapsed.
+    seen_regimens = set()
+    distinct_pos = 0
+
+    for obs in reversed(obsList):
+        value_coded = obs.get("valueCoded") if isinstance(obs, dict) else None
+        if value_coded is None:
+            continue
+
+        if value_coded in seen_regimens:
+            continue
+
+        seen_regimens.add(value_coded)
+
+        if distinct_pos == index:
+            return obs
+
+        distinct_pos += 1
+
+    return None
+
+def get_current_regimen_start_date(doc, cutoff_datetime: Optional[datetime] = None):
+    current_regimen_line_obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
+    if(current_regimen_line_obs is None):
+        return None
+    valueCoded = current_regimen_line_obs.get("valueCoded") 
+    encounter_id = current_regimen_line_obs.get("encounterId")
+    current_regimen_obs = obsutils.get_obs_with_encounter_id(doc, valueCoded, encounter_id)
+    currnet_regimen_obs_valuecoded = current_regimen_obs.get("valueCoded") if current_regimen_obs else None
+    current_regimen_start_date_obs=obsutils.get_first_obs_with_value(doc, PHARMACY_FORM_ID, valueCoded, [currnet_regimen_obs_valuecoded]) if currnet_regimen_obs_valuecoded else None
+    current_regimen_start_date =obsutils.getObsDatetimeFromObs(current_regimen_start_date_obs) if current_regimen_start_date_obs else None
+    return current_regimen_start_date
+
 def get_current_regimen_obs(doc, cutoff_datetime: Optional[datetime] = None):
     current_regimen_line_obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
     if(current_regimen_line_obs is None):
