@@ -128,7 +128,7 @@ def export_regimen_data(cutoff_datetime=None, filename=None):
             "ThirdLineRegimen": third_line_regimen,
 
         }
-        print("Previous Regimen: ", previous_regimen_line, "Current Regimen: ",  record.get("CurrentRegimenLine"))
+        # print("Previous Regimen: ", previous_regimen_line, "Current Regimen: ",  record.get("CurrentRegimenLine"))
         batch_list.append(record)
 
         if len(batch_list) >= BATCH_SIZE:
