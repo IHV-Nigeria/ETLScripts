@@ -1,5 +1,8 @@
 from typing import Optional, List, Dict
 from datetime import datetime
+
+from pandas import to_datetime
+
 from utils import commonutils
 
 
@@ -38,6 +41,7 @@ def get_first_obs_with_values(doc, form_id, concept_id, value_coded_arr, earlies
     )
     
     return matching_obs[0]
+
 
 def get_first_obs(doc,form_id,concept_id, earliest_cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
@@ -168,7 +172,6 @@ def get_last_occurrence_of_previous_regimen(obs_list: List[dict]) -> Optional[di
     return None
 
 
-
 def get_last_obs_with_valuecoded_before_date(doc, form_id, concept_id, value_coded_arr, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
@@ -248,6 +251,7 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
     
     return matching_obs[0]
 
+
 def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_coded_arr, n, x, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
@@ -285,6 +289,7 @@ def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_c
         return limited_obs_list[n-1]
     
     return None
+
 
 def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: Optional[datetime] = None):
     """
@@ -774,3 +779,134 @@ def get_first_unsuppressed_viral_load_between_dates2(doc, form_id, concept_id, s
     # Sort by datetime in ascending order and return the first one
     matching_obs.sort(key=lambda x: commonutils.normalize_clinical_date(x.get("obsDatetime")) or datetime(1900,1,1))
     return matching_obs[0]
+
+def get_arv_obs_rev(doc, formid, conceptid, n, sort_key='obsDatetime'):
+    """
+    Returns the nth ARV obs within the nth ARV group
+    """
+
+    group = get_nth_groupid_rev(doc=doc, formid=formid, n=n)
+
+    if not group:
+        return None
+
+    groupid = group.get('obsId')
+
+    obs_list = doc.get('messageData', {}).get('obs', [])
+
+    filtered_obs = [
+        o for o in obs_list
+        if o.get('formId') == formid
+           and o.get('conceptId') == conceptid
+           and o.get('voided') == 0
+           and o.get('obsGroupId') == groupid
+           and o.get(sort_key) is not None
+    ]
+
+    if not filtered_obs:
+        return None
+
+
+    return filtered_obs[0]
+
+def get_nth_groupid_rev(doc, formid, n, conceptid=162240, sort_key='obsDatetime'):
+    """
+    Returns the obsId of the nth grouping observation
+    """
+
+    obs_list = doc.get('messageData', {}).get('obs', [])
+
+    filtered_obs = [
+        o for o in obs_list
+        if o.get('formId') == formid
+           and o.get('conceptId') == conceptid
+           and o.get('voided') == 0
+           and o.get(sort_key) is not None
+    ]
+
+    if not filtered_obs:
+        return None
+
+    filtered_obs = sorted(
+        filtered_obs,
+        key=lambda o: to_datetime(o.get(sort_key), errors='coerce'),
+        reverse=True
+    )
+
+    try:
+        return filtered_obs[n-1]
+    except IndexError:
+        return None
+
+def get_obs_by_encounterid(doc, formid, encounter_id, conceptid):
+    """
+    Returns the unique observation for a concept within a specific encounter.
+    Assumes at most one matching observation exists per encounter. Does not sort.
+    """
+    if not encounter_id:
+        return None
+
+    obs_list = doc.get('messageData', {}).get('obs', [])
+
+    filtered_obs = [
+        o for o in obs_list
+        if o.get('formId') == formid
+           and o.get('conceptId') == conceptid
+           and o.get('voided') == 0
+           and o.get('encounterId') == encounter_id
+    ]
+
+    if not filtered_obs:
+        return None
+
+
+    return filtered_obs[0]
+
+def get_obs_by_visit_uuid(doc, formid, visit_id, conceptid):
+    """
+    Returns the unique observation for a concept within a specific encounter.
+    Assumes at most one matching observation exists per encounter. Does not sort.
+    """
+    if not visit_id:
+        return None
+
+    obs_list = doc.get('messageData', {}).get('obs', [])
+
+    filtered_obs = [
+        o for o in obs_list
+        if o.get('formId') == formid
+           and o.get('conceptId') == conceptid
+           and o.get('voided') == 0
+           and o.get('visitUuid') == visit_id
+    ]
+
+    if not filtered_obs:
+        return None
+
+
+    return filtered_obs[0]
+
+
+def get_obs_by_encounterid_and_concept_list(doc, formid, encounter_id, conceptid):
+    """
+    Returns the unique observation for a concept within a specific encounter.
+    Assumes at most one matching observation exists per encounter. Does not sort.
+    """
+    if not encounter_id:
+        return None
+
+    obs_list = doc.get('messageData', {}).get('obs', [])
+
+    filtered_obs = [
+        o for o in obs_list
+        if o.get('formId') == formid
+           and o.get('conceptId') in conceptid
+           and o.get('voided') == 0
+           and o.get('encounterId') == encounter_id
+    ]
+
+    if not filtered_obs:
+        return None
+
+
+    return filtered_obs[0]

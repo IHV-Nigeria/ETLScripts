@@ -33,18 +33,23 @@ ADULT_2ND_LINE_REGIMEN_CONCEPT_ID = 164513
 ADULT_3RD_LINE_REGIMEN_CONCEPT_ID = 165702
 CHILD_3RD_LINE_REGIMEN_CONCEPT_ID = 165703
 
+NUMBER_OF_MISSED_DOSES_PER_MONTH = 165836
 
 NEXT_APPOINTMENT_DATE_CONCEPT_ID = 5096
 
 CERVICAL_CANCER_SCREENING_STATUS_CONCEPT_ID = 167139
 CERVICAL_CANCER_TREATMENT_METHOD_CONCEPT_ID = 167150
 
-
+ARV_DRUGS_ADHERENCE_CONCEPT_ID = 165290
 
 def get_first_weight(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_first_obs(doc,CARE_CARD_FORM_ID, WEIGHT_KG_CONCEPT_ID)
     weight = obs.get("valueNumeric") if obs else None
     return weight
+
+def get_functional_status_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, FUNCTIONAL_STATUS_CONCEPT_ID, cutoff_datetime)
+    return obs
 
 def get_cervical_cancer_screening_status_obs(doc, cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, CARE_CARD_FORM_ID, CERVICAL_CANCER_SCREENING_STATUS_CONCEPT_ID, cutoff_datetime)
@@ -66,6 +71,10 @@ def get_last_tb_diagnosed_obs(doc, cutoff_datetime: Optional[datetime] = None):
 def get_last_nth_tb_status_obs_of_last_x_tb_statuses(doc, n, x, cutoff_datetime: Optional[datetime] = None):
     tb_status_obs = obsutils.get_nth_obs_of_last_x_obs(doc, CARE_CARD_FORM_ID, TB_STATUS_CONCEPT_ID, n, x, cutoff_datetime)
     return tb_status_obs
+
+def get_nth_drug_adherence_obs_of_last_x_viral_loads(doc, n, x, cutoff_datetime: Optional[datetime] = None):
+    viral_load_obs = obsutils.get_nth_obs_of_last_x_obs2(doc, CARE_CARD_FORM_ID, ARV_DRUGS_ADHERENCE_CONCEPT_ID, n, x, cutoff_datetime)
+    return viral_load_obs
 
 def get_first_who_stage_obs(doc,cutoff_datetime: Optional[datetime] = None):
     obs = get_first_obs(doc,CARE_CARD_FORM_ID, WHO_STAGE_CONCEPT_ID)
