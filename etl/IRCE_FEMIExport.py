@@ -19,6 +19,10 @@ import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 from dao.config import MONGO_DATABASE_NAME
+from formslib.pharmacyutils import (PHARMACY_FORM_ID, MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID, NEXT_APPOINTMENT_DATE_CONCEPT_ID,
+                                    CURRENT_REGIMEN_LINE_CONCEPT_ID, DRUG_REGIMEN_CONCEPT_LIST)
+from legacy.constants import CARE_CARD_FORM_ID
+from formslib.carecardutils import ARV_DRUGS_ADHERENCE_CONCEPT_ID
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
@@ -65,27 +69,64 @@ def export_request_data(cutoff_datetime=None, filename=None):
         birthdate = commonutils.normalize_clinical_date(demographics.get("birthdate"))
         facility_info = get_facility_by_datim(datim_code)
         art_start_date = commonutils.normalize_clinical_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-        eac_1_date = commonutils.normalize_clinical_date(eacutils.get_eac_date(1, doc))
-        last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
-        viral_load_before_first_eac_obs = labutils.get_last_viral_load_obs_before(doc, eac_1_date)
-        viral_load_1_obs = labutils.get_nth_viral_load_obs(doc, 1, cutoff_datetime)
-        viral_load_2_obs = labutils.get_nth_viral_load_obs(doc, 2, cutoff_datetime)
-        viral_load_3_obs = labutils.get_nth_viral_load_obs(doc, 3, cutoff_datetime)
+
+        obs_in_group1 = obsutils.get_arv_obs_rev(doc, formid=PHARMACY_FORM_ID, conceptid=MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID, n=1)
+        obs_in_group2 = obsutils.get_arv_obs_rev(doc, formid=PHARMACY_FORM_ID, conceptid=MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID, n=2)
+        obs_in_group3 = obsutils.get_arv_obs_rev(doc, formid=PHARMACY_FORM_ID, conceptid=MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID, n=3)
+        obs_in_group4 = obsutils.get_arv_obs_rev(doc, formid=PHARMACY_FORM_ID, conceptid=MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID, n=4)
+        obs_in_group5 = obsutils.get_arv_obs_rev(doc, formid=PHARMACY_FORM_ID, conceptid=MEDICATION_QUANTITY_DISPENSED_CONCEPT_ID, n=5)
+
+        next_visit_1_encounter_id = obs_in_group1.get('encounterId') if obs_in_group1 else None
+        next_visit_2_encounter_id = obs_in_group2.get('encounterId') if obs_in_group2 else None
+        next_visit_3_encounter_id = obs_in_group3.get('encounterId') if obs_in_group3 else None
+        next_visit_4_encounter_id = obs_in_group4.get('encounterId') if obs_in_group4 else None
+        next_visit_5_encounter_id = obs_in_group5.get('encounterId') if obs_in_group5 else None
+
+        next_visit_1_visit_uuid = obs_in_group1.get('visitUuid') if obs_in_group1 else None
+        next_visit_2_visit_uuid = obs_in_group2.get('visitUuid') if obs_in_group2 else None
+        next_visit_3_visit_uuid = obs_in_group3.get('visitUuid') if obs_in_group3 else None
+        next_visit_4_visit_uuid = obs_in_group4.get('visitUuid') if obs_in_group4 else None
+        next_visit_5_visit_uuid = obs_in_group5.get('visitUuid') if obs_in_group5 else None
+
+        next_visit_in_group1 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=NEXT_APPOINTMENT_DATE_CONCEPT_ID, encounter_id=next_visit_1_encounter_id)
+        next_visit_in_group2 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=NEXT_APPOINTMENT_DATE_CONCEPT_ID, encounter_id=next_visit_2_encounter_id)
+        next_visit_in_group3 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=NEXT_APPOINTMENT_DATE_CONCEPT_ID, encounter_id=next_visit_3_encounter_id)
+        next_visit_in_group4 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=NEXT_APPOINTMENT_DATE_CONCEPT_ID, encounter_id=next_visit_4_encounter_id)
+        next_visit_in_group5 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=NEXT_APPOINTMENT_DATE_CONCEPT_ID, encounter_id=next_visit_5_encounter_id)
+
+        regimen_line_in_group1 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=CURRENT_REGIMEN_LINE_CONCEPT_ID, encounter_id=next_visit_1_encounter_id)
+        regimen_line_in_group2 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=CURRENT_REGIMEN_LINE_CONCEPT_ID, encounter_id=next_visit_2_encounter_id)
+        regimen_line_in_group3 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=CURRENT_REGIMEN_LINE_CONCEPT_ID, encounter_id=next_visit_3_encounter_id)
+        regimen_line_in_group4 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=CURRENT_REGIMEN_LINE_CONCEPT_ID, encounter_id=next_visit_4_encounter_id)
+        regimen_line_in_group5 = obsutils.get_obs_by_encounterid(doc, formid=PHARMACY_FORM_ID, conceptid=CURRENT_REGIMEN_LINE_CONCEPT_ID, encounter_id=next_visit_5_encounter_id)
+
+        drug_in_group1 = obsutils.get_obs_by_encounterid_and_concept_list(doc, formid=PHARMACY_FORM_ID, conceptid=DRUG_REGIMEN_CONCEPT_LIST, encounter_id=next_visit_1_encounter_id)
+        drug_in_group2 = obsutils.get_obs_by_encounterid_and_concept_list(doc, formid=PHARMACY_FORM_ID, conceptid=DRUG_REGIMEN_CONCEPT_LIST, encounter_id=next_visit_2_encounter_id)
+        drug_in_group3 = obsutils.get_obs_by_encounterid_and_concept_list(doc, formid=PHARMACY_FORM_ID, conceptid=DRUG_REGIMEN_CONCEPT_LIST, encounter_id=next_visit_3_encounter_id)
+        drug_in_group4 = obsutils.get_obs_by_encounterid_and_concept_list(doc, formid=PHARMACY_FORM_ID, conceptid=DRUG_REGIMEN_CONCEPT_LIST, encounter_id=next_visit_4_encounter_id)
+        drug_in_group5 = obsutils.get_obs_by_encounterid_and_concept_list(doc, formid=PHARMACY_FORM_ID, conceptid=DRUG_REGIMEN_CONCEPT_LIST, encounter_id=next_visit_5_encounter_id)
+
+        adherence_1 = obsutils.get_obs_by_visit_uuid(doc, formid=CARE_CARD_FORM_ID, conceptid=ARV_DRUGS_ADHERENCE_CONCEPT_ID, visit_id=next_visit_1_visit_uuid)
+        adherence_2 = obsutils.get_obs_by_visit_uuid(doc, formid=CARE_CARD_FORM_ID, conceptid=ARV_DRUGS_ADHERENCE_CONCEPT_ID, visit_id=next_visit_2_visit_uuid)
+        adherence_3 = obsutils.get_obs_by_visit_uuid(doc, formid=CARE_CARD_FORM_ID, conceptid=ARV_DRUGS_ADHERENCE_CONCEPT_ID, visit_id=next_visit_3_visit_uuid)
+        adherence_4 = obsutils.get_obs_by_visit_uuid(doc, formid=CARE_CARD_FORM_ID, conceptid=ARV_DRUGS_ADHERENCE_CONCEPT_ID, visit_id=next_visit_4_visit_uuid)
+        Adherence_5 = obsutils.get_obs_by_visit_uuid(doc, formid=CARE_CARD_FORM_ID, conceptid=ARV_DRUGS_ADHERENCE_CONCEPT_ID, visit_id=next_visit_5_visit_uuid)
+
+        last_vl = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
+        second_last_vl = labutils.get_nth_viral_load_obs_of_last_x_viral_loads(doc, n=2, x=5, cutoff_datetime=cutoff_datetime)
+        third_last_vl = labutils.get_nth_viral_load_obs_of_last_x_viral_loads(doc, n=3, x=5, cutoff_datetime=cutoff_datetime)
+        fourth_last_vl = labutils.get_nth_viral_load_obs_of_last_x_viral_loads(doc, n=4, x=5, cutoff_datetime=cutoff_datetime)
+        fifth_last_vl = labutils.get_nth_viral_load_obs_of_last_x_viral_loads(doc, n=5, x=5, cutoff_datetime=cutoff_datetime)
+
+
 
         current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
-        current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None
         last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
-        current_pregnancy_status_obs=carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
-        first_unsuppressed_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
-        first_unsuppressed_viral_load_value = obsutils.getValueNumericFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
-        first_unsuppressed_viral_load_datetime = obsutils.getObsDatetimeFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
-        last_eac_encounter_datetime = encounterutils.get_encounter_datetime(last_eac_encounter) if last_eac_encounter else None
-        viral_load_after_last_eac_obs = labutils.get_first_viral_load_after_date(doc, last_eac_encounter_datetime) if last_eac_encounter_datetime else None
-        viral_load_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
-        viral_load_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+
 
         record = {
             "touchtime": header.get("touchTime"),
+            "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
             "State": facility_info.get("State") if facility_info else None,
             "LGA" : facility_info.get("LGA") if facility_info else None,
             "DatimCode" : header.get("facilityDatimCode"),
@@ -99,68 +140,60 @@ def export_request_data(cutoff_datetime=None, filename=None):
             "CurrentAgeMonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),
             "DOB": birthdate,
 
-            "ArtStartDate": art_start_date,
-            "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
-            "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-            "DaysOfARVRefill": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
-            "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
-            "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
-            "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
-            "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
+            "TBStatus":carecardutils.get_current_tb_status_obs(doc, cutoff_datetime).get("variableValue") if carecardutils.get_current_tb_status_obs(doc, cutoff_datetime) else None,
+            "Weight":carecardutils.get_current_weight_obs(doc, cutoff_datetime).get("variableValue") if carecardutils.get_current_weight_obs(doc, cutoff_datetime) else None,
+            "FunctionalStatus":carecardutils.get_functional_status_obs(doc, cutoff_datetime).get("variableValue") if carecardutils.get_functional_status_obs(doc, cutoff_datetime) else None,
+            "WHOStaging":carecardutils.get_last_who_stage_obs(doc, cutoff_datetime).get("variableValue") if carecardutils.get_last_who_stage_obs(doc, cutoff_datetime) else None,
+            "CD4": labutils.get_current_cd4_count_obs(doc, cutoff_datetime).get("variableValue") if labutils.get_current_cd4_count_obs(doc, cutoff_datetime) else None,
 
-            "DispensingModality": pharmacyutils.get_last_dsd_model(doc,cutoff_datetime),
-            "FacilityDispensingModality": pharmacyutils.get_facility_dsd_model(doc,cutoff_datetime),
-            "DDDDispensingModality": pharmacyutils.get_ddd_dsd_model(doc,cutoff_datetime),
-            "MMDType": pharmacyutils.get_mmd_type(doc,cutoff_datetime),
-            "PharmacyNextAppointmentDate": pharmacyutils.get_pharmacy_next_appointment_date(doc, cutoff_datetime),
-            "ClinicalNextAppointmentDate": carecardutils.get_clinical_next_appointment_date(doc,cutoff_datetime),
-            "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
-            "ViralLoadEncounterDate": obsutils.getObsDatetimeFromObs(current_viral_load_obs),
-            "ViralLoadSampleDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, current_viral_load_obs)),
-            "ViralLoadIndication": obsutils.getVariableValueFromObs(labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, current_viral_load_obs)),
-            "LastSampleTakenDate": obsutils.getValueDatetimeFromObs(labutils.get_last_sample_taken_date_obs(doc,cutoff_datetime)),
-            "ViralLoadBefore1stEAC": obsutils.getValueNumericFromObs(viral_load_before_first_eac_obs),
-            "ViralLoadBefore1stEACDate": obsutils.getObsDatetimeFromObs(viral_load_before_first_eac_obs),
-            "ViralLoadBefore1stEACSampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
-            "ViralLoadBefore1stEACReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
-            "EAC1date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,1,current_viral_load_obsdatetime)),
-            "EAC2date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,2,current_viral_load_obsdatetime)),
-            "EAC3date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,3,current_viral_load_obsdatetime)),
-            "EAC4date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,4,current_viral_load_obsdatetime)),
-            "EAC5date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,5,current_viral_load_obsdatetime)),
-            "EAC6date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,6,current_viral_load_obsdatetime)),
-            "EAC7date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,7,current_viral_load_obsdatetime)),
-            "EAC8date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,8,current_viral_load_obsdatetime)),
-            "ViralLoad1": obsutils.getValueNumericFromObs(viral_load_1_obs),
-            "ViralLoad1ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
-            "ViralLoad1SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
-            "ViralLoad2": obsutils.getValueNumericFromObs(viral_load_2_obs),
-            "ViralLoad2ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_2_obs)),
-            "ViralLoad2SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_2_obs)),
-            "ViralLoad3": obsutils.getValueNumericFromObs(viral_load_3_obs),
-            "ViralLoad3ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_3_obs)),
-            "ViralLoad3SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_3_obs)),
-            "CurrentRegimenLine": pharmacyutils.get_current_regimen_line(doc,cutoff_datetime) ,
-            "CurrentRegimen": pharmacyutils.get_current_regimen(doc,cutoff_datetime),
-            "SecondLineRegimenStartDate": pharmacyutils.get_min_second_line_regimen_date(doc,cutoff_datetime),
-            "ThirdLineRegimenStartDate": pharmacyutils.get_min_third_line_regimen_date(doc,cutoff_datetime),
-            "CurrentPregnancyStatus": obsutils.getVariableValueFromObs(current_pregnancy_status_obs),
-            "CurrentPregnancyStatusDatetime": obsutils.getObsDatetimeFromObs(current_pregnancy_status_obs),
-            "EDD": obsutils.getValueDatetimeFromObs(carecardutils.get_edd_for_last_pregnancy(doc,current_pregnancy_status_obs)),
-            "LastEACSessionType": eacutils.get_last_eac_session_type(doc,last_eac_encounter,cutoff_datetime),
-            "LastEACSessionDate": encounterutils.get_encounter_datetime (last_eac_encounter),
-            "LastEACBarriersToAdherence": eacutils.get_last_eac_barriers_to_adherence(doc,last_eac_encounter, cutoff_datetime),
-            "LastEACRegimenPlan": eacutils.get_last_eac_regimen_plan(doc, last_eac_encounter, cutoff_datetime),
-            "LastEACFollowupDate": eacutils.get_last_eac_followup_date(doc, last_eac_encounter, cutoff_datetime),
-            "LastEACAdherenceComments": eacutils.get_last_eac_comments(doc, last_eac_encounter, cutoff_datetime),
-            "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
-            "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
-            "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-            "Quater": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
-            "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
-            "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
-            "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
-            "viralLoadAfterLastEACDate": viral_load_after_last_eac_datetime,
+            # Get Last 5
+            "LastVL": last_vl.get("variableValue") if last_vl else None,
+            "LastVLDate": last_vl.get("obsDatetime") if last_vl else None,
+            "SecondLastVL": second_last_vl.get("variableValue") if second_last_vl else None,
+            "SecondLastVLDate": second_last_vl.get("obsDatetime") if second_last_vl else None,
+            "ThirdLastVL": third_last_vl.get("variableValue") if third_last_vl else None,
+            "ThirdLastVLDate": third_last_vl.get("obsDatetime") if third_last_vl else None,
+            "FourthLastVL": fourth_last_vl.get("variableValue") if fourth_last_vl else None,
+            "FourthLastVLDate": fourth_last_vl.get("obsDatetime") if fourth_last_vl else None,
+            "FifthLastVL": fifth_last_vl.get("variableValue") if fifth_last_vl else None,
+            "FifthLastVLDate": fifth_last_vl.get("obsDatetime") if fifth_last_vl else None,
+
+            # Get Last 5
+            "last_visit5": obs_in_group5.get('obsDatetime') if obs_in_group5 else None,
+            "regimen5": regimen_line_in_group5.get('variableValue') if regimen_line_in_group5 else None,
+            "drug5": drug_in_group5.get('variableValue') if drug_in_group5 else None,
+            "adherence5": Adherence_5.get('variableValue') if Adherence_5 else None,
+            "duration5": obs_in_group5.get('valueNumeric') if obs_in_group5 else None,
+            "next_app5": next_visit_in_group5.get('valueDatetime') if next_visit_in_group5 else None,
+
+            "last_visit4": obs_in_group4.get('obsDatetime') if obs_in_group4 else None,
+            "regimen4": regimen_line_in_group4.get('variableValue') if regimen_line_in_group4 else None,
+            "drug4": drug_in_group4.get('variableValue') if drug_in_group4 else None,
+            "adherence4": adherence_4.get('variableValue') if adherence_4 else None,
+            "duration4": obs_in_group4.get('valueNumeric') if obs_in_group4 else None,
+            "next_app4": next_visit_in_group4.get('valueDatetime') if next_visit_in_group4 else None,
+
+            "last_visit3": obs_in_group3.get('obsDatetime') if obs_in_group3 else None,
+            "regimen3": regimen_line_in_group3.get('variableValue') if regimen_line_in_group3 else None,
+            "drug3": drug_in_group3.get('variableValue') if drug_in_group3 else None,
+            "adherence3": adherence_3.get('variableValue') if adherence_3 else None,
+            "duration3": obs_in_group3.get('valueNumeric') if obs_in_group3 else None,
+            "next_app3": next_visit_in_group3.get('valueDatetime') if next_visit_in_group3 else None,
+
+            "last_visit2": obs_in_group2.get('obsDatetime') if obs_in_group2 else None,
+            "regimen2": regimen_line_in_group2.get('variableValue') if regimen_line_in_group2 else None,
+            "drug2": drug_in_group2.get('variableValue') if drug_in_group2 else None,
+            "adherence2": adherence_2.get('variableValue') if adherence_2 else None,
+            "duration2": obs_in_group2.get('valueNumeric') if obs_in_group2 else None,
+            "next_app2": next_visit_in_group2.get('valueDatetime') if next_visit_in_group2 else None,
+
+            "last_visit1": obs_in_group1.get('obsDatetime') if obs_in_group1 else None,
+            "regimen1": regimen_line_in_group1.get('variableValue') if regimen_line_in_group1 else None,
+            "drug1": drug_in_group1.get('variableValue') if drug_in_group1 else None,
+            "adherence1": adherence_1.get('variableValue') if adherence_1 else None,
+            "duration1": obs_in_group1.get('valueNumeric') if obs_in_group1 else None,
+            "next_app1": next_visit_in_group1.get('valueDatetime') if next_visit_in_group1 else None,
+
 
         }
         batch_list.append(record)

@@ -57,7 +57,7 @@ def get_nth_viral_load_reported_obs(doc, n , nth_viral_load_obs):
     return reported_date_obs
 
 def get_nth_viral_load_obs_of_last_x_viral_loads(doc, n, x, cutoff_datetime: Optional[datetime] = None):
-    viral_load_obs = obsutils.get_nth_obs_of_last_x_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, x, cutoff_datetime)
+    viral_load_obs = obsutils.get_nth_obs_of_last_x_obs2(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, x, cutoff_datetime)
 
     return viral_load_obs
    
