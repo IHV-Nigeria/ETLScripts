@@ -36,7 +36,6 @@ def _to_naive_datetime(value):
     return None
 
 
-
 def _extract_upsert_doc_key(doc):
     header = demographicsutils.get_message_header(doc)
     demographics = demographicsutils.get_patient_demographics(doc)
@@ -45,7 +44,6 @@ def _extract_upsert_doc_key(doc):
         "datimcode": header.get("facilityDatimCode"),
         "touchtime": _to_naive_datetime(header.get("touchTime"))
     }
-
 
 
 def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
@@ -82,7 +80,6 @@ def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
         records.append(convert_doc_to_record(doc, cutoff_datetime))
 
     return records, {"stale": stale_count, "invalid": invalid_key_count}
-
 
 
 def upsert_art_line_list_data(cutoff_datetime=None):
@@ -175,7 +172,6 @@ def upsert_art_line_list_data(cutoff_datetime=None):
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
 
 
-
 def initialize_art_line_list_data(cutoff_datetime=None):
 
     
@@ -230,9 +226,6 @@ def initialize_art_line_list_data(cutoff_datetime=None):
         print(f"\nETL Complete. Records Skipped:  Records Inserted: {total_inserted}")  
   
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
-    
-    
-
 
 
 def convert_doc_to_record(doc, cutoff_datetime):
@@ -438,9 +431,6 @@ def convert_doc_to_record(doc, cutoff_datetime):
 
             }
     return record
-
-
-
 
 
 def load_facility_cache(db, db_name=MONGO_DATABASE_NAME):
