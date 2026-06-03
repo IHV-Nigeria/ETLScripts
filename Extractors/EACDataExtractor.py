@@ -47,6 +47,8 @@ def countdown_to_midnight():
 
 print("Starting upsert function...")
 
+EACDataExport.upsert_art_line_list_data(cutoff_datetime=None)
+
 # 🔹 Main scheduler loop
 while True:
     countdown_to_midnight()
