@@ -19,6 +19,7 @@ import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 from dao import config
+from formslib.hivenrollmentutil import EDUCATION_LEVEL_CONCEPT_ID
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
@@ -61,11 +62,11 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
             facility_info = get_facility_by_datim(datim_code)
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
             last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
+            educational_status = hivenrollmentutils.get_last_education_level_obs(doc, cutoff_datetime)
 
 
 
             record = {
-                "touchtime": header.get("touchTime"),
                 "State": facility_info.get("State") if facility_info else None,
                 "LGA" : facility_info.get("LGA") if facility_info else None,
                 "DatimCode" : header.get("facilityDatimCode"),
@@ -73,15 +74,16 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
                 "UniqueID": demographicsutils.get_patient_identifier(4, doc),
                 "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
                 "Sex": demographics.get("gender"),
-                "DOB": birthdate,
-                "ArtStartDate": art_start_date,
-                "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
-                "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-                "DaysOfARVRefill": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
-                "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
-                "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
-                "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
-                "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
+                "EducationalStatus": educational_status,
+                # "DOB": birthdate,
+                # "ArtStartDate": art_start_date,
+                # "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
+                # "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
+                # "DaysOfARVRefill": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
+                # "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
+                # "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
+                # "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
+                # "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
 
             }
             batch_list.append(record)
