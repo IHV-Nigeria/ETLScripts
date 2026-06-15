@@ -36,7 +36,8 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
     db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
     cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    # size = mongo_dao.get_art_container_size(db,db_name)
+    size = 730_000
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -74,7 +75,7 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
                 "UniqueID": demographicsutils.get_patient_identifier(4, doc),
                 "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
                 "Sex": demographics.get("gender"),
-                "EducationalStatus": educational_status,
+                "EducationalStatus": educational_status.get("variableValue"),
                 # "DOB": birthdate,
                 # "ArtStartDate": art_start_date,
                 # "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
