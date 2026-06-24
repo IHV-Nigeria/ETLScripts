@@ -1,9 +1,6 @@
-from datetime import datetime, date
+from datetime import datetime
 import etl.EACDataExport as EACDataExport
 import etl.EACDataExportMultiprocess as EACDataExportMultiprocess
-
-import etl.ViralLoadAndIITPattern as ViralLoadAndIITPattern
-
 
 # This guard is MANDATORY on Windows for Multiprocessing
 if __name__ == '__main__':

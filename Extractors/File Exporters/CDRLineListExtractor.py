@@ -16,7 +16,7 @@ print ("Start time: ", start_time )
 
 cutoff_date = datetime(2025, 12, 31, 23, 59, 59)
 
-CDRLineList.export_cdr_line_list_data(filename="CDRLineList_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv", cutoff_datetime=cutoff_date)
+CDRLineList.export_cdr_line_list_data(filename="CDRLineList_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv", cutoff_datetime=None)
 
 end_time = datetime.now()
 print ("End time: ", end_time )

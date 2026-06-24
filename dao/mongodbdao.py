@@ -34,9 +34,22 @@ def get_art_containers(db,db_name=config.MONGO_DATABASE_NAME):
         }
     }
     }
-    art_containers_cusor = db.container.find(query)
-    return art_containers_cusor
+    art_containers_cursor = db.container.find(query)
+    return art_containers_cursor
 
+def get_transfer_containers(db,db_name=config.MONGO_DATABASE_NAME):
+    if(db is None):
+        db = get_db_connection(config.MONGO_DATABASE_NAME)
+    query = {
+        "messageData.patientIdentifiers": {
+            "$elemMatch": {
+                "identifierType": 100,
+                "voided": 0
+            }
+        }
+    }
+    art_containers_cursor = db.container.find(query)
+    return art_containers_cursor
 
 def get_art_container_for_patientidentifiers_size(db, patient_identifiers, db_name=config.MONGO_DATABASE_NAME):
     """Returns the count of ART containers matching the specific identifiers."""

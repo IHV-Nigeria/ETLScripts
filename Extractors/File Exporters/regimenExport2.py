@@ -128,7 +128,7 @@ def export_regimen_change(cutoff_datetime=None, filename=None):
 
 def prepare_filepath(filename=None):
     """Creates the directory and generates the full path for the CSV."""
-    output_dir = './output'
+    output_dir = '../output'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         

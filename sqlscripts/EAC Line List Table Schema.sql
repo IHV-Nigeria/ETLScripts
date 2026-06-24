@@ -1,5 +1,5 @@
 CREATE TABLE eac_line_list (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
 
     touchtime TIMESTAMP,
     state TEXT,
@@ -90,7 +90,7 @@ CREATE TABLE eac_line_list (
     lasteacreferral TEXT,
     lastreferralswitchcommitteedate TIMESTAMP,
 
-    patientuuid TEXT,
+    patientuuid TEXT PRIMARY KEY,
     quarter TEXT,
 
     firstunsuppressedviralload NUMERIC,
