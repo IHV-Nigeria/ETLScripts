@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 
 import sys
 import os
@@ -8,13 +8,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 import etl.EACDataExport as EACDataExport
-import etl.EACDataExportMultiprocess as EACDataExportMultiprocess
 
-import etl.ViralLoadAndIITPattern as ViralLoadAndIITPattern
-import etl.TBOutcomeStudy as TBOutcomeStudy
 import etl.IITEpisodeExport as IITEpisodeExport
-import etl.CDRLineList as CDRLineList
-
 
 start_time = datetime.now()
 print ("Start time: ", start_time )

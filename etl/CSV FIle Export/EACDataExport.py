@@ -1,7 +1,9 @@
 import pandas as pd
 from tqdm import tqdm
 from datetime import datetime, date
+from collections import OrderedDict
 import os
+import logging
 import dao.mongodbdao as mongo_dao
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
@@ -14,20 +16,13 @@ import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
+import dao.postgresdao as postgres_dao
 from dao.config import MONGO_DATABASE_NAME
 
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
-
-
-from tqdm import tqdm
-from datetime import datetime, date
-import dao.postgresdao as postgres_dao
-from formslib import iptutils, otzutils
-from utils import biometricutils
-from dao.config import MONGO_DATABASE_NAME
-import logging
+ASPIRE_STATES = {"FCT", "KATSINA", "NASARAWA", "RIVERS"}
 
 
 # functions for DB insertion
@@ -52,7 +47,7 @@ def _extract_upsert_doc_key(doc):
         "touchtime": _to_naive_datetime(header.get("touchTime"))
     }
 
-def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
+def _prefilter_stale_docs_before_conversion(doc_batch, conn, return_valid_docs=True, touchtime_cache=None, cache_max_size=50000):
     """
     Prefilters stale docs in batch before expensive conversion by comparing touchtime.
     """
@@ -69,23 +64,60 @@ def _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime):
         keyed_docs.append((doc, patientuuid, datimcode, key_data.get("touchtime")))
 
     if not keyed_docs:
-        return [], {"stale": 0, "invalid": invalid_key_count}
+        return [], {"stale": 0, "invalid": invalid_key_count, "valid": 0}
 
     key_pairs = [(item[1], item[2]) for item in keyed_docs]
-    existing_touchtime_map = postgres_dao.get_art_line_list_existing_touchtimes(conn, key_pairs)
+    existing_touchtime_map = {}
+
+    # Query only keys not present in cache to reduce DB round-trips on duplicate keys.
+    missing_key_pairs = []
+    seen_missing = set()
+    for patientuuid, datimcode in key_pairs:
+        key_tuple = (patientuuid, datimcode)
+        if touchtime_cache is not None and key_tuple in touchtime_cache:
+            if isinstance(touchtime_cache, OrderedDict):
+                touchtime_cache.move_to_end(key_tuple)
+            existing_touchtime_map[key_tuple] = touchtime_cache[key_tuple]
+            continue
+        if key_tuple not in seen_missing:
+            seen_missing.add(key_tuple)
+            missing_key_pairs.append(key_tuple)
+
+    if missing_key_pairs:
+        fetched_map = postgres_dao.get_art_line_list_existing_touchtimes(conn, missing_key_pairs)
+        for key_tuple in missing_key_pairs:
+            cached_value = _to_naive_datetime(fetched_map.get(key_tuple))
+            existing_touchtime_map[key_tuple] = cached_value
+            if touchtime_cache is not None:
+                touchtime_cache[key_tuple] = cached_value
+                if isinstance(touchtime_cache, OrderedDict):
+                    touchtime_cache.move_to_end(key_tuple)
+                if len(touchtime_cache) > cache_max_size:
+                    touchtime_cache.popitem(last=False)
 
     stale_count = 0
-    records = []
+    valid_count = 0
+    valid_docs = [] if return_valid_docs else None
     for doc, patientuuid, datimcode, incoming_touchtime in keyed_docs:
-        existing_touchtime = _to_naive_datetime(existing_touchtime_map.get((patientuuid, datimcode)))
+        key_tuple = (patientuuid, datimcode)
+        existing_touchtime = _to_naive_datetime(existing_touchtime_map.get(key_tuple))
+
+        # First-time records (not found in PostgreSQL) must always pass to upsert.
+        if existing_touchtime is None:
+            valid_count += 1
+            if return_valid_docs:
+                valid_docs.append(doc)
+            continue
 
         if existing_touchtime is not None and incoming_touchtime is not None and incoming_touchtime <= existing_touchtime:
             stale_count += 1
             continue
 
-        records.append(convert_doc_to_record(doc, cutoff_datetime))
+        valid_count += 1
+        if return_valid_docs:
+            valid_docs.append(doc)
 
-    return records, {"stale": stale_count, "invalid": invalid_key_count}
+    return valid_docs or [], {"stale": stale_count, "invalid": invalid_key_count, "valid": valid_count}
 
 def upsert_art_line_list_data(cutoff_datetime=None):
     logging.basicConfig(filename='etl_errors.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -93,7 +125,6 @@ def upsert_art_line_list_data(cutoff_datetime=None):
     db_name=MONGO_DATABASE_NAME
     #datims = ["LmLBtmd8U43"]
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
     size = mongo_dao.get_art_container_size(db,db_name)
     #cursor = mongo_dao.get_containers_by_datim_list(db,datims,db_name)
     #size = mongo_dao.get_container_by_datim_list_size(db,datims,db_name)
@@ -104,66 +135,104 @@ def upsert_art_line_list_data(cutoff_datetime=None):
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 2000 # Increased for 700k records
-    batch_list = []
     doc_batch = []
     inserted_count = 0
     updated_count = 0
     skipped_count = 0
     prefilter_stale_count = 0
     prefilter_invalid_key_count = 0
+    valid_doc_count = 0
     error_count = 0
 
     if cutoff_datetime is None:
         cutoff_datetime = datetime.now()
-    previous_quarter_end_date = commonutils.get_previous_quarter_end_date(cutoff_datetime)
 
 
     try:
-        #extracted_results = []
-        for doc in tqdm(cursor, total=size, desc="EAC Line List ETL Progress"):
+        # Phase 1: count valid/stale/invalid docs without holding valid docs in memory.
+        cursor_phase_1 = mongo_dao.get_art_containers(db, db_name)
+        for doc in tqdm(cursor_phase_1, total=size, desc="Phase 1/2 - Filtering docs", unit="doc"):
             try:
                 if not is_aspire_state(doc):
-                    continue  # Skip this record and move to the next one
+                    continue
 
                 doc_batch.append(doc)
-
                 if len(doc_batch) >= BATCH_SIZE:
-                    batch_list, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime)
+                    _, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, return_valid_docs=False)
                     prefilter_stale_count += prefilter_result.get('stale', 0)
                     prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
-
-                    if not batch_list:
-                        doc_batch.clear()
-                        continue
-
-                    #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
-                    result_arr= postgres_dao.batch_upsert_art_line_list(conn, batch_list)
-                    inserted_count += result_arr.get('inserted', 0)
-                    updated_count += result_arr.get('updated', 0)
-                    skipped_count += result_arr.get('skipped', 0)
-                    batch_list.clear() # clear() is slightly more memory efficient than []
+                    valid_doc_count += prefilter_result.get('valid', 0)
                     doc_batch.clear()
-
-
-                # Final Batch
-                if doc_batch:
-                    batch_list, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, cutoff_datetime)
-                    prefilter_stale_count += prefilter_result.get('stale', 0)
-                    prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
-
-                if batch_list:
-                    #postgres_dao.save_to_postgres(conn, "art_line_list", batch_list)
-                    result_arr = postgres_dao.batch_upsert_art_line_list(conn, batch_list)
-                    inserted_count += result_arr.get('inserted', 0)
-                    updated_count += result_arr.get('updated', 0)
-                    skipped_count += result_arr.get('skipped', 0)
             except Exception as e:
-                logging.error(f"Error processing batch: {e}. Batch details: {batch_list}")
+                logging.error(f"Error during filtering phase: {e}")
                 error_count += 1
                 continue
-                # Continue to next batch without rollback
+
+        if doc_batch:
+            _, prefilter_result = _prefilter_stale_docs_before_conversion(doc_batch, conn, return_valid_docs=False)
+            prefilter_stale_count += prefilter_result.get('stale', 0)
+            prefilter_invalid_key_count += prefilter_result.get('invalid', 0)
+            valid_doc_count += prefilter_result.get('valid', 0)
+            doc_batch.clear()
+
+        # Phase 2: re-read cursor, stream valid docs and upsert in batches.
+        cursor_phase_2 = mongo_dao.get_art_containers(db, db_name)
+        phase_2_touchtime_cache = OrderedDict()
+        with tqdm(total=valid_doc_count, desc="Phase 2/2 - Upserting valid docs", unit="doc") as upsert_progress:
+            for doc in cursor_phase_2:
+                try:
+                    if not is_aspire_state(doc):
+                        continue
+
+                    doc_batch.append(doc)
+                    if len(doc_batch) < BATCH_SIZE:
+                        continue
+
+                    valid_batch_docs, _ = _prefilter_stale_docs_before_conversion(
+                        doc_batch,
+                        conn,
+                        return_valid_docs=True,
+                        touchtime_cache=phase_2_touchtime_cache,
+                    )
+                    doc_batch.clear()
+                    if not valid_batch_docs:
+                        continue
+
+                    batch_list = [convert_doc_to_record(valid_doc, cutoff_datetime) for valid_doc in valid_batch_docs]
+                    if batch_list:
+                        result_arr = postgres_dao.batch_upsert_art_line_list(conn, batch_list)
+                        inserted_count += result_arr.get('inserted', 0)
+                        updated_count += result_arr.get('updated', 0)
+                        skipped_count += result_arr.get('skipped', 0)
+                    upsert_progress.update(len(valid_batch_docs))
+                except Exception as e:
+                    logging.error(f"Error during upsert phase: {e}")
+                    error_count += 1
+                    doc_batch.clear()
+                    continue
+
+            if doc_batch:
+                try:
+                    valid_batch_docs, _ = _prefilter_stale_docs_before_conversion(
+                        doc_batch,
+                        conn,
+                        return_valid_docs=True,
+                        touchtime_cache=phase_2_touchtime_cache,
+                    )
+                    doc_batch.clear()
+                    if valid_batch_docs:
+                        batch_list = [convert_doc_to_record(valid_doc, cutoff_datetime) for valid_doc in valid_batch_docs]
+                        if batch_list:
+                            result_arr = postgres_dao.batch_upsert_art_line_list(conn, batch_list)
+                            inserted_count += result_arr.get('inserted', 0)
+                            updated_count += result_arr.get('updated', 0)
+                            skipped_count += result_arr.get('skipped', 0)
+                        upsert_progress.update(len(valid_batch_docs))
+                except Exception as e:
+                    logging.error(f"Error during final upsert batch: {e}")
+                    error_count += 1
     except Exception as e:
-        logging.error(f"Error processing batch: {e}. Batch details: {batch_list}")
+        logging.error(f"Critical error in upsert_art_line_list_data: {e}")
 
     finally:
         # ALWAYS close connections
@@ -172,6 +241,7 @@ def upsert_art_line_list_data(cutoff_datetime=None):
         total_skipped = skipped_count + prefilter_stale_count + prefilter_invalid_key_count
         print(f"\nETL Complete. Records Skipped: {total_skipped}. Records Inserted: {inserted_count}. Records Updated: {updated_count}")
         print(f"Prefiltered stale docs: {prefilter_stale_count}. Prefiltered invalid keys: {prefilter_invalid_key_count}. Upsert-level skips: {skipped_count}")
+        print(f"Valid docs passed to upsert phase: {valid_doc_count}")
         print(f"Total batch errors during processing: {error_count}")
 
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
@@ -368,19 +438,12 @@ def convert_doc_to_record(doc, cutoff_datetime):
 
 
 
-
-
-
 def export_eac_data(cutoff_datetime=None, filename=None):
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    #pepfarids=["RIV65721878","RIV65302342","RIV65300488","RIV57502335"]
-    #pepfarids=['RIV65302342','RIV65300488','RIV57502335']
     cursor = mongo_dao.get_art_containers(db, db_name)
     #size = mongo_dao.get_art_container_size(db, db_name)
     size=725000
-    #size=4
-    #cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime) if cutoff_datetime else None
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -586,7 +649,6 @@ def get_facility_by_datim(datim_code):
 
 # check if document belongs to a facility in ASPIRE states (FCT,Katsina,Nasarawa,Rivers) ignore casing and whitespace
 def is_aspire_state(doc):
-    aspire_states = ["FCT", "KATSINA", "NASARAWA", "RIVERS"]
     header = demographicsutils.get_message_header(doc)
     datim_code = header.get("facilityDatimCode")
    
@@ -598,7 +660,7 @@ def is_aspire_state(doc):
         return False
     if facility:
         state = facility.get("State", "").strip().upper()
-        return state in aspire_states
+        return state in ASPIRE_STATES
     return False
 
 

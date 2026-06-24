@@ -10,23 +10,18 @@ import dao.mongodbdao as mongo_dao
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
 import formslib.hivenrollmentutil as hivenrollmentutils
-import formslib.carecardutils as carecardutils
 import formslib.pharmacyutils as pharmacyutils
-import utils.encounterutils as encounterutils
-import formslib.labutils as labutils
-import formslib.eacutils as eacutils
-import utils.obsutils as obsutils
-import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 from dao import config
 from formslib.hivenrollmentutil import EDUCATION_LEVEL_CONCEPT_ID
+from utils import encounterutils
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
 
 
 
-def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
+def export_transit_line_list_data(cutoff_datetime=None, filename=None):
     """
     Main function to export CDR Line List data to CSV. Processes ART containers in batches and saves to CSV incrementally.
     target variables to extract:
@@ -35,8 +30,9 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
     """
     db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    cursor = mongo_dao.get_transfer_containers(db,db_name)
+    # size = mongo_dao.get_transfer_containers(db,db_name)
+    size = 700_000
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -44,54 +40,45 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
 
     # 1. Prepare the file path (create directory and name)
     full_path = prepare_filepath(filename)
-    
+
     # Track if it's the first batch so we can write the CSV header
     is_first_batch = True
-    
+
     #extracted_results = []
     for doc in tqdm(cursor, total=size, desc="CDR Line List ETL Progress"):
-            
 
-            if not is_aspire_state(doc):
-                continue  # Skip this record and move to the next one
 
-            header = demographicsutils.get_message_header(doc)
-            datim_code = header.get("facilityDatimCode")
-            demographics = demographicsutils.get_patient_demographics(doc)
-            birthdate = commonutils.validate_date(demographics.get("birthdate"))
-            facility_info = get_facility_by_datim(datim_code)
-            art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
-            educational_status = hivenrollmentutils.get_last_education_level_obs(doc, cutoff_datetime)
+        if not is_aspire_state(doc):
+            continue  # Skip this record and move to the next one
+
+        header = demographicsutils.get_message_header(doc)
+        datim_code = header.get("facilityDatimCode")
+        demographics = demographicsutils.get_patient_demographics(doc)
+        facility_info = get_facility_by_datim(datim_code)
 
 
 
-            record = {
-                "State": facility_info.get("State") if facility_info else None,
-                "LGA" : facility_info.get("LGA") if facility_info else None,
-                "DatimCode" : header.get("facilityDatimCode"),
-                "FacilityName": header.get("facilityName"),
-                "UniqueID": demographicsutils.get_patient_identifier(4, doc),
-                "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
-                "Sex": demographics.get("gender"),
-                "EducationalStatus": educational_status,
-                # "DOB": birthdate,
-                # "ArtStartDate": art_start_date,
-                # "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
-                # "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-                # "DaysOfARVRefill": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
-                # "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
-                # "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
-                # "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
-                # "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
 
-            }
-            batch_list.append(record)
+        record = {
+            "State": facility_info.get("State") if facility_info else None,
+            "LGA" : facility_info.get("LGA") if facility_info else None,
+            "DatimCode" : header.get("facilityDatimCode"),
+            "FacilityName": header.get("facilityName"),
+            "UniqueID": demographicsutils.get_patient_identifier(4, doc),
+            "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
+            "Sex": demographics.get("gender"),
+            "TransitId": demographicsutils.get_patient_identifier(100, doc),
+            "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
+            "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
 
-            if len(batch_list) >= BATCH_SIZE:
-                save_batch_to_csv(batch_list, full_path, is_first_batch)
-                batch_list = [] # Clear memory
-                is_first_batch = False # Next batches append without headers
+
+        }
+        batch_list.append(record)
+
+        if len(batch_list) >= BATCH_SIZE:
+            save_batch_to_csv(batch_list, full_path, is_first_batch)
+            batch_list = [] # Clear memory
+            is_first_batch = False # Next batches append without headers
 
 
     # 3. Save any remaining records (the last partial batch)
@@ -150,11 +137,11 @@ def is_aspire_state(doc):
     aspire_states = ["FCT", "KATSINA", "NASARAWA", "RIVERS"]
     header = demographicsutils.get_message_header(doc)
     datim_code = header.get("facilityDatimCode")
-   
+
     if not datim_code:
-        return False    
+        return False
     facility = get_facility_by_datim(datim_code)
-    
+
     if facility is None:
         return False
     if facility:
