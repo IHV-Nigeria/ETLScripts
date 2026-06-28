@@ -76,3 +76,105 @@
 2026-06-19 12:55:17,566 - INFO - ================================================================================
 2026-06-19 12:55:17,566 - INFO - STARTING SCHEDULER - Waiting for midnight...
 2026-06-19 12:55:17,567 - INFO - ================================================================================
+2026-06-25 23:59:59,847 - INFO - [RUN] Midnight reached! Running export job...
+2026-06-25 23:59:59,876 - INFO - ================================================================================
+2026-06-25 23:59:59,882 - INFO - SCHEDULED JOB STARTED at 2026-06-25 23:59:59.878829
+2026-06-25 23:59:59,884 - INFO - ================================================================================
+2026-06-25 23:59:59,933 - INFO - Starting EAC data export to PostgreSQL
+2026-06-25 23:59:59,934 - INFO - Cutoff datetime: 2026-06-25 23:59:59.933356
+2026-06-25 23:59:59,934 - INFO - Target table: eac_line_list
+2026-06-25 23:59:59,937 - INFO - Batch size: 5000
+2026-06-25 23:59:59,938 - INFO - Filter ASPIRE only: False
+2026-06-25 23:59:59,938 - INFO - Connecting to MongoDB...
+2026-06-26 00:00:00,095 - INFO - Loading facility cache...
+2026-06-26 00:00:00,177 - INFO - Connecting to PostgreSQL...
+2026-06-26 00:00:00,330 - INFO - Fetching EAC containers from MongoDB...
+2026-06-26 00:01:44,705 - INFO - Found 38117 total EAC containers
+2026-06-26 00:01:44,706 - INFO - Processing records...
+2026-06-26 00:02:40,085 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-26 00:02:42,786 - INFO - Batch 1 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:03:36,321 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-26 00:03:38,622 - INFO - Batch 2 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:04:36,553 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-26 00:04:38,717 - INFO - Batch 3 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:05:41,789 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-26 00:05:43,943 - INFO - Batch 4 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:07:54,404 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-06-26 00:07:56,503 - INFO - Batch 5 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:08:44,176 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-06-26 00:08:45,978 - INFO - Batch 6 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:09:34,986 - INFO - Upserting batch 7 (5000 records) to eac_line_list...
+2026-06-26 00:09:36,790 - INFO - Batch 7 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-26 00:09:43,345 - INFO - Upserting final batch (1049 records)
+2026-06-26 00:09:43,345 - INFO - Upserting batch 8 (1049 records) to eac_line_list...
+2026-06-26 00:09:43,685 - INFO - Batch 8 result: 0 inserted, 0 updated, 1049 skipped
+2026-06-26 00:09:43,685 - INFO - 
+======================================================================
+2026-06-26 00:09:43,685 - INFO - EAC EXPORT COMPLETED
+2026-06-26 00:09:43,686 - INFO - ======================================================================
+2026-06-26 00:09:43,686 - INFO - Total records processed: 36049
+2026-06-26 00:09:43,687 - INFO -   [OK] Inserted: 0
+2026-06-26 00:09:43,687 - INFO -   [OK] Updated: 0
+2026-06-26 00:09:43,688 - INFO -   [OK] Skipped: 36049
+2026-06-26 00:09:43,688 - INFO -   [ERROR] Errors: 0
+2026-06-26 00:09:43,688 - INFO - Success rate: 0.0%
+2026-06-26 00:09:43,689 - INFO - ======================================================================
+2026-06-26 00:09:43,691 - INFO - PostgreSQL connection closed
+2026-06-26 00:09:43,698 - INFO - Scheduled export completed in 583 seconds:
+2026-06-26 00:09:43,699 - INFO -   [OK] Inserted: 0
+2026-06-26 00:09:43,700 - INFO -   [OK] Updated: 0
+2026-06-26 00:09:43,700 - INFO -   [OK] Skipped: 36049
+2026-06-26 00:09:43,701 - INFO -   [ERROR] Errors: 0
+2026-06-26 00:09:43,701 - INFO - [OK] Job completed successfully in 583 seconds
+2026-06-26 00:09:43,701 - INFO - ================================================================================
+2026-06-27 00:00:00,020 - INFO - [RUN] Midnight reached! Running export job...
+2026-06-27 00:00:00,115 - INFO - ================================================================================
+2026-06-27 00:00:00,129 - INFO - SCHEDULED JOB STARTED at 2026-06-27 00:00:00.118346
+2026-06-27 00:00:00,142 - INFO - ================================================================================
+2026-06-27 00:00:00,174 - INFO - Starting EAC data export to PostgreSQL
+2026-06-27 00:00:00,175 - INFO - Cutoff datetime: 2026-06-27 00:00:00.174537
+2026-06-27 00:00:00,175 - INFO - Target table: eac_line_list
+2026-06-27 00:00:00,176 - INFO - Batch size: 5000
+2026-06-27 00:00:00,177 - INFO - Filter ASPIRE only: False
+2026-06-27 00:00:00,178 - INFO - Connecting to MongoDB...
+2026-06-27 00:00:00,264 - INFO - Loading facility cache...
+2026-06-27 00:00:00,388 - INFO - Connecting to PostgreSQL...
+2026-06-27 00:00:00,523 - INFO - Fetching EAC containers from MongoDB...
+2026-06-27 00:01:07,480 - INFO - Found 38117 total EAC containers
+2026-06-27 00:01:07,481 - INFO - Processing records...
+2026-06-27 00:02:29,345 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-27 00:02:31,994 - INFO - Batch 1 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:03:54,633 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-27 00:03:57,219 - INFO - Batch 2 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:05:19,589 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-27 00:05:22,041 - INFO - Batch 3 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:06:44,352 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-27 00:06:46,406 - INFO - Batch 4 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:09:58,299 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-06-27 00:10:00,527 - INFO - Batch 5 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:11:46,440 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-06-27 00:11:48,888 - INFO - Batch 6 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:13:44,058 - INFO - Upserting batch 7 (5000 records) to eac_line_list...
+2026-06-27 00:13:46,642 - INFO - Batch 7 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-27 00:14:01,263 - INFO - Upserting final batch (1049 records)
+2026-06-27 00:14:01,263 - INFO - Upserting batch 8 (1049 records) to eac_line_list...
+2026-06-27 00:14:01,745 - INFO - Batch 8 result: 0 inserted, 0 updated, 1049 skipped
+2026-06-27 00:14:01,746 - INFO - 
+======================================================================
+2026-06-27 00:14:01,746 - INFO - EAC EXPORT COMPLETED
+2026-06-27 00:14:01,747 - INFO - ======================================================================
+2026-06-27 00:14:01,747 - INFO - Total records processed: 36049
+2026-06-27 00:14:01,748 - INFO -   [OK] Inserted: 0
+2026-06-27 00:14:01,748 - INFO -   [OK] Updated: 0
+2026-06-27 00:14:01,748 - INFO -   [OK] Skipped: 36049
+2026-06-27 00:14:01,748 - INFO -   [ERROR] Errors: 0
+2026-06-27 00:14:01,748 - INFO - Success rate: 0.0%
+2026-06-27 00:14:01,749 - INFO - ======================================================================
+2026-06-27 00:14:01,751 - INFO - PostgreSQL connection closed
+2026-06-27 00:14:01,762 - INFO - Scheduled export completed in 841 seconds:
+2026-06-27 00:14:01,763 - INFO -   [OK] Inserted: 0
+2026-06-27 00:14:01,763 - INFO -   [OK] Updated: 0
+2026-06-27 00:14:01,763 - INFO -   [OK] Skipped: 36049
+2026-06-27 00:14:01,763 - INFO -   [ERROR] Errors: 0
+2026-06-27 00:14:01,764 - INFO - [OK] Job completed successfully in 841 seconds
+2026-06-27 00:14:01,765 - INFO - ================================================================================

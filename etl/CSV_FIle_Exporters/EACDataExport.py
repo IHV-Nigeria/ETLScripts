@@ -424,7 +424,7 @@ def convert_doc_to_record(doc, cutoff_datetime):
         "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
         "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
         "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-        "Quarter": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
+        "Quarter": commonutils.get_fy_and_quarter_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
         "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
         "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
         "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
@@ -574,7 +574,8 @@ def export_eac_data(cutoff_datetime=None, filename=None):
                 "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
                 "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
                 "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-                "Quarter": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
+                "Quarter": commonutils.get_fy_and_quarter_from_date(
+                    obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
                 "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
                 "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
                 "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
