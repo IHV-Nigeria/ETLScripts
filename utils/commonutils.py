@@ -52,9 +52,6 @@ def localize_date(utc_dt: Optional[datetime]) -> Optional[datetime]:
     return utc_dt.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Africa/Lagos")).replace(tzinfo=None)
 
 
-
-
-
 def validate_date(date_val: Optional[datetime]) -> None | date | datetime:
     """
     Validates clinical dates. If the date is a typo (e.g., year 2023702),
@@ -83,7 +80,7 @@ def validate_date(date_val: Optional[datetime]) -> None | date | datetime:
         return format_date(date_val)
 
 
-def get_fy_and_quater_from_date(input_date: datetime):
+def get_fy_and_quarter_from_date(input_date: datetime):
     if input_date is None:
         return None
 
@@ -109,11 +106,12 @@ def get_fy_and_quater_from_date(input_date: datetime):
 
     return f"FY{str(fy_year)[-2:]}Q{quarter}"
 
+
 def get_fy_and_quarter_of_obs_obsdatetime(obs):
     if obs is None:
         return None
     obs_datetime = obs.get("obsDatetime")
-    return get_fy_and_quater_from_date(obs_datetime)
+    return get_fy_and_quarter_from_date(obs_datetime)
 
 
 def normalize_clinical_date(date_val: Any) -> Optional[datetime]:
@@ -139,6 +137,7 @@ def normalize_clinical_date(date_val: Any) -> Optional[datetime]:
     except Exception:
         return None
 
+
 def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) -> int: 
     """
     Returns the number of days between datetime1 and datetime2.
@@ -155,6 +154,7 @@ def get_days_diff(datetime1: Optional[datetime], datetime2: Optional[datetime]) 
     delta = clean_dt2 - clean_dt1
 
     return delta.days
+
 
 def get_previous_quarter_end_date(input_date: datetime) -> datetime:
     """
@@ -179,7 +179,8 @@ def get_previous_quarter_end_date(input_date: datetime) -> datetime:
         return datetime(year, 6, 30)
     else: # month >=10 and month <=12
         return datetime(year, 9, 30)
-    
+
+
 def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
     """
     Returns the number of whole calendar months between datetime1 and datetime2.
@@ -187,20 +188,20 @@ def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
     if datetime1 is None or datetime2 is None:
         return 0
 
-    # STRIP TIMEZONES: Convert both to naive to prevent the comparison error
-    #if datetime1.tzinfo is not None:
-    #    datetime1 = datetime1.replace(tzinfo=None)
-    #if datetime2.tzinfo is not None:
-    #    datetime2 = datetime2.replace(tzinfo=None)
-    
     datetime1 = normalize_clinical_date(datetime1)
     datetime2 = normalize_clinical_date(datetime2)
+
+    # Handle cases where normalization fails
+    if datetime1 is None or datetime2 is None:
+        return 0
+
     if datetime1 > datetime2:
-        dt_start, dt_end = datetime2, datetime1
         sign = -1
     else:
-        dt_start, dt_end = datetime1, datetime2
         sign = 1
+
+    dt_start = datetime1 if datetime1 <= datetime2 else datetime2
+    dt_end = datetime2 if datetime1 <= datetime2 else datetime1
 
     months = (dt_end.year - dt_start.year) * 12 + (dt_end.month - dt_start.month)
 
@@ -208,7 +209,7 @@ def get_month_diff(datetime1: datetime, datetime2: datetime) -> int:
     if dt_end.day < dt_start.day:
         months -= 1
 
-    return months * sign
+    return abs(months * sign)
 
 def get_year_diff(datetime1: datetime, datetime2: datetime) -> int:
     """
@@ -229,7 +230,7 @@ def get_year_diff(datetime1: datetime, datetime2: datetime) -> int:
     if (datetime2.month, datetime2.day) < (datetime1.month, datetime1.day):
         years -= 1
 
-    return years * sign
+    return abs(years * sign)
 
 
     
