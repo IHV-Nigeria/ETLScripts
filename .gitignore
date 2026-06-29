@@ -15,3 +15,6 @@ __pycache__/
 # Large outputs
 Extractors/output/
 Extractors/etl_errors.log
+Extractors/File Exporters/output/
+*.xlsx
+*.csv

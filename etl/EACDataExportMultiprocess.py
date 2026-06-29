@@ -192,7 +192,8 @@ def process_document(doc, cutoff_datetime):
                 "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
                 "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
                 "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-                "Quater": commonutils.get_fy_and_quater_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
+                "Quater": commonutils.get_fy_and_quarter_from_date(
+                    obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
             }
     return record
 
