@@ -22,7 +22,7 @@ from dao.config import MONGO_DATABASE_NAME
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
-ASPIRE_STATES = {"NASARAWA", "RIVERS"}
+ASPIRE_STATES = ["Nasarawa", "Rivers"]
 
 
 
@@ -30,9 +30,9 @@ ASPIRE_STATES = {"NASARAWA", "RIVERS"}
 def export_data(cutoff_datetime=None, filename=None):
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db, db_name)
-    #size = mongo_dao.get_art_container_size(db, db_name)
-    size=725000
+    cursor, size = mongo_dao.get_containers_by_states(db=db, states_list=ASPIRE_STATES)
+    # size = mongo_dao.get_art_container_size(db, db_name)
+    # size=725000
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
