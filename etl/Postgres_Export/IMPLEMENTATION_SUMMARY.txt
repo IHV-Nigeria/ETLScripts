@@ -1,0 +1,445 @@
+"""
+═══════════════════════════════════════════════════════════════════════════
+  MODIFICATION COMPLETE: eacPgExport.py
+  Quarter-Based Upsert System Fully Integrated
+═══════════════════════════════════════════════════════════════════════════
+
+WHAT WAS ADDED:
+===============
+
+✅ Line 20: Import postgresquarterupsert module
+   from dao import postgresquarterupsert as postgres_upsert
+
+✅ Lines 217-376: Main export function
+   export_eac_data_to_postgresql()
+
+   Features:
+   ├─ Connects to MongoDB with facility cache
+   ├─ Processes records in batches (default: 5000)
+   ├─ Batch upsert with quarter-based logic
+   ├─ Comprehensive logging to file and console
+   ├─ Progress bar with TQDM
+   ├─ Detailed statistics (inserted, updated, skipped)
+   └─ Error handling and cleanup
+
+✅ Lines 379-412: Batch upsert helper
+   _upsert_batch()
+
+   Features:
+   ├─ Wraps batch_upsert_by_quarter()
+   ├─ Error handling
+   ├─ Batch number tracking
+   └─ Result logging
+
+✅ Lines 415-452: Main entry point
+   if __name__ == "__main__":
+
+   Features:
+   ├─ Can be run directly as a script
+   ├─ Imports and error handling
+   ├─ Keyboard interrupt support
+   └─ Exit codes for process monitoring
+
+
+QUICK START - 3 OPTIONS:
+========================
+
+Option 1: Run Directly (Easiest)
+────────────────────────────────
+cd "C:\Users\innoc\PycharmProjects\ETLScripts-main\etl\Postgres Export"
+python eacPgExport.py
+
+Result:
+  ✓ Exports all EAC data to PostgreSQL
+  ✓ Uses default settings
+  ✓ Logs to eac_pg_export.log
+
+Expected output:
+  ✓ Progress bar showing records processed
+  ✓ Batch statistics after each 5000 records
+  ✓ Final summary with totals
+
+
+Option 2: Import in Python Code
+────────────────────────────────
+from etl.Postgres_Export.eacPgExport import export_eac_data_to_postgresql
+from datetime import datetime
+
+result = export_eac_data_to_postgresql()
+
+# Or with custom parameters:
+result = export_eac_data_to_postgresql(
+    cutoff_datetime=datetime(2024, 1, 1),
+    table_name="eac_line_list",
+    batch_size=5000,
+    filter_aspire_only=False
+)
+
+print(f"Inserted: {result['inserted']}, Updated: {result['updated']}")
+
+
+Option 3: Schedule Automated Runs
+─────────────────────────────────
+Windows Task Scheduler:
+  Create scheduled task to run: python eacPgExport.py
+  Daily at 2 AM
+
+Python Schedule:
+  import schedule
+  schedule.every().day.at("02:00").do(export_eac_data_to_postgresql)
+
+
+HOW IT WORKS:
+=============
+
+Data Flow:
+  1. MongoDB ART Containers
+     ↓
+  2. convert_doc_to_record() → Transform to PostgreSQL record
+     ↓
+  3. Batch Collection (up to batch_size records)
+     ↓
+  4. _upsert_batch() → Call batch_upsert_by_quarter()
+     ↓
+  5. PostgreSQL Quarter-Based Upsert:
+     ├─ (PatientUUID, Quarter) exists?
+     │  ├─ NO → INSERT new record (+1 inserted)
+     │  └─ YES → touchtime newer?
+     │     ├─ YES → UPDATE record (+1 updated)
+     │     └─ NO → SKIP record (+1 skipped)
+     └─ Return statistics
+     ↓
+  6. Accumulate batch statistics
+     ↓
+  7. Log results to file and console
+     ↓
+  8. Return final statistics
+
+
+FUNCTION PARAMETERS:
+====================
+
+export_eac_data_to_postgresql(
+    cutoff_datetime=None,              # Datetime for data extraction
+    table_name="eac_line_list",   # PostgreSQL table name
+    batch_size=5000,                   # Records per batch
+    filter_aspire_only=False           # Filter ASPIRE states only
+)
+
+Returns:
+{
+    "total_processed": N,   # Total records processed
+    "inserted": N,          # New records inserted
+    "updated": N,           # Records updated
+    "skipped": N,           # Records skipped (DB newer)
+    "errors": N             # Records with errors
+}
+
+
+UPSERT LOGIC REFERENCE:
+=======================
+
+Composite Key: (PatientUUID, Quarter)
+
+For each record from MongoDB:
+
+1. Query PostgreSQL: SELECT * FROM eac_line_list
+   WHERE PatientUUID = ? AND Quarter = ?
+
+2. Record Not Found
+   └─ ACTION: INSERT new record
+      └─ Statistics: +1 inserted
+
+3. Record Found (same quarter)
+   └─ Compare: new.touchtime vs db.touchtime
+      ├─ new.touchtime > db.touchtime
+      │  └─ ACTION: UPDATE all fields
+      │     └─ Statistics: +1 updated
+      │
+      └─ new.touchtime <= db.touchtime
+         └─ ACTION: SKIP (don't modify)
+            └─ Statistics: +1 skipped
+
+4. Different Quarter
+   └─ ACTION: INSERT as new record
+      └─ Statistics: +1 inserted
+
+
+LOGGING OUTPUT:
+===============
+
+Log File: eac_pg_export.log (same directory as script)
+
+Sample Output:
+──────────────
+2026-06-19 11:30:45,123 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 11:30:45,234 - INFO - Cutoff datetime: 2026-06-19 11:30:45.123456
+2026-06-19 11:30:45,345 - INFO - Target table: eac_line_list
+2026-06-19 11:30:45,456 - INFO - Batch size: 5000
+2026-06-19 11:30:45,567 - INFO - Filter ASPIRE only: False
+2026-06-19 11:30:45,678 - INFO - Connecting to MongoDB...
+2026-06-19 11:30:46,789 - INFO - Loading facility cache...
+2026-06-19 11:30:46,890 - INFO - Loaded 500 facilities into memory cache.
+2026-06-19 11:30:46,901 - INFO - Connecting to PostgreSQL...
+2026-06-19 11:30:46,912 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 11:30:47,023 - INFO - Found 50000 total EAC containers
+2026-06-19 11:30:47,134 - INFO - Processing records...
+EAC Export Progress: [████████████████████████████] 50000/50000
+2026-06-19 11:35:50,123 - INFO - Upserting batch 1 (5000 records) to eac_quarterly_data...
+2026-06-19 11:35:52,234 - INFO - Batch 1 result: 3000 inserted, 1500 updated, 500 skipped
+...
+2026-06-19 11:40:30,123 - INFO - ======================================================================
+2026-06-19 11:40:30,234 - INFO - EAC EXPORT COMPLETED
+2026-06-19 11:40:30,345 - INFO - ======================================================================
+2026-06-19 11:40:30,456 - INFO - Total records processed: 50000
+2026-06-19 11:40:30,567 - INFO -   ✓ Inserted: 30000
+2026-06-19 11:40:30,678 - INFO -   ✓ Updated: 15000
+2026-06-19 11:40:30,789 - INFO -   ✓ Skipped: 5000
+2026-06-19 11:40:30,890 - INFO -   ✗ Errors: 0
+2026-06-19 11:40:30,901 - INFO - Success rate: 90.0%
+2026-06-19 11:40:31,023 - INFO - PostgreSQL connection closed
+
+
+PREREQUISITES BEFORE RUNNING:
+=============================
+
+✅ Verify PostgreSQL Connection
+   - Check dao/config.py has correct DB_HOST, DB_PORT, DB_USER, DB_PASS
+   - Test: python quickstart_demo.py (from project root)
+
+✅ Create Target Table
+   - Run SCHEMA_SETUP.sql to create eac_quarterly_data table
+   - Ensure UNIQUE(patientuuid, quarter) constraint exists
+   - Create recommended indexes
+
+✅ Verify MongoDB Connection
+   - Check dao/config.py MongoDB settings
+   - Verify mongodb is running and accessible
+
+✅ Field Mapping
+   - Script converts MongoDB fields to PostgreSQL columns
+   - Key fields: PatientUUID, Quarter, touchtime
+   - All optional fields preserved as NULL if unavailable
+
+
+DATABASE TABLE SETUP:
+====================
+
+Before first run, create PostgreSQL table:
+
+CREATE TABLE eac_quarterly_data (
+    recordid SERIAL PRIMARY KEY,
+    PatientUUID VARCHAR(100) NOT NULL,
+    Quarter VARCHAR(10) NOT NULL,
+    touchtime TIMESTAMP,
+    DatimCode VARCHAR(50),
+    FacilityName VARCHAR(255),
+    State VARCHAR(100),
+    LGA VARCHAR(100),
+    -- ... add all other fields from convert_doc_to_record() ...
+
+    UNIQUE(PatientUUID, Quarter)
+);
+
+CREATE INDEX idx_patientuuid_quarter
+ON eac_quarterly_data(PatientUUID, Quarter);
+
+CREATE INDEX idx_touchtime ON eac_quarterly_data(touchtime);
+CREATE INDEX idx_quarter ON eac_quarterly_data(Quarter);
+
+
+EXAMPLE USAGE SCENARIOS:
+========================
+
+Scenario 1: Full Export All States, Current Date
+───────────────────────────────────────────────
+from etl.Postgres_Export.eacPgExport import export_eac_data_to_postgresql
+
+result = export_eac_data_to_postgresql()
+# Processes all EAC data newest first
+
+
+Scenario 2: ASPIRE States Only
+──────────────────────────────
+result = export_eac_data_to_postgresql(filter_aspire_only=True)
+# Only: FCT, KATSINA, NASARAWA, RIVERS
+
+
+Scenario 3: Specific Quarter (Q1 2024)
+──────────────────────────────────────
+from datetime import datetime
+
+result = export_eac_data_to_postgresql(
+    cutoff_datetime=datetime(2024, 3, 31)
+)
+# All data up to and including Mar 31, 2024
+
+
+Scenario 4: Large Batch Processing
+──────────────────────────────────
+result = export_eac_data_to_postgresql(
+    batch_size=10000  # Larger batches = faster but uses more memory
+)
+
+Scenario 5: Test Export to Different Table
+───────────────────────────────────────────
+result = export_eac_data_to_postgresql(
+    table_name="eac_test_export"  # Won't affect production table
+)
+
+
+MONITORING THE EXPORT:
+======================
+
+Real-Time Log Monitoring (PowerShell):
+────────────────────────────────────
+Get-Content -Path "eac_pg_export.log" -Wait
+
+Check Results After Export:
+───────────────────────────
+SELECT COUNT(*) as total,
+       COUNT(DISTINCT PatientUUID) as unique_patients,
+       COUNT(DISTINCT Quarter) as unique_quarters
+FROM eac_quarterly_data;
+
+View Sample Data:
+─────────────────
+SELECT * FROM eac_quarterly_data LIMIT 10;
+
+Check Specific Patient:
+───────────────────────
+SELECT * FROM eac_quarterly_data
+WHERE PatientUUID = 'abc-123-def'
+ORDER BY Quarter DESC;
+
+
+TROUBLESHOOTING:
+================
+
+Issue: "ModuleNotFoundError: No module named 'postgresquarterupsert'"
+Fix:   Ensure dao/postgresquarterupsert.py exists
+       (It was created as part of the upsert system setup)
+
+Issue: "PostgreSQL connection failed"
+Fix:   1. Check dao/config.py credentials
+       2. Verify PostgreSQL is running
+       3. Try connecting manually with pgAdmin or psql client
+
+Issue: "UNIQUE constraint violation"
+Fix:   1. Ensure table has: ALTER TABLE eac_quarterly_data
+          ADD UNIQUE(PatientUUID, Quarter);
+       2. Remove duplicate entries if any
+       3. Field names must match exactly (case-sensitive!)
+
+Issue: "No records inserted (0 inserted, 0 updated, 0 skipped)"
+Fix:   1. Check MongoDB connection is working
+       2. Verify facility cache loads (should show "Loaded X facilities")
+       3. Check cutoff_datetime isn't filtering everything out
+       4. Verify PatientUUID and Quarter fields are populated
+
+Issue: Slow Performance
+Fix:   1. Create recommended indexes on (PatientUUID, Quarter)
+       2. Run: VACUUM ANALYZE eac_quarterly_data;
+       3. Increase batch_size to 10000
+       4. Check database server resources (CPU, memory, disk I/O)
+
+
+COMMON USAGE PATTERNS:
+======================
+
+Daily Automated Export:
+────────────────────
+# Create C:\\eac_export.bat
+@echo off
+cd C:\\Users\\innoc\\PycharmProjects\\ETLScripts-main\\etl\\Postgres Export
+python eacPgExport.py >> eac_export_%DATE:~-4,4%%DATE:~-10,2%%DATE:~-7,2%.log 2>&1
+
+# Schedule in Task Scheduler for 2 AM daily
+
+
+Weekly Export to Archive Table:
+──────────────────────────────
+from etl.Postgres_Export.eacPgExport import export_eac_data_to_postgresql
+
+result = export_eac_data_to_postgresql(
+    table_name="eac_weekly_archive"
+)
+
+
+Integration with Existing ETL:
+──────────────────────────────
+# In your main ETL orchestrator
+from etl.Postgres_Export.eacPgExport import export_eac_data_to_postgresql
+
+logger.info("Starting EAC export...")
+result = export_eac_data_to_postgresql()
+
+if result['errors'] > 0:
+    logger.warning(f"Export completed with {result['errors']} errors")
+    # Maybe send alert
+
+
+NEXT STEPS:
+===========
+
+1. ✓ Database Table
+   └─ Create eac_quarterly_data table using SCHEMA_SETUP.sql
+      or the CREATE TABLE statement above
+
+2. ✓ Test Local Run
+   └─ cd "C:\Users\innoc\PycharmProjects\ETLScripts-main\etl\Postgres Export"
+   └─ python eacPgExport.py
+   └─ Monitor: tail -f eac_pg_export.log (or Get-Content -Wait in PowerShell)
+
+3. ✓ Verify Results
+   └─ Check PostgreSQL table
+   └─ SELECT COUNT(*) FROM eac_quarterly_data;
+   └─ SELECT * FROM eac_quarterly_data LIMIT 5;
+
+4. ✓ Schedule Automated Runs
+   └─ Windows: Use Task Scheduler
+   └─ Linux/Mac: Use cron
+
+5. ✓ Set Up Monitoring
+   └─ Check logs daily
+   └─ Track statistics (inserted vs updated ratio)
+   └─ Alert on errors > 0
+
+
+DOCUMENTATION:
+===============
+
+For more information, see these files in your project:
+
+In etl/Postgres Export directory:
+  ✓ EAC_EXPORT_GUIDE.py - Comprehensive guide
+  ✓ EAC_QUICK_REFERENCE.py - Quick lookup (this file)
+  ✓ eacPgExport.py - Source code with inline comments
+
+In main project directory:
+  ✓ dao/postgresquarterupsert.py - Upsert module (API reference)
+  ✓ QUARTER_UPSERT_README.md - Complete API documentation
+  ✓ SCHEMA_SETUP.sql - Database schemas and indexes
+  ✓ INTEGRATION_GUIDE.py - Integration patterns
+  ✓ QUICK_REFERENCE.py - System-wide reference
+  ✓ examples_quarter_upsert.py - Working examples
+
+
+SUPPORT:
+========
+
+For issues, check:
+  1. eac_pg_export.log for error details
+  2. EAC_EXPORT_GUIDE.py (Troubleshooting section)
+  3. PostgreSQL logs for database errors
+  4. MongoDB logs for data extraction issues
+
+
+════════════════════════════════════════════════════════════════════════════
+                         ✓ Implementation Complete ✓
+                    Ready to run: python eacPgExport.py
+════════════════════════════════════════════════════════════════════════════
+"""
+
+print(__doc__)
+

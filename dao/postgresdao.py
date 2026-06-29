@@ -5,6 +5,11 @@ from psycopg2 import Error
 from psycopg2.extras import execute_values
 import logging
 
+
+def _normalize_record_keys(record):
+    """Return a copy of the record with lowercase keys."""
+    return {str(key).lower(): value for key, value in record.items()}
+
 def connect_to_postgresqldb():
     connection = None
     try:
@@ -40,17 +45,20 @@ def batch_upsert_art_line_list(conn, records_list):
     if not records_list:
         return {"inserted": 0, "updated": 0, "skipped": 0}
 
-    valid_records = [
-        r for r in records_list
-        if r.get('patientuuid') is not None and r.get('datimcode') is not None
-    ]
-    skipped_count = len(records_list) - len(valid_records)
+    normalized_records = []
+    for r in records_list:
+        normalized = _normalize_record_keys(r)
+        if normalized.get('patientuuid') is not None and normalized.get('datimcode') is not None:
+            normalized_records.append(normalized)
 
-    if not valid_records:
+    skipped_count = len(records_list) - len(normalized_records)
+
+    if not normalized_records:
         return {"inserted": 0, "updated": 0, "skipped": skipped_count}
 
-    columns = list(valid_records[0].keys())
-    update_columns = [col for col in columns if col not in ['recordid', 'patientuuid', 'datimcode']]
+    columns = list(normalized_records[0].keys())
+    protected_keys = {'recordid', 'patientuuid', 'datimcode'}
+    update_columns = [col for col in columns if col.lower() not in protected_keys]
     update_clause = ", ".join([f"{col} = EXCLUDED.{col}" for col in update_columns])
 
     # The RETURNING xmax clause allows us to see what the DB did
@@ -65,7 +73,7 @@ def batch_upsert_art_line_list(conn, records_list):
         RETURNING (xmax = 0) AS is_insert;
     """
 
-    values = [[r[col] for col in columns] for r in valid_records]
+    values = [[r[col] for col in columns] for r in normalized_records]
     
     ins_count = 0
     upd_count = 0
@@ -88,7 +96,7 @@ def batch_upsert_art_line_list(conn, records_list):
         print(f"Database Error: {e}")
         raise e
 
-    skipped_count += max(0, len(valid_records) - len(results))
+    skipped_count += max(0, len(normalized_records) - len(results))
     return {"inserted": ins_count, "updated": upd_count, "skipped": skipped_count}
 
 

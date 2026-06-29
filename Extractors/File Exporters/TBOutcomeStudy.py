@@ -1,11 +1,7 @@
-from datetime import datetime, date
+from datetime import datetime
 import etl.EACDataExport as EACDataExport
-import etl.EACDataExportMultiprocess as EACDataExportMultiprocess
 
-import etl.ViralLoadAndIITPattern as ViralLoadAndIITPattern
 import etl.TBOutcomeStudy as TBOutcomeStudy
-import etl.IITEpisodeExport as IITEpisodeExport
-
 
 start_time = datetime.now()
 print ("Start time: ", start_time )

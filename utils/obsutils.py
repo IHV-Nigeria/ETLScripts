@@ -754,6 +754,61 @@ def get_first_unsuppressed_viral_load_between_dates(doc, form_id, concept_id, st
     # Return the observation part of the first tuple
     return matching_obs[0][1]
 
+def get_first_suppressed_viral_load_between_dates(doc, form_id, concept_id, start_datetime, end_datetime, suppression_threshold):
+    obs_list = doc.get("messageData", {}).get("obs", [])
+    matching_obs = []
+
+    norm_start = commonutils.normalize_clinical_date(start_datetime)
+    norm_end = commonutils.normalize_clinical_date(end_datetime)
+
+    try:
+        threshold = float(suppression_threshold)
+    except (ValueError, TypeError):
+        return None
+
+    def _to_int(value):
+        try:
+            return int(float(value))
+        except (ValueError, TypeError):
+            return None
+
+    target_form_id = _to_int(form_id)
+    target_concept_id = _to_int(concept_id)
+
+    for obs in obs_list:
+        obs_form_id = _to_int(obs.get("formId"))
+        obs_concept_id = _to_int(obs.get("conceptId"))
+
+        if obs_form_id != target_form_id or obs_concept_id != target_concept_id:
+            continue
+
+        voided_val = obs.get("voided")
+        is_voided = str(voided_val).strip().lower() in {"1", "true", "t", "yes"}
+        if is_voided:
+            continue
+
+        obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+        if not isinstance(obs_dt, datetime) or norm_start is None or norm_end is None:
+            continue
+
+        try:
+            raw_val = obs.get("valueNumeric")
+            value_numeric = float(raw_val) if raw_val is not None else None
+        except (ValueError, TypeError):
+            value_numeric = None
+
+        if value_numeric is None:
+            continue
+
+        if norm_start <= obs_dt <= norm_end and value_numeric <= threshold:
+            matching_obs.append((obs_dt, obs))
+
+    if not matching_obs:
+        return None
+
+    matching_obs.sort(key=lambda x: x[0])
+    return matching_obs[0][1]
+
 def get_first_unsuppressed_viral_load_between_dates2(doc, form_id, concept_id, start_datetime, end_datetime, suppression_threshold):
     obs_list = doc.get("messageData", {}).get("obs", [])
     matching_obs = []
