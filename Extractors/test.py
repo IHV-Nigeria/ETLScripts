@@ -7,15 +7,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-<<<<<<< HEAD
-import etl.IITEpisodeExport as IITEpisodeExport
-
-
-=======
-import etl.EACDataExport as EACDataExport
 
 import etl.IITEpisodeExport as IITEpisodeExport
->>>>>>> 23c4b8430aabd81b8880da69926faf6ff2eb5ae5
 
 start_time = datetime.now()
 print ("Start time: ", start_time )
