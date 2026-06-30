@@ -11,16 +11,13 @@ import pandas as pd
 from tqdm import tqdm
 from datetime import datetime, date
 import os
-
 import dao.mongodbdao as mongo_dao
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
 import formslib.hivenrollmentutil as hivenrollmentutils
 import formslib.carecardutils as carecardutils
 import formslib.pharmacyutils as pharmacyutils
-import utils.encounterutils as encounterutils
 import formslib.labutils as labutils
-import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
@@ -37,11 +34,10 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
     national_hospital_datim_code = "meYf9FxUI4c"
     datim_codes = [asokoro_datim_code, national_hospital_datim_code]
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_containers_by_datim_list(db, datim_codes, db_name)
-    size = mongo_dao.get_container_by_datim_list_size(db, datim_codes, db_name)
+    cursor, size = mongo_dao.get_art_containers(db, db_name)
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
-    BATCH_SIZE = 1000
+    BATCH_SIZE = 5000
     batch_list = []
 
     # 1. Prepare the file path (create directory and name)
@@ -71,6 +67,9 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
             baseline_weight = carecardutils.get_first_weight_obs(doc,cutoff_datetime)
             baseline_weight_value = obsutils.getValueNumericFromObs(baseline_weight) if baseline_weight else None
             baseline_weight_date = obsutils.getObsDatetimeFromObs(baseline_weight) if baseline_weight else None
+            baseline_height_obs = carecardutils.get_first_height_obs(doc, cutoff_datetime)
+            baseline_height_value = obsutils.getValueNumericFromObs(baseline_height_obs) if baseline_height_obs else None
+            baseline_height_date = obsutils.getObsDatetimeFromObs(baseline_height_obs) if baseline_height_obs else None
             baseline_viral_load_obs = labutils.get_first_viral_load_obs(doc)
             baseline_viral_load_value = obsutils.getValueNumericFromObs(baseline_viral_load_obs) if baseline_viral_load_obs else None
             baseline_viral_load_date = obsutils.getObsDatetimeFromObs(baseline_viral_load_obs) if baseline_viral_load_obs else None
@@ -115,6 +114,9 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
             last_who_stage_obs = carecardutils.get_last_who_stage_obs(doc, cutoff_datetime)
             last_who_stage_value = obsutils.getVariableValueFromObs(last_who_stage_obs) if last_who_stage_obs else None
             last_who_stage_date = obsutils.getObsDatetimeFromObs(last_who_stage_obs) if last_who_stage_obs else None
+            cd4_obs = labutils.get_baseline_cd4_count_obs(doc, cutoff_datetime)
+            baseline_cd4 = obsutils.getValueNumericFromObs(cd4_obs) if cd4_obs else None
+            baseline_cd4_date = obsutils.getObsDatetimeFromObs(cd4_obs) if cd4_obs else None
 
             record = {
                 "touchtime": header.get("touchTime"),
@@ -135,10 +137,14 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
                 "ArtStartDate": art_start_date,
                 "BaselineWeight(Kg)": baseline_weight_value,
                 "BaselineWeightDate": baseline_weight_date,
+                "BaselineHeight": baseline_height_value,
+                "BaselineHeightDate": baseline_height_date,
                 "BaselineViralLoad": baseline_viral_load_value,
                 "BaselineViralLoadDate": baseline_viral_load_date,
                 "BaselineWHOStage": baseline_who_stage_value,
                 "BaselineWHOStageDate": baseline_who_stage_date,
+                "BaselineCD4Count": baseline_cd4,
+                "BaselineCD4Date": baseline_cd4_date,
                 "BaselineTBStatus": baseline_tb_status_value,
                 "BaselineTBStatusDate": baseline_tb_status_date,
                 "INHPickup1Date": inh_pickup1_date,
