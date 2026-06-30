@@ -38,6 +38,10 @@ def get_current_cd4_count_obs(doc, cutoff_datetime: Optional[datetime] = None):
     cd4_count_obs = obsutils.get_last_obs_before_date(doc, LAB_FORM_ID, CD4_COUNT_CONCEPT_ID, cutoff_datetime)
     return cd4_count_obs
 
+def get_baseline_cd4_count_obs(doc, cutoff_datetime: Optional[datetime] = None):
+    cd4_count_obs = obsutils.get_first_obs(doc, LAB_FORM_ID, CD4_COUNT_CONCEPT_ID, cutoff_datetime)
+    return cd4_count_obs
+
 def get_nth_viral_sample_collection_obs(doc, nth_viral_load_obs):
     if nth_viral_load_obs is None:
         return None
