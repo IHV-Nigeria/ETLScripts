@@ -88,6 +88,10 @@ def get_first_weight_obs(doc,cutoff_datetime: Optional[datetime] = None):
     weight_obs = get_first_obs(doc,CARE_CARD_FORM_ID, WEIGHT_KG_CONCEPT_ID)
     return weight_obs
 
+def get_first_height_obs(doc,cutoff_datetime: Optional[datetime] = None):
+    height_obs = get_first_obs(doc,CARE_CARD_FORM_ID, HEIGHT_CM_CONCEPT_ID)
+    return height_obs
+
 def get_current_pregnancy_status_obs(doc, cutoff_datetime: Optional[datetime] = None): 
     pregnancy_status_obs=obsutils.get_last_obs_before_date(doc,CARE_CARD_FORM_ID,PREGNANCY_STATUS_CONCEPT_ID,cutoff_datetime)
     return pregnancy_status_obs
