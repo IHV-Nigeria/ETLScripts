@@ -22,27 +22,26 @@ from dao.config import MONGO_DATABASE_NAME
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
-ASPIRE_STATES = ["Nasarawa", "Rivers"]
 
 
 
 
 def export_data(cutoff_datetime=None, filename=None):
     db_name=MONGO_DATABASE_NAME
+    TARGET_STATES = ["Nasarawa", "Rivers"]
     db = mongo_dao.get_db_connection(db_name)
-    cursor, size = mongo_dao.get_containers_by_states(db=db, states_list=ASPIRE_STATES)
+    cursor, size = mongo_dao.get_containers_by_states(db=db, states_list=TARGET_STATES)
     # size = mongo_dao.get_art_container_size(db, db_name)
     # size=725000
+
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
     batch_list = []
 
-    cutoff_datetime = None # commonutils.normalize_clinical_date(datetime(2024, 10, 1)) if cutoff_datetime else None
-
-    start_datetime = commonutils.normalize_clinical_date(datetime(2000, 10, 1))
-    end_datetime = commonutils.normalize_clinical_date(datetime.now())
+    start_datetime = commonutils.normalize_clinical_date(datetime(2010, 10, 1))
     # end_datetime = commonutils.normalize_clinical_date(datetime.now())
+    end_datetime = commonutils.normalize_clinical_date(datetime.now())
 
     # 1. Prepare the file path (create directory and name)
     full_path = prepare_filepath(filename)
@@ -112,7 +111,6 @@ def export_data(cutoff_datetime=None, filename=None):
             "CurrentRegimen": pharmacyutils.get_current_regimen(doc,cutoff_datetime),
             "BaselineViralLoad": baseline_vl,
             "BaselineViralLoadEncounterDate": baseline_vl_date,
-            # "BaselineViralLoadSampleDate": first_suppressed_viral_load_obs,
             "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
             "ViralLoadEncounterDate": obsutils.getObsDatetimeFromObs(current_viral_load_obs),
             "ViralLoadSampleDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, current_viral_load_obs)),
@@ -173,7 +171,7 @@ def prepare_filepath(filename=None):
         if not filename.endswith('.csv'):
             filename = f"{filename}_{timestamp}.csv"
     else:
-        filename = f"VLNasExport_{timestamp}.csv"
+        filename = f"NasVL_{timestamp}.csv"
 
     return os.path.join(output_dir, filename)
 
@@ -206,6 +204,7 @@ def get_facility_by_datim(datim_code):
 # check if document belongs to a facility in ASPIRE states (FCT,Katsina,Nasarawa,Rivers) ignore casing and whitespace
 def is_aspire_state(doc):
     header = demographicsutils.get_message_header(doc)
+    ASPIRE_STATES = {"FCT", "KATSINA", "NASARAWA", "RIVERS"}
     datim_code = header.get("facilityDatimCode")
 
     if not datim_code:
@@ -218,7 +217,4 @@ def is_aspire_state(doc):
         state = facility.get("State", "").strip().upper()
         return state in ASPIRE_STATES
     return False
-
-
-
 

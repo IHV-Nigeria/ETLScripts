@@ -10,7 +10,7 @@ def get_db_connection(db_name=config.MONGO_DATABASE_NAME):
 
 def get_art_container_size(db,db_name=config.MONGO_DATABASE_NAME):
     """Returns the count of ART containers in the database."""
-    if(db is None):
+    if db is None:
         db = get_db_connection(config.MONGO_DATABASE_NAME)
     query = {
     "messageData.patientIdentifiers": {
@@ -23,8 +23,8 @@ def get_art_container_size(db,db_name=config.MONGO_DATABASE_NAME):
     art_containers_count = db.container.count_documents(query)
     return art_containers_count
 
-def get_art_containers(db,db_name=config.MONGO_DATABASE_NAME):
-    if(db is None):
+def get_art_containers(db, db_name=config.MONGO_DATABASE_NAME):
+    if db is None:
         db = get_db_connection(config.MONGO_DATABASE_NAME)
     query = {
     "messageData.patientIdentifiers": {
