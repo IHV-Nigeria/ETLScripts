@@ -441,9 +441,9 @@ def convert_doc_to_record(doc, cutoff_datetime):
 def export_eac_data(cutoff_datetime=None, filename=None):
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db, db_name)
+    cursor, size = mongo_dao.get_art_containers(db, db_name)
     #size = mongo_dao.get_art_container_size(db, db_name)
-    size=725000
+    # size=725000
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -663,7 +663,4 @@ def is_aspire_state(doc):
         state = facility.get("State", "").strip().upper()
         return state in ASPIRE_STATES
     return False
-
-
-
 
