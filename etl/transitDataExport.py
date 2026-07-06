@@ -1,19 +1,11 @@
-#import mongo_utils as utils
-#import constants as constants
-from email import utils
 import pandas as pd
 from tqdm import tqdm
 from datetime import datetime, date
 import os
-
 import dao.mongodbdao as mongo_dao
 import utils.demographicutils as demographicsutils
-import formslib.artcommencementutil as artcommence
-import formslib.hivenrollmentutil as hivenrollmentutils
 import formslib.pharmacyutils as pharmacyutils
-import utils.commonutils as commonutils
 from dao import config
-from formslib.hivenrollmentutil import EDUCATION_LEVEL_CONCEPT_ID
 from utils import encounterutils
 
 # Global cache to store facilities for O(1) lookup speed

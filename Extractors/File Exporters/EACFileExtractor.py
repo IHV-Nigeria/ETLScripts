@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-import etl.EACDataExport as EACExporter
+import etl.CSV_FIle_Exporters.EACDataExport as EACExporter
 
 
 start_time = datetime.now()
