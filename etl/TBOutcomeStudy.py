@@ -48,8 +48,7 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
     
     #extracted_results = []
     for doc in tqdm(cursor, total=size, desc="TB Outcome Study ETL Progress"):
-            
-           
+
             if not is_aspire_state(doc):
                 continue  # Skip this record and move to the next one
 
@@ -59,11 +58,11 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
             birthdate = commonutils.validate_date(demographics.get("birthdate"))
             facility_info = get_facility_by_datim(datim_code)
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-            
-           
-            current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime) 
-            current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None 
-            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime) 
+
+
+            current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
+            current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None
+            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
             baseline_weight = carecardutils.get_first_weight_obs(doc,cutoff_datetime)
             baseline_weight_value = obsutils.getValueNumericFromObs(baseline_weight) if baseline_weight else None
             baseline_weight_date = obsutils.getObsDatetimeFromObs(baseline_weight) if baseline_weight else None
@@ -103,9 +102,9 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
             tb_status4_date = obsutils.getObsDatetimeFromObs(tb_status4_obs) if tb_status4_obs else None
             tb_status5_obs = carecardutils.get_last_nth_tb_status_obs_of_last_x_tb_statuses(doc, 5, 5, cutoff_datetime)
             tb_status5_value = obsutils.getVariableValueFromObs(tb_status5_obs) if tb_status5_obs else None
-            tb_status5_date = obsutils.getObsDatetimeFromObs(tb_status5_obs) if tb_status5_obs else None   
+            tb_status5_date = obsutils.getObsDatetimeFromObs(tb_status5_obs) if tb_status5_obs else None
             last_tb_diagnosed_obs = carecardutils.get_last_tb_diagnosed_obs(doc, cutoff_datetime)
-            last_tb_diagnosed_date = obsutils.getObsDatetimeFromObs(last_tb_diagnosed_obs) if last_tb_diagnosed_obs else None 
+            last_tb_diagnosed_date = obsutils.getObsDatetimeFromObs(last_tb_diagnosed_obs) if last_tb_diagnosed_obs else None
             last_inh_pickup_obs = pharmacyutils.get_last_isoniazid_prophylaxis_pickup_obs(doc, cutoff_datetime)
             last_inh_pickup_date = obsutils.getObsDatetimeFromObs(last_inh_pickup_obs) if last_inh_pickup_obs else None
             last_tb_status_obs = carecardutils.get_current_tb_status_obs(doc, cutoff_datetime)
@@ -153,15 +152,15 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
                 "INHPickup4Date": inh_pickup4_date,
                 "INHPickup5Date": inh_pickup5_date,
                 "TBStatus1": tb_status1_value,
-                "TBStatus1Date": tb_status1_date,   
+                "TBStatus1Date": tb_status1_date,
                 "TBStatus2": tb_status2_value,
-                "TBStatus2Date": tb_status2_date,   
+                "TBStatus2Date": tb_status2_date,
                 "TBStatus3": tb_status3_value,
-                "TBStatus3Date": tb_status3_date,   
+                "TBStatus3Date": tb_status3_date,
                 "TBStatus4": tb_status4_value,
-                "TBStatus4Date": tb_status4_date,   
+                "TBStatus4Date": tb_status4_date,
                 "TBStatus5": tb_status5_value,
-                "TBStatus5Date": tb_status5_date,   
+                "TBStatus5Date": tb_status5_date,
                 "SecondLineRegimenStartDate": pharmacyutils.get_min_second_line_regimen_date(doc,cutoff_datetime),
                 "ThirdLineRegimenStartDate": pharmacyutils.get_min_third_line_regimen_date(doc,cutoff_datetime),
                 "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
@@ -180,18 +179,12 @@ def export_tb_outcome_study_data(cutoff_datetime=None, filename=None ):
                 "CurrentWHOStageDate": last_who_stage_date,
                 "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
                 "CurrentViralLoadDate": current_viral_load_obsdatetime,
-                "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid")  
-                
-                
-                
-                
-                
-                
-               
-                
-                
-                
-                      
+                "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid")
+
+
+
+
+
             }
             batch_list.append(record)
 
