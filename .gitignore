@@ -18,3 +18,4 @@ Extractors/etl_errors.log
 Extractors/File Exporters/output/
 *.xlsx
 *.csv
+output/
