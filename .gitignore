@@ -19,3 +19,5 @@ Extractors/File Exporters/output/
 *.xlsx
 *.csv
 output/
+# ETL output files
+Extractors/File Exporters/output/*.csv
