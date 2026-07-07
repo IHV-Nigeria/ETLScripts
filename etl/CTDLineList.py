@@ -18,8 +18,7 @@ def export_ctd_line_list_data(cutoff_datetime=None):
 
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    cursor, size = mongo_dao.get_art_containers(db,db_name)
     conn=postgres_dao.connect_to_postgresqldb()
     if conn is None:
         print("Failed to connect to PostgreSQL. Data not saved.")

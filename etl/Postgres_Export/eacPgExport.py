@@ -285,8 +285,7 @@ def export_eac_data_to_postgresql(
 
         # Get cursor for EAC containers
         logger.info("Fetching EAC containers from MongoDB...")
-        cursor = mongo_dao.get_art_containers(mongo_db, MONGO_DATABASE_NAME)
-        total_size = mongo_dao.get_art_container_size(mongo_db, MONGO_DATABASE_NAME)
+        cursor, total_size = mongo_dao.get_art_containers(mongo_db, MONGO_DATABASE_NAME)
         
         logger.info(f"Found {total_size} total EAC containers")
         

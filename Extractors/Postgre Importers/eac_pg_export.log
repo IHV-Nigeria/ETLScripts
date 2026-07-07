@@ -1,0 +1,26 @@
+2026-06-19 12:25:05,522 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 12:25:05,522 - INFO - Cutoff datetime: 2026-06-19 12:25:05.522272
+2026-06-19 12:25:05,522 - INFO - Target table: eac_line_list
+2026-06-19 12:25:05,523 - INFO - Batch size: 5000
+2026-06-19 12:25:05,523 - INFO - Filter ASPIRE only: False
+2026-06-19 12:25:05,523 - INFO - Connecting to MongoDB...
+2026-06-19 12:25:05,531 - ERROR - Fatal error during export: Database objects do not implement truth value testing or bool(). Please compare with None instead: database is not None
+Traceback (most recent call last):
+  File "C:\Users\innoc\PycharmProjects\ETLScripts-main\etl\Postgres_Export\eacPgExport.py", line 253, in export_eac_data_to_postgresql
+    if not mongo_db:
+  File "C:\Users\innoc\PycharmProjects\ETLScripts-main\.venv\Lib\site-packages\pymongo\synchronous\database.py", line 342, in __bool__
+    raise NotImplementedError(
+NotImplementedError: Database objects do not implement truth value testing or bool(). Please compare with None instead: database is not None
+2026-06-19 12:29:06,214 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 12:29:06,214 - INFO - Cutoff datetime: 2026-06-19 12:29:06.214556
+2026-06-19 12:29:06,214 - INFO - Target table: eac_line_list
+2026-06-19 12:29:06,214 - INFO - Batch size: 5000
+2026-06-19 12:29:06,214 - INFO - Filter ASPIRE only: False
+2026-06-19 12:29:06,214 - INFO - Connecting to MongoDB...
+2026-06-19 12:29:06,221 - ERROR - Fatal error during export: Database objects do not implement truth value testing or bool(). Please compare with None instead: database is not None
+Traceback (most recent call last):
+  File "C:\Users\innoc\PycharmProjects\ETLScripts-main\etl\Postgres_Export\eacPgExport.py", line 253, in export_eac_data_to_postgresql
+    if not mongo_db:
+  File "C:\Users\innoc\PycharmProjects\ETLScripts-main\.venv\Lib\site-packages\pymongo\synchronous\database.py", line 342, in __bool__
+    raise NotImplementedError(
+NotImplementedError: Database objects do not implement truth value testing or bool(). Please compare with None instead: database is not None

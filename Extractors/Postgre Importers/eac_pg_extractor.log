@@ -1,0 +1,622 @@
+2026-06-19 12:37:19,141 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 12:37:19.141846
+2026-06-19 12:37:19,141 - INFO - ================================================================================
+2026-06-19 12:37:19,141 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 12:37:19,141 - INFO - ================================================================================
+2026-06-19 12:37:19,141 - INFO - Starting upsert process...
+2026-06-19 12:37:19,142 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 12:37:19,142 - INFO - Cutoff datetime: 2026-06-19 12:37:19.142803
+2026-06-19 12:37:19,142 - INFO - Target table: eac_line_list
+2026-06-19 12:37:19,143 - INFO - Batch size: 5000
+2026-06-19 12:37:19,144 - INFO - Filter ASPIRE only: False
+2026-06-19 12:37:19,144 - INFO - Connecting to MongoDB...
+2026-06-19 12:37:19,155 - ERROR - Fatal error during export: Database objects do not implement truth value testing or bool(). Please compare with None instead: database is not None
+Traceback (most recent call last):
+  File "C:\Users\innoc\PycharmProjects\ETLScripts-main\etl\Postgres_Export\eacPgExport.py", line 253, in export_eac_data_to_postgresql
+    if not mongo_db:
+  File "C:\Users\innoc\PycharmProjects\ETLScripts-main\.venv\Lib\site-packages\pymongo\synchronous\database.py", line 342, in __bool__
+    raise NotImplementedError(
+NotImplementedError: Database objects do not implement truth value testing or bool(). Please compare with None instead: database is not None
+2026-06-19 12:37:19,156 - INFO - Initial export completed:
+2026-06-19 12:37:19,161 - INFO - ================================================================================
+2026-06-19 12:37:19,161 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 12:37:19,161 - INFO - ================================================================================
+2026-06-19 12:43:08,364 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 12:43:08.364071
+2026-06-19 12:43:08,364 - INFO - ================================================================================
+2026-06-19 12:43:08,364 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 12:43:08,364 - INFO - ================================================================================
+2026-06-19 12:43:08,364 - INFO - Starting upsert process...
+2026-06-19 12:43:08,365 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 12:43:08,365 - INFO - Cutoff datetime: 2026-06-19 12:43:08.364071
+2026-06-19 12:43:08,365 - INFO - Target table: eac_quarterly_data
+2026-06-19 12:43:08,365 - INFO - Batch size: 5000
+2026-06-19 12:43:08,365 - INFO - Filter ASPIRE only: False
+2026-06-19 12:43:08,365 - INFO - Connecting to MongoDB...
+2026-06-19 12:43:08,369 - INFO - Loading facility cache...
+2026-06-19 12:43:08,406 - INFO - Connecting to PostgreSQL...
+2026-06-19 12:43:08,458 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 12:43:58,090 - INFO - Found 38117 total EAC containers
+2026-06-19 12:43:58,091 - INFO - Processing records...
+2026-06-19 12:44:32,460 - INFO - Upserting batch 1 (5000 records) to eac_quarterly_data...
+2026-06-19 12:44:32,596 - ERROR - Error processing batch: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+. Sample record: {'touchtime': datetime.datetime(2023, 8, 1, 23, 0), 'state': 'FCT', 'lga': 'Kwali', 'datimcode': 'cp7lzrnlXEV', 'facilityname': 'fc General Hospital Kwali', 'uniqueid': 'FCT11200367', 'hospitalnumber': '67189', 'sex': 'Female', 'ageatartstartyears': 23, 'ageatartstartmonths': None, 'currentageyears': 33, 'currentagemonths': None, 'dob': datetime.datetime(1992, 6, 23, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 128, 'datetransferredin': None, 'transferredinstatus': 'None', 'artstartdate': datetime.datetime(2015, 9, 28, 0, 0), 'lastpickupdate': datetime.datetime(2023, 3, 20, 0, 0), 'lastvisitdate': datetime.datetime(2023, 7, 28, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': None, 'facilitydispensingmodality': None, 'ddddispensingmodality': None, 'mmdtype': None, 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'currentviralload': 800.0, 'viralloadencounterdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadsampledate': None, 'viralloadindication': None, 'lastsampletakendate': datetime.datetime(2023, 7, 28, 0, 0), 'viralloadbefore1steac': 800.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadbefore1steacsamplecollectiondate': None, 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 16, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': None, 'currentpregnancystatusdatetime': None, 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '03af949699a77db40a041405acdddba9f96a', 'quarter': 'FY22Q4', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:44:32,597 - ERROR - Error upserting batch 1: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+
+2026-06-19 12:45:00,930 - INFO - Upserting batch 2 (5000 records) to eac_quarterly_data...
+2026-06-19 12:45:01,055 - ERROR - Error processing batch: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 7, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65704803', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A3/2288', 'sex': 'F', 'ageatartstartyears': 25, 'ageatartstartmonths': None, 'currentageyears': 32, 'currentagemonths': None, 'dob': datetime.datetime(1994, 1, 1, 0, 0), 'careentrypoint': None, 'monthsonart': 82, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2019, 7, 29, 0, 0), 'lastpickupdate': datetime.datetime(2023, 5, 5, 0, 0), 'lastvisitdate': datetime.datetime(2023, 5, 5, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 3, 27, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 5, 5, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '8cca3dd0-1083-445f-9180-6edc91e2fdc5', 'quarter': 'FY22Q2', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:45:01,056 - ERROR - Error upserting batch 2: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+
+2026-06-19 12:45:33,582 - INFO - Upserting batch 3 (5000 records) to eac_quarterly_data...
+2026-06-19 12:45:33,699 - ERROR - Error processing batch: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+. Sample record: {'touchtime': datetime.datetime(2023, 4, 26, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65706232', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A8/3706', 'sex': 'F', 'ageatartstartyears': 28, 'ageatartstartmonths': None, 'currentageyears': 36, 'currentagemonths': None, 'dob': datetime.datetime(1990, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 91, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2018, 10, 31, 0, 0), 'lastpickupdate': datetime.datetime(2023, 4, 3, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 3, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 4, 23, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 4, 3, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '2141defe-d019-4832-8e4d-020e807e1caa', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:45:33,700 - ERROR - Error upserting batch 3: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+
+2026-06-19 12:46:06,940 - INFO - Upserting batch 4 (5000 records) to eac_quarterly_data...
+2026-06-19 12:46:07,058 - ERROR - Error processing batch: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 30, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65711890', 'hospitalnumber': 'IHVN/RI/ONE/TG2/A8/9651', 'sex': 'F', 'ageatartstartyears': 37, 'ageatartstartmonths': None, 'currentageyears': 43, 'currentagemonths': None, 'dob': datetime.datetime(1983, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 68, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2020, 10, 7, 0, 0), 'lastpickupdate': datetime.datetime(2023, 1, 16, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 25, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 26, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 1, 16, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '6c430e66-7242-48ec-82ae-d3295e91c67d', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:46:07,059 - ERROR - Error upserting batch 4: relation "eac_quarterly_data" does not exist
+LINE 2:         INSERT INTO eac_quarterly_data (touchtime, state, lg...
+                            ^
+
+2026-06-19 12:46:37,135 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 12:46:37,137 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 12:46:37,137 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 12:46:37.137967
+2026-06-19 12:46:37,137 - INFO - ================================================================================
+2026-06-19 12:46:37,137 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 12:46:37,137 - INFO - ================================================================================
+2026-06-19 12:46:37,137 - INFO - Starting upsert process...
+2026-06-19 12:46:37,138 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 12:46:37,138 - INFO - Cutoff datetime: 2026-06-19 12:46:37.138968
+2026-06-19 12:46:37,138 - INFO - Target table: eac_line_list
+2026-06-19 12:46:37,138 - INFO - Batch size: 5000
+2026-06-19 12:46:37,138 - INFO - Filter ASPIRE only: False
+2026-06-19 12:46:37,138 - INFO - Connecting to MongoDB...
+2026-06-19 12:46:37,143 - INFO - Loading facility cache...
+2026-06-19 12:46:37,158 - INFO - Connecting to PostgreSQL...
+2026-06-19 12:46:37,205 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 12:46:51,705 - INFO - Found 38117 total EAC containers
+2026-06-19 12:46:51,705 - INFO - Processing records...
+2026-06-19 12:47:47,624 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-19 12:47:47,949 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 8, 1, 23, 0), 'state': 'FCT', 'lga': 'Kwali', 'datimcode': 'cp7lzrnlXEV', 'facilityname': 'fc General Hospital Kwali', 'uniqueid': 'FCT11200367', 'hospitalnumber': '67189', 'sex': 'Female', 'ageatartstartyears': 23, 'ageatartstartmonths': None, 'currentageyears': 33, 'currentagemonths': None, 'dob': datetime.datetime(1992, 6, 23, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 128, 'datetransferredin': None, 'transferredinstatus': 'None', 'artstartdate': datetime.datetime(2015, 9, 28, 0, 0), 'lastpickupdate': datetime.datetime(2023, 3, 20, 0, 0), 'lastvisitdate': datetime.datetime(2023, 7, 28, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': None, 'facilitydispensingmodality': None, 'ddddispensingmodality': None, 'mmdtype': None, 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'currentviralload': 800.0, 'viralloadencounterdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadsampledate': None, 'viralloadindication': None, 'lastsampletakendate': datetime.datetime(2023, 7, 28, 0, 0), 'viralloadbefore1steac': 800.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadbefore1steacsamplecollectiondate': None, 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 16, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': None, 'currentpregnancystatusdatetime': None, 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '03af949699a77db40a041405acdddba9f96a', 'quarter': 'FY22Q4', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:47:47,950 - ERROR - Error upserting batch 1: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:48:58,117 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-19 12:48:58,400 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 7, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65704803', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A3/2288', 'sex': 'F', 'ageatartstartyears': 25, 'ageatartstartmonths': None, 'currentageyears': 32, 'currentagemonths': None, 'dob': datetime.datetime(1994, 1, 1, 0, 0), 'careentrypoint': None, 'monthsonart': 82, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2019, 7, 29, 0, 0), 'lastpickupdate': datetime.datetime(2023, 5, 5, 0, 0), 'lastvisitdate': datetime.datetime(2023, 5, 5, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 3, 27, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 5, 5, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '8cca3dd0-1083-445f-9180-6edc91e2fdc5', 'quarter': 'FY22Q2', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:48:58,401 - ERROR - Error upserting batch 2: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:50:13,077 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-19 12:50:13,379 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 4, 26, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65706232', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A8/3706', 'sex': 'F', 'ageatartstartyears': 28, 'ageatartstartmonths': None, 'currentageyears': 36, 'currentagemonths': None, 'dob': datetime.datetime(1990, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 91, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2018, 10, 31, 0, 0), 'lastpickupdate': datetime.datetime(2023, 4, 3, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 3, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 4, 23, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 4, 3, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '2141defe-d019-4832-8e4d-020e807e1caa', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:50:13,380 - ERROR - Error upserting batch 3: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:51:29,328 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-19 12:51:29,613 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 30, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65711890', 'hospitalnumber': 'IHVN/RI/ONE/TG2/A8/9651', 'sex': 'F', 'ageatartstartyears': 37, 'ageatartstartmonths': None, 'currentageyears': 43, 'currentagemonths': None, 'dob': datetime.datetime(1983, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 68, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2020, 10, 7, 0, 0), 'lastpickupdate': datetime.datetime(2023, 1, 16, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 25, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 26, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 1, 16, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '6c430e66-7242-48ec-82ae-d3295e91c67d', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:51:29,614 - ERROR - Error upserting batch 4: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:54:22,617 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 12:54:22,619 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 12:54:22,619 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 12:54:22.619227
+2026-06-19 12:54:22,620 - INFO - ================================================================================
+2026-06-19 12:54:22,620 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 12:54:22,620 - INFO - ================================================================================
+2026-06-19 12:54:22,620 - INFO - Starting upsert process...
+2026-06-19 12:54:22,620 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 12:54:22,620 - INFO - Cutoff datetime: 2026-06-19 12:54:22.620226
+2026-06-19 12:54:22,620 - INFO - Target table: eac_line_list
+2026-06-19 12:54:22,620 - INFO - Batch size: 5000
+2026-06-19 12:54:22,620 - INFO - Filter ASPIRE only: False
+2026-06-19 12:54:22,620 - INFO - Connecting to MongoDB...
+2026-06-19 12:54:22,626 - INFO - Loading facility cache...
+2026-06-19 12:54:22,673 - INFO - Connecting to PostgreSQL...
+2026-06-19 12:54:22,720 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 12:54:39,297 - INFO - Found 38117 total EAC containers
+2026-06-19 12:54:39,298 - INFO - Processing records...
+2026-06-19 12:55:08,996 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-19 12:55:09,135 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 8, 1, 23, 0), 'state': 'FCT', 'lga': 'Kwali', 'datimcode': 'cp7lzrnlXEV', 'facilityname': 'fc General Hospital Kwali', 'uniqueid': 'FCT11200367', 'hospitalnumber': '67189', 'sex': 'Female', 'ageatartstartyears': 23, 'ageatartstartmonths': None, 'currentageyears': 33, 'currentagemonths': None, 'dob': datetime.datetime(1992, 6, 23, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 128, 'datetransferredin': None, 'transferredinstatus': 'None', 'artstartdate': datetime.datetime(2015, 9, 28, 0, 0), 'lastpickupdate': datetime.datetime(2023, 3, 20, 0, 0), 'lastvisitdate': datetime.datetime(2023, 7, 28, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': None, 'facilitydispensingmodality': None, 'ddddispensingmodality': None, 'mmdtype': None, 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'currentviralload': 800.0, 'viralloadencounterdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadsampledate': None, 'viralloadindication': None, 'lastsampletakendate': datetime.datetime(2023, 7, 28, 0, 0), 'viralloadbefore1steac': 800.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadbefore1steacsamplecollectiondate': None, 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 16, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': None, 'currentpregnancystatusdatetime': None, 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '03af949699a77db40a041405acdddba9f96a', 'quarter': 'FY22Q4', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:55:09,136 - ERROR - Error upserting batch 1: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:55:38,369 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-19 12:55:38,506 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 7, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65704803', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A3/2288', 'sex': 'F', 'ageatartstartyears': 25, 'ageatartstartmonths': None, 'currentageyears': 32, 'currentagemonths': None, 'dob': datetime.datetime(1994, 1, 1, 0, 0), 'careentrypoint': None, 'monthsonart': 82, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2019, 7, 29, 0, 0), 'lastpickupdate': datetime.datetime(2023, 5, 5, 0, 0), 'lastvisitdate': datetime.datetime(2023, 5, 5, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 3, 27, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 5, 5, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '8cca3dd0-1083-445f-9180-6edc91e2fdc5', 'quarter': 'FY22Q2', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:55:38,506 - ERROR - Error upserting batch 2: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:56:09,957 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-19 12:56:10,088 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 4, 26, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65706232', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A8/3706', 'sex': 'F', 'ageatartstartyears': 28, 'ageatartstartmonths': None, 'currentageyears': 36, 'currentagemonths': None, 'dob': datetime.datetime(1990, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 91, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2018, 10, 31, 0, 0), 'lastpickupdate': datetime.datetime(2023, 4, 3, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 3, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 4, 23, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 4, 3, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '2141defe-d019-4832-8e4d-020e807e1caa', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:56:10,089 - ERROR - Error upserting batch 3: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:56:43,462 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-19 12:56:43,589 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 30, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65711890', 'hospitalnumber': 'IHVN/RI/ONE/TG2/A8/9651', 'sex': 'F', 'ageatartstartyears': 37, 'ageatartstartmonths': None, 'currentageyears': 43, 'currentagemonths': None, 'dob': datetime.datetime(1983, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 68, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2020, 10, 7, 0, 0), 'lastpickupdate': datetime.datetime(2023, 1, 16, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 25, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 26, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 1, 16, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '6c430e66-7242-48ec-82ae-d3295e91c67d', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:56:43,589 - ERROR - Error upserting batch 4: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:58:02,497 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-06-19 12:58:02,624 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 7, 31, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65700132', 'hospitalnumber': 'HAI/RI/OBA/TG1/A7/159.', 'sex': 'M', 'ageatartstartyears': 44, 'ageatartstartmonths': None, 'currentageyears': 54, 'currentagemonths': None, 'dob': datetime.datetime(1972, 6, 5, 0, 0), 'careentrypoint': 'Outpatient department', 'monthsonart': 117, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2016, 9, 2, 0, 0), 'lastpickupdate': datetime.datetime(2023, 6, 14, 0, 0), 'lastvisitdate': datetime.datetime(2023, 6, 14, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 12, 11, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 10, 29, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 4, 18, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 2, 13, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 2, 13, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 4, 18, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 2, 13, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 4, 13, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2019, 1, 21, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': 'd223fba9-b668-4fa3-b1bc-a104b8c9d92f', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:58:02,625 - ERROR - Error upserting batch 5: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 12:58:54,589 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-06-19 12:58:54,877 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2024, 8, 23, 8, 24, 12), 'state': 'FCT', 'lga': 'Gwagwalada', 'datimcode': 'IEE3UZcwPu3', 'facilityname': 'fc Gwagwalada KP One Stop Shop', 'uniqueid': 'FCT31800444', 'hospitalnumber': '000444', 'sex': 'F', 'ageatartstartyears': 34, 'ageatartstartmonths': None, 'currentageyears': 41, 'currentagemonths': None, 'dob': datetime.datetime(1985, 5, 4, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 77, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2020, 1, 6, 0, 0), 'lastpickupdate': datetime.datetime(2024, 8, 21, 0, 0), 'lastvisitdate': datetime.datetime(2024, 8, 21, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Decentralized Drug Delivery (DDD)', 'facilitydispensingmodality': None, 'ddddispensingmodality': 'Community ART', 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2025, 2, 17, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2025, 2, 17, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2024, 8, 21, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 23, 1, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2024, 8, 21, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': 'd23ad20b-d635-481a-a054-bde20f7099a1', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 12:58:54,878 - ERROR - Error upserting batch 6: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:00:44,151 - INFO - Upserting batch 7 (5000 records) to eac_line_list...
+2026-06-19 13:00:44,397 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 10, 19, 10, 20, 16), 'state': 'Rivers', 'lga': 'Ogba/Egbema/Ndoni', 'datimcode': 'c8mPyHVf7sh', 'facilityname': 'Omoku General Hospital', 'uniqueid': 'RIV57304970', 'hospitalnumber': '000721/21', 'sex': 'F', 'ageatartstartyears': 45, 'ageatartstartmonths': None, 'currentageyears': 50, 'currentagemonths': None, 'dob': datetime.datetime(1975, 9, 7, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 63, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2021, 3, 13, 0, 0), 'lastpickupdate': datetime.datetime(2023, 10, 17, 0, 0), 'lastvisitdate': datetime.datetime(2023, 10, 17, 0, 0), 'daysofarvrefill': '120.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Decentralized Drug Delivery (DDD)', 'facilitydispensingmodality': None, 'ddddispensingmodality': 'Home Delivery', 'mmdtype': 'MMD 3 to 5', 'pharmacynextappointmentdate': datetime.datetime(2024, 2, 15, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2024, 2, 15, 0, 0), 'currentviralload': 29.0, 'viralloadencounterdate': datetime.datetime(2023, 10, 12, 9, 2, 40), 'viralloadsampledate': datetime.datetime(2023, 9, 22, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 9, 22, 0, 0), 'viralloadbefore1steac': 29.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 10, 12, 9, 2, 40), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 9, 22, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 10, 7, 1, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 10, 17, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '086b103c-ab35-42e1-93e7-be0d9beaf3ac', 'quarter': 'FY23Q1', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:00:44,398 - ERROR - Error upserting batch 7: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:00:59,516 - INFO - Upserting final batch (1049 records)
+2026-06-19 13:00:59,517 - INFO - Upserting batch 8 (1049 records) to eac_line_list...
+2026-06-19 13:00:59,581 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 11, 23, 8, 24, 2), 'state': 'Rivers', 'lga': 'Ogba/Egbema/Ndoni', 'datimcode': 'c8mPyHVf7sh', 'facilityname': 'Omoku General Hospital', 'uniqueid': 'RIV57300792', 'hospitalnumber': '0002164', 'sex': 'F', 'ageatartstartyears': 19, 'ageatartstartmonths': None, 'currentageyears': 28, 'currentagemonths': None, 'dob': datetime.datetime(1997, 12, 15, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 110, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2017, 3, 29, 0, 0), 'lastpickupdate': datetime.datetime(2023, 11, 17, 0, 0), 'lastvisitdate': datetime.datetime(2023, 11, 17, 0, 0), 'daysofarvrefill': '120.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Decentralized Drug Delivery (DDD)', 'facilitydispensingmodality': None, 'ddddispensingmodality': 'Home Delivery', 'mmdtype': 'MMD 3 to 5', 'pharmacynextappointmentdate': datetime.datetime(2024, 3, 15, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2024, 3, 15, 0, 0), 'currentviralload': 29.0, 'viralloadencounterdate': datetime.datetime(2023, 11, 23, 9, 24, 2), 'viralloadsampledate': datetime.datetime(2023, 11, 7, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 11, 7, 0, 0), 'viralloadbefore1steac': 29.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 11, 23, 9, 24, 2), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 11, 7, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 11, 19, 1, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 11, 17, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '97fb42c3-ccb4-4d70-9493-c91a26aca7ba', 'quarter': 'FY23Q1', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:00:59,582 - ERROR - Error upserting batch 8: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:00:59,587 - INFO - 
+======================================================================
+2026-06-19 13:00:59,588 - INFO - EAC EXPORT COMPLETED
+2026-06-19 13:00:59,588 - INFO - ======================================================================
+2026-06-19 13:00:59,588 - INFO - Total records processed: 0
+2026-06-19 13:00:59,588 - INFO -   [OK] Inserted: 0
+2026-06-19 13:00:59,588 - INFO -   [OK] Updated: 0
+2026-06-19 13:00:59,588 - INFO -   [OK] Skipped: 0
+2026-06-19 13:00:59,588 - INFO -   [ERROR] Errors: 36049
+2026-06-19 13:00:59,589 - INFO - ======================================================================
+2026-06-19 13:00:59,589 - INFO - PostgreSQL connection closed
+2026-06-19 13:00:59,602 - INFO - Initial export completed:
+2026-06-19 13:00:59,602 - INFO -   [OK] Inserted: 0
+2026-06-19 13:00:59,603 - INFO -   [OK] Updated: 0
+2026-06-19 13:00:59,603 - INFO -   [OK] Skipped: 0
+2026-06-19 13:00:59,603 - INFO -   [ERROR] Errors: 36049
+2026-06-19 13:00:59,603 - INFO - ================================================================================
+2026-06-19 13:00:59,603 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 13:00:59,603 - INFO - ================================================================================
+2026-06-19 13:14:55,966 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 13:14:55,974 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 13:14:55,974 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 13:14:55.974285
+2026-06-19 13:14:55,974 - INFO - ================================================================================
+2026-06-19 13:14:55,974 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 13:14:55,974 - INFO - ================================================================================
+2026-06-19 13:14:55,974 - INFO - Starting upsert process...
+2026-06-19 13:14:55,975 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 13:14:55,975 - INFO - Cutoff datetime: 2026-06-19 13:14:55.975283
+2026-06-19 13:14:55,975 - INFO - Target table: eac_line_list
+2026-06-19 13:14:55,975 - INFO - Batch size: 5000
+2026-06-19 13:14:55,975 - INFO - Filter ASPIRE only: False
+2026-06-19 13:14:55,975 - INFO - Connecting to MongoDB...
+2026-06-19 13:14:55,981 - INFO - Loading facility cache...
+2026-06-19 13:14:56,024 - INFO - Connecting to PostgreSQL...
+2026-06-19 13:14:56,085 - ERROR - Upsert preflight failed for table eac_line_list: operator does not exist: name[] = text[]
+LINE 16:               ) = ARRAY['patientuuid', 'quarter']
+                         ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+2026-06-19 13:14:56,085 - INFO - Initial export completed:
+2026-06-19 13:14:56,085 - INFO -   [OK] Inserted: 0
+2026-06-19 13:14:56,085 - INFO -   [OK] Updated: 0
+2026-06-19 13:14:56,085 - INFO -   [OK] Skipped: 0
+2026-06-19 13:14:56,085 - INFO -   [ERROR] Errors: 1
+2026-06-19 13:14:56,085 - INFO - ================================================================================
+2026-06-19 13:14:56,085 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 13:14:56,085 - INFO - ================================================================================
+2026-06-19 13:16:15,910 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 13:16:15,913 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 13:16:15,913 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 13:16:15.913901
+2026-06-19 13:16:15,913 - INFO - ================================================================================
+2026-06-19 13:16:15,913 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 13:16:15,913 - INFO - ================================================================================
+2026-06-19 13:16:15,913 - INFO - Starting upsert process...
+2026-06-19 13:16:15,914 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 13:16:15,914 - INFO - Cutoff datetime: 2026-06-19 13:16:15.914845
+2026-06-19 13:16:15,914 - INFO - Target table: eac_line_list
+2026-06-19 13:16:15,914 - INFO - Batch size: 5000
+2026-06-19 13:16:15,914 - INFO - Filter ASPIRE only: False
+2026-06-19 13:16:15,914 - INFO - Connecting to MongoDB...
+2026-06-19 13:16:15,921 - INFO - Loading facility cache...
+2026-06-19 13:16:15,952 - INFO - Connecting to PostgreSQL...
+2026-06-19 13:16:16,019 - ERROR - Upsert preflight failed for table eac_line_list: operator does not exist: name[] = text[]
+LINE 16:               ) = ARRAY['patientuuid', 'quarter']
+                         ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+2026-06-19 13:16:16,019 - INFO - Initial export completed:
+2026-06-19 13:16:16,019 - INFO -   [OK] Inserted: 0
+2026-06-19 13:16:16,019 - INFO -   [OK] Updated: 0
+2026-06-19 13:16:16,019 - INFO -   [OK] Skipped: 0
+2026-06-19 13:16:16,019 - INFO -   [ERROR] Errors: 1
+2026-06-19 13:16:16,019 - INFO - ================================================================================
+2026-06-19 13:16:16,019 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 13:16:16,019 - INFO - ================================================================================
+2026-06-19 13:19:40,507 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 13:19:40,508 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 13:19:40,508 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 13:19:40.508356
+2026-06-19 13:19:40,508 - INFO - ================================================================================
+2026-06-19 13:19:40,508 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 13:19:40,508 - INFO - ================================================================================
+2026-06-19 13:19:40,508 - INFO - Starting upsert process...
+2026-06-19 13:19:40,509 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 13:19:40,509 - INFO - Cutoff datetime: 2026-06-19 13:19:40.509356
+2026-06-19 13:19:40,509 - INFO - Target table: eac_line_list
+2026-06-19 13:19:40,509 - INFO - Batch size: 5000
+2026-06-19 13:19:40,509 - INFO - Filter ASPIRE only: False
+2026-06-19 13:19:40,509 - INFO - Connecting to MongoDB...
+2026-06-19 13:19:40,513 - INFO - Loading facility cache...
+2026-06-19 13:19:40,543 - INFO - Connecting to PostgreSQL...
+2026-06-19 13:19:40,579 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 13:20:27,034 - INFO - Found 38117 total EAC containers
+2026-06-19 13:20:27,034 - INFO - Processing records...
+2026-06-19 13:21:02,502 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-19 13:21:02,646 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 8, 1, 23, 0), 'state': 'FCT', 'lga': 'Kwali', 'datimcode': 'cp7lzrnlXEV', 'facilityname': 'fc General Hospital Kwali', 'uniqueid': 'FCT11200367', 'hospitalnumber': '67189', 'sex': 'Female', 'ageatartstartyears': 23, 'ageatartstartmonths': None, 'currentageyears': 33, 'currentagemonths': None, 'dob': datetime.datetime(1992, 6, 23, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 128, 'datetransferredin': None, 'transferredinstatus': 'None', 'artstartdate': datetime.datetime(2015, 9, 28, 0, 0), 'lastpickupdate': datetime.datetime(2023, 3, 20, 0, 0), 'lastvisitdate': datetime.datetime(2023, 7, 28, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': None, 'facilitydispensingmodality': None, 'ddddispensingmodality': None, 'mmdtype': None, 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 16, 0, 0), 'currentviralload': 800.0, 'viralloadencounterdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadsampledate': None, 'viralloadindication': None, 'lastsampletakendate': datetime.datetime(2023, 7, 28, 0, 0), 'viralloadbefore1steac': 800.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 7, 26, 0, 0), 'viralloadbefore1steacsamplecollectiondate': None, 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 16, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': None, 'currentpregnancystatusdatetime': None, 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '03af949699a77db40a041405acdddba9f96a', 'quarter': 'FY22Q4', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:21:02,646 - ERROR - Error upserting batch 1: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:21:30,236 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-19 13:21:30,338 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 7, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65704803', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A3/2288', 'sex': 'F', 'ageatartstartyears': 25, 'ageatartstartmonths': None, 'currentageyears': 32, 'currentagemonths': None, 'dob': datetime.datetime(1994, 1, 1, 0, 0), 'careentrypoint': None, 'monthsonart': 82, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2019, 7, 29, 0, 0), 'lastpickupdate': datetime.datetime(2023, 5, 5, 0, 0), 'lastvisitdate': datetime.datetime(2023, 5, 5, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 11, 1, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 3, 29, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 1, 26, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 3, 27, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 5, 5, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '8cca3dd0-1083-445f-9180-6edc91e2fdc5', 'quarter': 'FY22Q2', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:21:30,338 - ERROR - Error upserting batch 2: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:22:01,402 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-19 13:22:01,532 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 4, 26, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65706232', 'hospitalnumber': 'IHVN/RI/OBA/TG2/A8/3706', 'sex': 'F', 'ageatartstartyears': 28, 'ageatartstartmonths': None, 'currentageyears': 36, 'currentagemonths': None, 'dob': datetime.datetime(1990, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 91, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2018, 10, 31, 0, 0), 'lastpickupdate': datetime.datetime(2023, 4, 3, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 3, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 9, 30, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 4, 27, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 2, 17, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 4, 23, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 4, 3, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '2141defe-d019-4832-8e4d-020e807e1caa', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:22:01,533 - ERROR - Error upserting batch 3: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:22:34,174 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-19 13:22:34,278 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 5, 30, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65711890', 'hospitalnumber': 'IHVN/RI/ONE/TG2/A8/9651', 'sex': 'F', 'ageatartstartyears': 37, 'ageatartstartmonths': None, 'currentageyears': 43, 'currentagemonths': None, 'dob': datetime.datetime(1983, 1, 1, 0, 0), 'careentrypoint': 'Outreach program', 'monthsonart': 68, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2020, 10, 7, 0, 0), 'lastpickupdate': datetime.datetime(2023, 1, 16, 0, 0), 'lastvisitdate': datetime.datetime(2023, 4, 25, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 7, 15, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 5, 31, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 4, 25, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 26, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2023, 1, 16, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': '6c430e66-7242-48ec-82ae-d3295e91c67d', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:22:34,278 - ERROR - Error upserting batch 4: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:24:01,836 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-06-19 13:24:01,946 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2023, 7, 31, 23, 0), 'state': 'Rivers', 'lga': 'Obio/Akpor', 'datimcode': 'KFbRZKvXpb3', 'facilityname': 'KPIF Obio-Akpor KP OSS', 'uniqueid': 'RIV65700132', 'hospitalnumber': 'HAI/RI/OBA/TG1/A7/159.', 'sex': 'M', 'ageatartstartyears': 44, 'ageatartstartmonths': None, 'currentageyears': 54, 'currentagemonths': None, 'dob': datetime.datetime(1972, 6, 5, 0, 0), 'careentrypoint': 'Outpatient department', 'monthsonart': 117, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2016, 9, 2, 0, 0), 'lastpickupdate': datetime.datetime(2023, 6, 14, 0, 0), 'lastvisitdate': datetime.datetime(2023, 6, 14, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Facility Dispensing', 'facilitydispensingmodality': 'Not Differentiated', 'ddddispensingmodality': None, 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2023, 12, 11, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2023, 10, 29, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 4, 18, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 2, 13, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2023, 2, 13, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 4, 18, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 2, 13, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 4, 13, 0, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2019, 1, 21, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': 'd223fba9-b668-4fa3-b1bc-a104b8c9d92f', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:24:01,946 - ERROR - Error upserting batch 5: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:24:42,754 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-06-19 13:24:42,879 - ERROR - Error processing batch: there is no unique or exclusion constraint matching the ON CONFLICT specification
+. Sample record: {'touchtime': datetime.datetime(2024, 8, 23, 8, 24, 12), 'state': 'FCT', 'lga': 'Gwagwalada', 'datimcode': 'IEE3UZcwPu3', 'facilityname': 'fc Gwagwalada KP One Stop Shop', 'uniqueid': 'FCT31800444', 'hospitalnumber': '000444', 'sex': 'F', 'ageatartstartyears': 34, 'ageatartstartmonths': None, 'currentageyears': 41, 'currentagemonths': None, 'dob': datetime.datetime(1985, 5, 4, 0, 0), 'careentrypoint': 'Voluntary counseling and testing program', 'monthsonart': 77, 'datetransferredin': None, 'transferredinstatus': None, 'artstartdate': datetime.datetime(2020, 1, 6, 0, 0), 'lastpickupdate': datetime.datetime(2024, 8, 21, 0, 0), 'lastvisitdate': datetime.datetime(2024, 8, 21, 0, 0), 'daysofarvrefill': '180.0', 'pillbalance': None, 'patientoutcome': None, 'patientoutcomedate': None, 'currentartstatus': 'InActive', 'dispensingmodality': 'Decentralized Drug Delivery (DDD)', 'facilitydispensingmodality': None, 'ddddispensingmodality': 'Community ART', 'mmdtype': 'MMD greater than or equal to 6', 'pharmacynextappointmentdate': datetime.datetime(2025, 2, 17, 0, 0), 'clinicalnextappointmentdate': datetime.datetime(2025, 2, 17, 0, 0), 'currentviralload': 19.0, 'viralloadencounterdate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadsampledate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadindication': 'Normal priority (status)', 'lastsampletakendate': datetime.datetime(2024, 8, 21, 0, 0), 'viralloadbefore1steac': 19.0, 'viralloadbefore1steacdate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadbefore1steacsamplecollectiondate': datetime.datetime(2023, 5, 10, 0, 0), 'viralloadbefore1steacreporteddate': datetime.datetime(2023, 5, 23, 1, 0), 'eac1date': None, 'eac2date': None, 'eac3date': None, 'eac4date': None, 'eac5date': None, 'eac6date': None, 'eac7date': None, 'eac8date': None, 'viralload1': None, 'viralload1reporteddate': None, 'viralload1samplecollectiondate': None, 'viralload2': None, 'viralload2reporteddate': None, 'viralload2samplecollectiondate': None, 'viralload3': None, 'viralload3reporteddate': None, 'viralload3samplecollectiondate': None, 'currentregimenline': 'Adult 1st line ARV regimen', 'currentregimen': 'TDF-3TC-DTG', 'secondlineregimenstartdate': None, 'thirdlineregimenstartdate': None, 'currentpregnancystatus': 'Not Pregnant', 'currentpregnancystatusdatetime': datetime.datetime(2024, 8, 21, 0, 0), 'edd': None, 'lasteacsessiontype': None, 'lasteacsessiondate': None, 'lasteacbarrierstoadherence': None, 'lasteacregimenplan': None, 'lasteacfollowupdate': None, 'lasteacadherencecomments': None, 'lasteacreferral': None, 'lastreferralswitchcommitteedate': None, 'patientuuid': 'd23ad20b-d635-481a-a054-bde20f7099a1', 'quarter': 'FY22Q3', 'firstunsuppressedviralload': None, 'firstunsuppressedviralloaddate': None, 'viralloadafterlasteac': None, 'viralloadafterlasteacdate': None, 'regimenaftereac': None, 'regimenaftereacdate': None}
+2026-06-19 13:24:42,879 - ERROR - Error upserting batch 6: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+2026-06-19 13:24:48,608 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 13:24:48,610 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 13:24:48,611 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 13:24:48.610543
+2026-06-19 13:24:48,611 - INFO - ================================================================================
+2026-06-19 13:24:48,611 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 13:24:48,611 - INFO - ================================================================================
+2026-06-19 13:24:48,611 - INFO - Starting upsert process...
+2026-06-19 13:24:48,611 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 13:24:48,611 - INFO - Cutoff datetime: 2026-06-19 13:24:48.611487
+2026-06-19 13:24:48,611 - INFO - Target table: eac_line_list
+2026-06-19 13:24:48,611 - INFO - Batch size: 5000
+2026-06-19 13:24:48,612 - INFO - Filter ASPIRE only: False
+2026-06-19 13:24:48,612 - INFO - Connecting to MongoDB...
+2026-06-19 13:24:48,618 - INFO - Loading facility cache...
+2026-06-19 13:24:48,662 - INFO - Connecting to PostgreSQL...
+2026-06-19 13:24:48,717 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-06-19 13:24:48,728 - ERROR - [PREFLIGHT FAILED] operator does not exist: name[] = text[]
+LINE 16:               ) = ARRAY['patientuuid', 'quarter']
+                         ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+2026-06-19 13:24:48,728 - ERROR - Upsert preflight failed for table eac_line_list: operator does not exist: name[] = text[]
+LINE 16:               ) = ARRAY['patientuuid', 'quarter']
+                         ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+
+2026-06-19 13:24:48,729 - INFO - Initial export completed:
+2026-06-19 13:24:48,729 - INFO -   [OK] Inserted: 0
+2026-06-19 13:24:48,729 - INFO -   [OK] Updated: 0
+2026-06-19 13:24:48,729 - INFO -   [OK] Skipped: 0
+2026-06-19 13:24:48,729 - INFO -   [ERROR] Errors: 1
+2026-06-19 13:24:48,729 - INFO - ================================================================================
+2026-06-19 13:24:48,730 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 13:24:48,730 - INFO - ================================================================================
+2026-06-19 13:25:56,790 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 13:25:56,792 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 13:25:56,792 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 13:25:56.792474
+2026-06-19 13:25:56,792 - INFO - ================================================================================
+2026-06-19 13:25:56,792 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 13:25:56,792 - INFO - ================================================================================
+2026-06-19 13:25:56,792 - INFO - Starting upsert process...
+2026-06-19 13:25:56,793 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 13:25:56,793 - INFO - Cutoff datetime: 2026-06-19 13:25:56.793480
+2026-06-19 13:25:56,793 - INFO - Target table: eac_line_list
+2026-06-19 13:25:56,793 - INFO - Batch size: 5000
+2026-06-19 13:25:56,793 - INFO - Filter ASPIRE only: False
+2026-06-19 13:25:56,793 - INFO - Connecting to MongoDB...
+2026-06-19 13:25:56,799 - INFO - Loading facility cache...
+2026-06-19 13:25:56,843 - INFO - Connecting to PostgreSQL...
+2026-06-19 13:25:56,892 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-06-19 13:25:56,978 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-06-19 13:25:56,978 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 13:26:23,466 - INFO - Found 38117 total EAC containers
+2026-06-19 13:26:23,466 - INFO - Processing records...
+2026-06-19 13:26:53,563 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-19 13:26:55,714 - INFO - Batch 1 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:27:24,665 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-19 13:27:26,724 - INFO - Batch 2 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:27:58,798 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-19 13:28:00,906 - INFO - Batch 3 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:28:33,052 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-19 13:28:35,300 - INFO - Batch 4 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:30:25,977 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-06-19 13:30:28,683 - INFO - Batch 5 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:31:37,018 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-06-19 13:31:39,627 - INFO - Batch 6 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:32:32,382 - INFO - Upserting batch 7 (5000 records) to eac_line_list...
+2026-06-19 13:32:34,699 - INFO - Batch 7 result: 5000 inserted, 0 updated, 0 skipped
+2026-06-19 13:32:47,917 - INFO - Upserting final batch (1049 records)
+2026-06-19 13:32:47,917 - INFO - Upserting batch 8 (1049 records) to eac_line_list...
+2026-06-19 13:32:48,279 - INFO - Batch 8 result: 1049 inserted, 0 updated, 0 skipped
+2026-06-19 13:32:48,279 - INFO - 
+======================================================================
+2026-06-19 13:32:48,280 - INFO - EAC EXPORT COMPLETED
+2026-06-19 13:32:48,280 - INFO - ======================================================================
+2026-06-19 13:32:48,280 - INFO - Total records processed: 36049
+2026-06-19 13:32:48,280 - INFO -   [OK] Inserted: 36049
+2026-06-19 13:32:48,280 - INFO -   [OK] Updated: 0
+2026-06-19 13:32:48,280 - INFO -   [OK] Skipped: 0
+2026-06-19 13:32:48,281 - INFO -   [ERROR] Errors: 0
+2026-06-19 13:32:48,281 - INFO - Success rate: 100.0%
+2026-06-19 13:32:48,281 - INFO - ======================================================================
+2026-06-19 13:32:48,281 - INFO - PostgreSQL connection closed
+2026-06-19 13:32:48,291 - INFO - Initial export completed:
+2026-06-19 13:32:48,291 - INFO -   [OK] Inserted: 36049
+2026-06-19 13:32:48,292 - INFO -   [OK] Updated: 0
+2026-06-19 13:32:48,292 - INFO -   [OK] Skipped: 0
+2026-06-19 13:32:48,292 - INFO -   [ERROR] Errors: 0
+2026-06-19 13:32:48,292 - INFO - ================================================================================
+2026-06-19 13:32:48,292 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 13:32:48,292 - INFO - ================================================================================
+2026-06-19 13:33:03,037 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-06-19 13:33:03,038 - INFO - [OK] Successfully imported job scheduler
+2026-06-19 13:33:03,039 - INFO - EAC PostgreSQL Extractor started at: 2026-06-19 13:33:03.039275
+2026-06-19 13:33:03,039 - INFO - ================================================================================
+2026-06-19 13:33:03,039 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-06-19 13:33:03,039 - INFO - ================================================================================
+2026-06-19 13:33:03,039 - INFO - Starting upsert process...
+2026-06-19 13:33:03,039 - INFO - Starting EAC data export to PostgreSQL
+2026-06-19 13:33:03,039 - INFO - Cutoff datetime: 2026-06-19 13:33:03.039275
+2026-06-19 13:33:03,039 - INFO - Target table: eac_line_list
+2026-06-19 13:33:03,039 - INFO - Batch size: 5000
+2026-06-19 13:33:03,040 - INFO - Filter ASPIRE only: False
+2026-06-19 13:33:03,040 - INFO - Connecting to MongoDB...
+2026-06-19 13:33:03,046 - INFO - Loading facility cache...
+2026-06-19 13:33:03,086 - INFO - Connecting to PostgreSQL...
+2026-06-19 13:33:03,167 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-06-19 13:33:03,177 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-06-19 13:33:03,177 - INFO - Fetching EAC containers from MongoDB...
+2026-06-19 13:33:26,085 - INFO - Found 38117 total EAC containers
+2026-06-19 13:33:26,085 - INFO - Processing records...
+2026-06-19 13:34:29,574 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-06-19 13:34:31,913 - INFO - Batch 1 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:35:21,756 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-06-19 13:35:23,731 - INFO - Batch 2 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:35:57,471 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-06-19 13:35:59,375 - INFO - Batch 3 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:36:50,036 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-06-19 13:36:52,422 - INFO - Batch 4 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:40:00,532 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-06-19 13:40:02,947 - INFO - Batch 5 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:41:39,352 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-06-19 13:41:41,552 - INFO - Batch 6 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:43:27,198 - INFO - Upserting batch 7 (5000 records) to eac_line_list...
+2026-06-19 13:43:29,617 - INFO - Batch 7 result: 0 inserted, 0 updated, 5000 skipped
+2026-06-19 13:43:45,985 - INFO - Upserting final batch (1049 records)
+2026-06-19 13:43:45,986 - INFO - Upserting batch 8 (1049 records) to eac_line_list...
+2026-06-19 13:43:46,456 - INFO - Batch 8 result: 0 inserted, 0 updated, 1049 skipped
+2026-06-19 13:43:46,457 - INFO - 
+======================================================================
+2026-06-19 13:43:46,457 - INFO - EAC EXPORT COMPLETED
+2026-06-19 13:43:46,457 - INFO - ======================================================================
+2026-06-19 13:43:46,457 - INFO - Total records processed: 36049
+2026-06-19 13:43:46,457 - INFO -   [OK] Inserted: 0
+2026-06-19 13:43:46,458 - INFO -   [OK] Updated: 0
+2026-06-19 13:43:46,458 - INFO -   [OK] Skipped: 36049
+2026-06-19 13:43:46,458 - INFO -   [ERROR] Errors: 0
+2026-06-19 13:43:46,458 - INFO - Success rate: 0.0%
+2026-06-19 13:43:46,458 - INFO - ======================================================================
+2026-06-19 13:43:46,459 - INFO - PostgreSQL connection closed
+2026-06-19 13:43:46,472 - INFO - Initial export completed:
+2026-06-19 13:43:46,472 - INFO -   [OK] Inserted: 0
+2026-06-19 13:43:46,472 - INFO -   [OK] Updated: 0
+2026-06-19 13:43:46,472 - INFO -   [OK] Skipped: 36049
+2026-06-19 13:43:46,473 - INFO -   [ERROR] Errors: 0
+2026-06-19 13:43:46,473 - INFO - ================================================================================
+2026-06-19 13:43:46,473 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-06-19 13:43:46,473 - INFO - ================================================================================
+2026-07-07 11:25:44,522 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:25:44,525 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:25:44,525 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:25:44.525113
+2026-07-07 11:25:44,525 - INFO - ================================================================================
+2026-07-07 11:25:44,525 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:25:44,525 - INFO - ================================================================================
+2026-07-07 11:25:44,525 - INFO - Starting upsert process...
+2026-07-07 11:25:44,526 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:25:44,526 - INFO - Cutoff datetime: 2026-07-07 11:25:44.525113
+2026-07-07 11:25:44,526 - INFO - Target table: eac_line_list
+2026-07-07 11:25:44,526 - INFO - Batch size: 5000
+2026-07-07 11:25:44,526 - INFO - Filter ASPIRE only: False
+2026-07-07 11:25:44,526 - INFO - Connecting to MongoDB...
+2026-07-07 11:25:44,533 - INFO - Loading facility cache...
+2026-07-07 11:25:44,647 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:25:44,750 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:25:44,784 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:25:44,784 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:27:22,441 - INFO - Found 38117 total EAC containers
+2026-07-07 11:27:22,442 - INFO - Processing records...
+2026-07-07 11:27:22,485 - ERROR - Error processing document: 'Cursor' object has no attribute 'get'
+2026-07-07 11:27:22,485 - ERROR - Error processing document: 'int' object has no attribute 'get'
+2026-07-07 11:27:22,485 - INFO - 
+======================================================================
+2026-07-07 11:27:22,485 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:27:22,485 - INFO - ======================================================================
+2026-07-07 11:27:22,486 - INFO - Total records processed: 0
+2026-07-07 11:27:22,486 - INFO -   [OK] Inserted: 0
+2026-07-07 11:27:22,486 - INFO -   [OK] Updated: 0
+2026-07-07 11:27:22,486 - INFO -   [OK] Skipped: 0
+2026-07-07 11:27:22,486 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:27:22,486 - INFO - ======================================================================
+2026-07-07 11:27:22,486 - INFO - PostgreSQL connection closed
+2026-07-07 11:27:22,486 - INFO - Initial export completed:
+2026-07-07 11:27:22,487 - INFO -   [OK] Inserted: 0
+2026-07-07 11:27:22,487 - INFO -   [OK] Updated: 0
+2026-07-07 11:27:22,487 - INFO -   [OK] Skipped: 0
+2026-07-07 11:27:22,487 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:27:22,487 - INFO - ================================================================================
+2026-07-07 11:27:22,487 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:27:22,487 - INFO - ================================================================================
+2026-07-07 11:38:05,294 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:38:05,297 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:38:05,297 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:38:05.297358
+2026-07-07 11:38:05,297 - INFO - ================================================================================
+2026-07-07 11:38:05,297 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:38:05,298 - INFO - ================================================================================
+2026-07-07 11:38:05,298 - INFO - Starting upsert process...
+2026-07-07 11:38:05,298 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:38:05,298 - INFO - Cutoff datetime: 2026-07-07 11:38:05.298361
+2026-07-07 11:38:05,299 - INFO - Target table: eac_line_list
+2026-07-07 11:38:05,299 - INFO - Batch size: 5000
+2026-07-07 11:38:05,299 - INFO - Filter ASPIRE only: False
+2026-07-07 11:38:05,299 - INFO - Connecting to MongoDB...
+2026-07-07 11:38:05,312 - INFO - Loading facility cache...
+2026-07-07 11:38:05,363 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:38:05,411 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:38:05,420 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:38:05,420 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:38:57,970 - INFO - Found 38117 total EAC containers
+2026-07-07 11:38:57,970 - INFO - Processing records...
+2026-07-07 11:38:57,998 - ERROR - Error processing document: 'Cursor' object has no attribute 'get'
+2026-07-07 11:38:57,999 - ERROR - Error processing document: 'int' object has no attribute 'get'
+2026-07-07 11:38:57,999 - INFO - 
+======================================================================
+2026-07-07 11:38:57,999 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:38:57,999 - INFO - ======================================================================
+2026-07-07 11:38:57,999 - INFO - Total records processed: 0
+2026-07-07 11:38:58,000 - INFO -   [OK] Inserted: 0
+2026-07-07 11:38:58,000 - INFO -   [OK] Updated: 0
+2026-07-07 11:38:58,000 - INFO -   [OK] Skipped: 0
+2026-07-07 11:38:58,000 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:38:58,000 - INFO - ======================================================================
+2026-07-07 11:38:58,000 - INFO - PostgreSQL connection closed
+2026-07-07 11:38:58,000 - INFO - Initial export completed:
+2026-07-07 11:38:58,002 - INFO -   [OK] Inserted: 0
+2026-07-07 11:38:58,002 - INFO -   [OK] Updated: 0
+2026-07-07 11:38:58,002 - INFO -   [OK] Skipped: 0
+2026-07-07 11:38:58,002 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:38:58,002 - INFO - ================================================================================
+2026-07-07 11:38:58,002 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:38:58,002 - INFO - ================================================================================
+2026-07-07 11:43:44,263 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:43:44,265 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:43:44,265 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:43:44.265957
+2026-07-07 11:43:44,265 - INFO - ================================================================================
+2026-07-07 11:43:44,266 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:43:44,266 - INFO - ================================================================================
+2026-07-07 11:43:44,266 - INFO - Starting upsert process...
+2026-07-07 11:43:44,266 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:43:44,266 - INFO - Cutoff datetime: 2026-07-07 11:43:44.266958
+2026-07-07 11:43:44,267 - INFO - Target table: eac_line_list
+2026-07-07 11:43:44,267 - INFO - Batch size: 5000
+2026-07-07 11:43:44,267 - INFO - Filter ASPIRE only: False
+2026-07-07 11:43:44,267 - INFO - Connecting to MongoDB...
+2026-07-07 11:43:44,276 - INFO - Loading facility cache...
+2026-07-07 11:43:44,319 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:43:44,371 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:43:44,381 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:43:44,381 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:44:25,734 - INFO - Found 38117 total EAC containers
+2026-07-07 11:44:25,735 - INFO - Processing records...
+2026-07-07 11:44:25,760 - ERROR - Error processing document: 'Cursor' object has no attribute 'get'
+2026-07-07 11:44:25,760 - ERROR - Error processing document: 'int' object has no attribute 'get'
+2026-07-07 11:44:25,760 - INFO - 
+======================================================================
+2026-07-07 11:44:25,760 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:44:25,760 - INFO - ======================================================================
+2026-07-07 11:44:25,760 - INFO - Total records processed: 0
+2026-07-07 11:44:25,760 - INFO -   [OK] Inserted: 0
+2026-07-07 11:44:25,760 - INFO -   [OK] Updated: 0
+2026-07-07 11:44:25,760 - INFO -   [OK] Skipped: 0
+2026-07-07 11:44:25,760 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:44:25,760 - INFO - ======================================================================
+2026-07-07 11:44:25,762 - INFO - PostgreSQL connection closed
+2026-07-07 11:44:25,763 - INFO - Initial export completed:
+2026-07-07 11:44:25,763 - INFO -   [OK] Inserted: 0
+2026-07-07 11:44:25,763 - INFO -   [OK] Updated: 0
+2026-07-07 11:44:25,763 - INFO -   [OK] Skipped: 0
+2026-07-07 11:44:25,763 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:44:25,764 - INFO - ================================================================================
+2026-07-07 11:44:25,764 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:44:25,764 - INFO - ================================================================================
+2026-07-07 11:53:42,437 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:53:42,439 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:53:42,439 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:53:42.439729
+2026-07-07 11:53:42,439 - INFO - ================================================================================
+2026-07-07 11:53:42,439 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:53:42,439 - INFO - ================================================================================
+2026-07-07 11:53:42,439 - INFO - Starting upsert process...
+2026-07-07 11:53:42,439 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:53:42,439 - INFO - Cutoff datetime: 2026-07-07 11:53:42.439729
+2026-07-07 11:53:42,439 - INFO - Target table: eac_line_list
+2026-07-07 11:53:42,439 - INFO - Batch size: 5000
+2026-07-07 11:53:42,441 - INFO - Filter ASPIRE only: False
+2026-07-07 11:53:42,441 - INFO - Connecting to MongoDB...
+2026-07-07 11:53:42,447 - INFO - Loading facility cache...
+2026-07-07 11:53:42,486 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:53:42,575 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:53:42,605 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:53:42,605 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:54:25,349 - INFO - Found 38117 total EAC containers
+2026-07-07 11:54:25,349 - INFO - Processing records...
+2026-07-07 11:54:59,637 - INFO - Upserting batch 1 (5000 records) to eac_line_list...
+2026-07-07 11:55:01,851 - INFO - Batch 1 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:55:32,430 - INFO - Upserting batch 2 (5000 records) to eac_line_list...
+2026-07-07 11:55:34,233 - INFO - Batch 2 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:56:08,624 - INFO - Upserting batch 3 (5000 records) to eac_line_list...
+2026-07-07 11:56:10,407 - INFO - Batch 3 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:56:44,578 - INFO - Upserting batch 4 (5000 records) to eac_line_list...
+2026-07-07 11:56:46,345 - INFO - Batch 4 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:58:09,777 - INFO - Upserting batch 5 (5000 records) to eac_line_list...
+2026-07-07 11:58:11,747 - INFO - Batch 5 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:58:59,334 - INFO - Upserting batch 6 (5000 records) to eac_line_list...
+2026-07-07 11:59:01,239 - INFO - Batch 6 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:59:47,980 - INFO - Upserting batch 7 (5000 records) to eac_line_list...
+2026-07-07 11:59:49,929 - INFO - Batch 7 result: 0 inserted, 0 updated, 5000 skipped
+2026-07-07 11:59:56,735 - INFO - Upserting final batch (1049 records)
+2026-07-07 11:59:56,735 - INFO - Upserting batch 8 (1049 records) to eac_line_list...
+2026-07-07 11:59:57,062 - INFO - Batch 8 result: 0 inserted, 0 updated, 1049 skipped
+2026-07-07 11:59:57,063 - INFO - 
+======================================================================
+2026-07-07 11:59:57,063 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:59:57,063 - INFO - ======================================================================
+2026-07-07 11:59:57,063 - INFO - Total records processed: 36049
+2026-07-07 11:59:57,063 - INFO -   [OK] Inserted: 0
+2026-07-07 11:59:57,063 - INFO -   [OK] Updated: 0
+2026-07-07 11:59:57,063 - INFO -   [OK] Skipped: 36049
+2026-07-07 11:59:57,063 - INFO -   [ERROR] Errors: 0
+2026-07-07 11:59:57,063 - INFO - Success rate: 0.0%
+2026-07-07 11:59:57,063 - INFO - ======================================================================
+2026-07-07 11:59:57,063 - INFO - PostgreSQL connection closed
+2026-07-07 11:59:57,071 - INFO - Initial export completed:
+2026-07-07 11:59:57,071 - INFO -   [OK] Inserted: 0
+2026-07-07 11:59:57,071 - INFO -   [OK] Updated: 0
+2026-07-07 11:59:57,071 - INFO -   [OK] Skipped: 36049
+2026-07-07 11:59:57,071 - INFO -   [ERROR] Errors: 0
+2026-07-07 11:59:57,072 - INFO - ================================================================================
+2026-07-07 11:59:57,072 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:59:57,072 - INFO - ================================================================================

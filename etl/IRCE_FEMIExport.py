@@ -34,9 +34,8 @@ def export_request_data(cutoff_datetime=None, filename=None):
     db = mongo_dao.get_db_connection(db_name)
     #pepfarids=["RIV65721878","RIV65302342","RIV65300488","RIV57502335"]
     #pepfarids=['RIV65302342','RIV65300488','RIV57502335']
-    cursor = mongo_dao.get_art_containers(db, db_name)
-    #size = mongo_dao.get_art_container_size(db, db_name)
-    size=725000
+    cursor, size = mongo_dao.get_art_containers(db, db_name)
+    #size=725000
     #size=4
     #cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime) if cutoff_datetime else None
     print(f"Processing {size} ART containers...")
