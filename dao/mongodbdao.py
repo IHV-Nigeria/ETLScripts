@@ -22,11 +22,7 @@ def get_art_container_size(db,db_name=config.MONGO_DATABASE_NAME):
     art_containers_count = db.container.count_documents(query)
     return art_containers_count
 
-<<<<<<< HEAD
-def get_art_containers(db,db_name=config.MONGO_DATABASE_NAME):
-=======
 def get_art_containers(db, db_name=config.MONGO_DATABASE_NAME):
->>>>>>> e2742709331445a815483d242c009dea0a6a62f2
     if db is None:
         db = get_db_connection(config.MONGO_DATABASE_NAME)
     query = {
