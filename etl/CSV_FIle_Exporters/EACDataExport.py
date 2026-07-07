@@ -150,7 +150,7 @@ def upsert_art_line_list_data(cutoff_datetime=None):
 
     try:
         # Phase 1: count valid/stale/invalid docs without holding valid docs in memory.
-        cursor_phase_1 = mongo_dao.get_art_containers(db, db_name)
+        cursor_phase_1 = mongo_dao.get_art_containers(db, db_name)[0]
         for doc in tqdm(cursor_phase_1, total=size, desc="Phase 1/2 - Filtering docs", unit="doc"):
             try:
                 if not is_aspire_state(doc):
@@ -176,7 +176,7 @@ def upsert_art_line_list_data(cutoff_datetime=None):
             doc_batch.clear()
 
         # Phase 2: re-read cursor, stream valid docs and upsert in batches.
-        cursor_phase_2 = mongo_dao.get_art_containers(db, db_name)
+        cursor_phase_2 = mongo_dao.get_art_containers(db, db_name)[0]
         phase_2_touchtime_cache = OrderedDict()
         with tqdm(total=valid_doc_count, desc="Phase 2/2 - Upserting valid docs", unit="doc") as upsert_progress:
             for doc in cursor_phase_2:
@@ -251,8 +251,8 @@ def initialize_eac_line_list_data(cutoff_datetime=None):
 
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    cursor, size = mongo_dao.get_art_containers(db,db_name)
+    # size = mongo_dao.get_art_container_size(db,db_name)
     conn=postgres_dao.connect_to_postgresqldb()
     if conn is None:
         print("Failed to connect to PostgreSQL. Data not saved.")
@@ -424,7 +424,8 @@ def convert_doc_to_record(doc, cutoff_datetime):
         "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
         "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
         "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-        "Quarter": commonutils.get_fy_and_quarter_from_date(obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
+        "Quarter": commonutils.get_fy_and_quarter_from_date(
+            obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
         "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
         "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
         "viralLoadAfterLastEAC": viral_load_after_last_eac_value,

@@ -35,9 +35,8 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
     """
     db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    # size = mongo_dao.get_art_container_size(db,db_name)
-    size = 730_000
+    cursor, size = mongo_dao.get_art_containers(db,db_name)
+    # size = 730_000
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000

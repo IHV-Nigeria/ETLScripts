@@ -30,8 +30,7 @@ def producer_consumer_etl(num_consumers=4, cutoff_datetime=None, filename="EAC_E
      # Producer logic (same as the original export_eac_data function but instead of processing, it puts documents in the queue)
     db_name="cdr"
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_art_containers(db,db_name)
-    size = mongo_dao.get_art_container_size(db,db_name)
+    cursor, size = mongo_dao.get_art_containers(db,db_name)
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
 

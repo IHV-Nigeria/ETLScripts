@@ -440,3 +440,126 @@ HINT:  No operator matches the given name and argument types. You might need to 
 2026-06-19 13:43:46,473 - INFO - ================================================================================
 2026-06-19 13:43:46,473 - INFO - STARTING SCHEDULER - Waiting for midnight...
 2026-06-19 13:43:46,473 - INFO - ================================================================================
+2026-07-07 11:25:44,522 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:25:44,525 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:25:44,525 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:25:44.525113
+2026-07-07 11:25:44,525 - INFO - ================================================================================
+2026-07-07 11:25:44,525 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:25:44,525 - INFO - ================================================================================
+2026-07-07 11:25:44,525 - INFO - Starting upsert process...
+2026-07-07 11:25:44,526 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:25:44,526 - INFO - Cutoff datetime: 2026-07-07 11:25:44.525113
+2026-07-07 11:25:44,526 - INFO - Target table: eac_line_list
+2026-07-07 11:25:44,526 - INFO - Batch size: 5000
+2026-07-07 11:25:44,526 - INFO - Filter ASPIRE only: False
+2026-07-07 11:25:44,526 - INFO - Connecting to MongoDB...
+2026-07-07 11:25:44,533 - INFO - Loading facility cache...
+2026-07-07 11:25:44,647 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:25:44,750 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:25:44,784 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:25:44,784 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:27:22,441 - INFO - Found 38117 total EAC containers
+2026-07-07 11:27:22,442 - INFO - Processing records...
+2026-07-07 11:27:22,485 - ERROR - Error processing document: 'Cursor' object has no attribute 'get'
+2026-07-07 11:27:22,485 - ERROR - Error processing document: 'int' object has no attribute 'get'
+2026-07-07 11:27:22,485 - INFO - 
+======================================================================
+2026-07-07 11:27:22,485 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:27:22,485 - INFO - ======================================================================
+2026-07-07 11:27:22,486 - INFO - Total records processed: 0
+2026-07-07 11:27:22,486 - INFO -   [OK] Inserted: 0
+2026-07-07 11:27:22,486 - INFO -   [OK] Updated: 0
+2026-07-07 11:27:22,486 - INFO -   [OK] Skipped: 0
+2026-07-07 11:27:22,486 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:27:22,486 - INFO - ======================================================================
+2026-07-07 11:27:22,486 - INFO - PostgreSQL connection closed
+2026-07-07 11:27:22,486 - INFO - Initial export completed:
+2026-07-07 11:27:22,487 - INFO -   [OK] Inserted: 0
+2026-07-07 11:27:22,487 - INFO -   [OK] Updated: 0
+2026-07-07 11:27:22,487 - INFO -   [OK] Skipped: 0
+2026-07-07 11:27:22,487 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:27:22,487 - INFO - ================================================================================
+2026-07-07 11:27:22,487 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:27:22,487 - INFO - ================================================================================
+2026-07-07 11:38:05,294 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:38:05,297 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:38:05,297 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:38:05.297358
+2026-07-07 11:38:05,297 - INFO - ================================================================================
+2026-07-07 11:38:05,297 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:38:05,298 - INFO - ================================================================================
+2026-07-07 11:38:05,298 - INFO - Starting upsert process...
+2026-07-07 11:38:05,298 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:38:05,298 - INFO - Cutoff datetime: 2026-07-07 11:38:05.298361
+2026-07-07 11:38:05,299 - INFO - Target table: eac_line_list
+2026-07-07 11:38:05,299 - INFO - Batch size: 5000
+2026-07-07 11:38:05,299 - INFO - Filter ASPIRE only: False
+2026-07-07 11:38:05,299 - INFO - Connecting to MongoDB...
+2026-07-07 11:38:05,312 - INFO - Loading facility cache...
+2026-07-07 11:38:05,363 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:38:05,411 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:38:05,420 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:38:05,420 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:38:57,970 - INFO - Found 38117 total EAC containers
+2026-07-07 11:38:57,970 - INFO - Processing records...
+2026-07-07 11:38:57,998 - ERROR - Error processing document: 'Cursor' object has no attribute 'get'
+2026-07-07 11:38:57,999 - ERROR - Error processing document: 'int' object has no attribute 'get'
+2026-07-07 11:38:57,999 - INFO - 
+======================================================================
+2026-07-07 11:38:57,999 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:38:57,999 - INFO - ======================================================================
+2026-07-07 11:38:57,999 - INFO - Total records processed: 0
+2026-07-07 11:38:58,000 - INFO -   [OK] Inserted: 0
+2026-07-07 11:38:58,000 - INFO -   [OK] Updated: 0
+2026-07-07 11:38:58,000 - INFO -   [OK] Skipped: 0
+2026-07-07 11:38:58,000 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:38:58,000 - INFO - ======================================================================
+2026-07-07 11:38:58,000 - INFO - PostgreSQL connection closed
+2026-07-07 11:38:58,000 - INFO - Initial export completed:
+2026-07-07 11:38:58,002 - INFO -   [OK] Inserted: 0
+2026-07-07 11:38:58,002 - INFO -   [OK] Updated: 0
+2026-07-07 11:38:58,002 - INFO -   [OK] Skipped: 0
+2026-07-07 11:38:58,002 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:38:58,002 - INFO - ================================================================================
+2026-07-07 11:38:58,002 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:38:58,002 - INFO - ================================================================================
+2026-07-07 11:43:44,263 - INFO - [OK] Successfully imported export_eac_data_to_postgresql
+2026-07-07 11:43:44,265 - INFO - [OK] Successfully imported job scheduler
+2026-07-07 11:43:44,265 - INFO - EAC PostgreSQL Extractor started at: 2026-07-07 11:43:44.265957
+2026-07-07 11:43:44,265 - INFO - ================================================================================
+2026-07-07 11:43:44,266 - INFO - PERFORMING INITIAL EAC DATA EXPORT
+2026-07-07 11:43:44,266 - INFO - ================================================================================
+2026-07-07 11:43:44,266 - INFO - Starting upsert process...
+2026-07-07 11:43:44,266 - INFO - Starting EAC data export to PostgreSQL
+2026-07-07 11:43:44,266 - INFO - Cutoff datetime: 2026-07-07 11:43:44.266958
+2026-07-07 11:43:44,267 - INFO - Target table: eac_line_list
+2026-07-07 11:43:44,267 - INFO - Batch size: 5000
+2026-07-07 11:43:44,267 - INFO - Filter ASPIRE only: False
+2026-07-07 11:43:44,267 - INFO - Connecting to MongoDB...
+2026-07-07 11:43:44,276 - INFO - Loading facility cache...
+2026-07-07 11:43:44,319 - INFO - Connecting to PostgreSQL...
+2026-07-07 11:43:44,371 - INFO - [PREFLIGHT] Ensuring unique index on eac_line_list(patientuuid, quarter)...
+2026-07-07 11:43:44,381 - INFO - [PREFLIGHT] Verified unique index for upsert key (patientuuid, quarter) on eac_line_list
+2026-07-07 11:43:44,381 - INFO - Fetching EAC containers from MongoDB...
+2026-07-07 11:44:25,734 - INFO - Found 38117 total EAC containers
+2026-07-07 11:44:25,735 - INFO - Processing records...
+2026-07-07 11:44:25,760 - ERROR - Error processing document: 'Cursor' object has no attribute 'get'
+2026-07-07 11:44:25,760 - ERROR - Error processing document: 'int' object has no attribute 'get'
+2026-07-07 11:44:25,760 - INFO - 
+======================================================================
+2026-07-07 11:44:25,760 - INFO - EAC EXPORT COMPLETED
+2026-07-07 11:44:25,760 - INFO - ======================================================================
+2026-07-07 11:44:25,760 - INFO - Total records processed: 0
+2026-07-07 11:44:25,760 - INFO -   [OK] Inserted: 0
+2026-07-07 11:44:25,760 - INFO -   [OK] Updated: 0
+2026-07-07 11:44:25,760 - INFO -   [OK] Skipped: 0
+2026-07-07 11:44:25,760 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:44:25,760 - INFO - ======================================================================
+2026-07-07 11:44:25,762 - INFO - PostgreSQL connection closed
+2026-07-07 11:44:25,763 - INFO - Initial export completed:
+2026-07-07 11:44:25,763 - INFO -   [OK] Inserted: 0
+2026-07-07 11:44:25,763 - INFO -   [OK] Updated: 0
+2026-07-07 11:44:25,763 - INFO -   [OK] Skipped: 0
+2026-07-07 11:44:25,763 - INFO -   [ERROR] Errors: 2
+2026-07-07 11:44:25,764 - INFO - ================================================================================
+2026-07-07 11:44:25,764 - INFO - STARTING SCHEDULER - Waiting for midnight...
+2026-07-07 11:44:25,764 - INFO - ================================================================================
