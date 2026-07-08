@@ -19,6 +19,7 @@ import utils.commonutils as commonutils
 import dao.postgresdao as postgres_dao
 import dao.postgresquarterupsert as postgres_upsert
 from dao.config import MONGO_DATABASE_NAME, EAC_TABLE_NAME
+import csv
 
 
 # Global cache to store facilities for O(1) lookup speed
@@ -294,6 +295,11 @@ def export_eac_data_to_postgresql(
         total_stats = {"inserted": 0, "updated": 0, "skipped": 0, "errors": 0}
         batch_number = 0
         
+        # Collections for detailed tracking
+        all_inserted_details = []
+        all_updated_details = []
+        all_error_details = []
+        
         logger.info("Processing records...")
         
         for doc in tqdm(cursor, total=total_size, desc="EAC Export Progress"):
@@ -333,6 +339,11 @@ def export_eac_data_to_postgresql(
                     total_stats["skipped"] += batch_stats.get("skipped", 0)
                     total_stats["errors"] += batch_stats.get("errors", 0)
                     
+                    # Collect detailed tracking info
+                    all_inserted_details.extend(batch_stats.get("inserted_details", []))
+                    all_updated_details.extend(batch_stats.get("updated_details", []))
+                    all_error_details.extend(batch_stats.get("error_details", []))
+                    
                     batch_records = []
             
             except Exception as e:
@@ -356,9 +367,33 @@ def export_eac_data_to_postgresql(
             total_stats["updated"] += batch_stats.get("updated", 0)
             total_stats["skipped"] += batch_stats.get("skipped", 0)
             total_stats["errors"] += batch_stats.get("errors", 0)
+            
+            # Collect detailed tracking info
+            all_inserted_details.extend(batch_stats.get("inserted_details", []))
+            all_updated_details.extend(batch_stats.get("updated_details", []))
+            all_error_details.extend(batch_stats.get("error_details", []))
         
         # Final statistics
         total_processed = total_stats["inserted"] + total_stats["updated"] + total_stats["skipped"]
+        
+        # Write CSV tracking files
+        output_dir = './upsert_logs'
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        if all_inserted_details:
+            inserted_csv = os.path.join(output_dir, f"eac_inserted_{timestamp}.csv")
+            fieldnames_inserted = ['patientuuid', 'datim_code', 'uniqueID', 'quarter', 'touchtime']
+            _write_csv_file(inserted_csv, fieldnames_inserted, all_inserted_details, logger)
+        
+        if all_updated_details:
+            updated_csv = os.path.join(output_dir, f"eac_updated_{timestamp}.csv")
+            fieldnames_updated = ['patientuuid', 'datim_code', 'uniqueID', 'quarter', 'old_touchtime', 'new_touchtime']
+            _write_csv_file(updated_csv, fieldnames_updated, all_updated_details, logger)
+        
+        if all_error_details:
+            errors_csv = os.path.join(output_dir, f"eac_errors_{timestamp}.csv")
+            fieldnames_errors = ['patientuuid', 'datim_code', 'uniqueID', 'error']
+            _write_csv_file(errors_csv, fieldnames_errors, all_error_details, logger)
         
         logger.info("\n" + "="*70)
         logger.info("EAC EXPORT COMPLETED")
@@ -374,6 +409,10 @@ def export_eac_data_to_postgresql(
             logger.info(f"Success rate: {success_rate:.1f}%")
         
         logger.info("="*70)
+        logger.info(f"[TRACKING] Inserted records: {len(all_inserted_details)}")
+        logger.info(f"[TRACKING] Updated records: {len(all_updated_details)}")
+        logger.info(f"[TRACKING] Error records: {len(all_error_details)}")
+        logger.info("="*70)
         
         # Close connections
         if pg_conn is not None:
@@ -385,7 +424,12 @@ def export_eac_data_to_postgresql(
             "inserted": total_stats["inserted"],
             "updated": total_stats["updated"],
             "skipped": total_stats["skipped"],
-            "errors": total_stats["errors"]
+            "errors": total_stats["errors"],
+            "csv_files": {
+                "inserted_count": len(all_inserted_details),
+                "updated_count": len(all_updated_details),
+                "error_count": len(all_error_details)
+            }
         }
     
     except Exception as e:
@@ -395,7 +439,7 @@ def export_eac_data_to_postgresql(
 
 def _upsert_batch(pg_conn, table_name, records, batch_number, logger):
     """
-    Helper function to upsert a batch of records to PostgreSQL.
+    Helper function to upsert a batch of records to PostgreSQL with tracking.
     
     Args:
         pg_conn: PostgreSQL connection
@@ -405,12 +449,12 @@ def _upsert_batch(pg_conn, table_name, records, batch_number, logger):
         logger: Logger instance
     
     Returns:
-        Dictionary with upsert results
+        Dictionary with upsert results including detailed tracking info
     """
     try:
         logger.info(f"Upserting batch {batch_number} ({len(records)} records) to {table_name}...")
         
-        result = postgres_upsert.batch_upsert_by_quarter(
+        result = postgres_upsert.batch_upsert_by_quarter_with_tracking(
             pg_conn,
             table_name,
             records,
@@ -420,13 +464,40 @@ def _upsert_batch(pg_conn, table_name, records, batch_number, logger):
         logger.info(f"Batch {batch_number} result: "
                    f"{result['inserted']} inserted, "
                    f"{result['updated']} updated, "
-                   f"{result['skipped']} skipped")
+                   f"{result['skipped']} skipped, "
+                   f"{result['errors']} errors")
         
         return result
     
     except Exception as e:
         logger.error(f"Error upserting batch {batch_number}: {e}")
-        return {"inserted": 0, "updated": 0, "skipped": 0, "errors": len(records)}
+        return {
+            "inserted": 0, "updated": 0, "skipped": 0, "errors": len(records),
+            "inserted_details": [], "updated_details": [], "error_details": []
+        }
+
+
+def _write_csv_file(filepath, fieldnames, rows, logger):
+    """
+    Helper function to write detailed tracking information to CSV.
+    
+    Args:
+        filepath: Path to CSV file
+        fieldnames: List of column names
+        rows: List of dictionaries (records)
+        logger: Logger instance
+    """
+    try:
+        os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else '.', exist_ok=True)
+        
+        with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+        
+        logger.info(f"Wrote {len(rows)} records to {filepath}")
+    except Exception as e:
+        logger.error(f"Error writing CSV file {filepath}: {e}")
 
 
 if __name__ == "__main__":

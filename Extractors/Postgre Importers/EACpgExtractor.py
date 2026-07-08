@@ -88,6 +88,14 @@ try:
     logger.info(f"  [OK] Skipped: {result.get('skipped', 0)}")
     logger.info(f"  [ERROR] Errors: {result.get('errors', 0)}")
     
+    # Log CSV tracking file info
+    csv_info = result.get('csv_files', {})
+    if csv_info:
+        logger.info(f"  [TRACKING] CSV files generated:")
+        logger.info(f"    - Inserted records: {csv_info.get('inserted_count', 0)}")
+        logger.info(f"    - Updated records: {csv_info.get('updated_count', 0)}")
+        logger.info(f"    - Error records: {csv_info.get('error_count', 0)}")
+    
 except Exception as e:
     logger.error(f"[ERROR] Initial export failed: {e}", exc_info=True)
     sys.exit(1)
@@ -122,6 +130,15 @@ while True:
         logger.info(f"  [OK] Updated: {result.get('updated', 0)}")
         logger.info(f"  [OK] Skipped: {result.get('skipped', 0)}")
         logger.info(f"  [ERROR] Errors: {result.get('errors', 0)}")
+        
+        # Log CSV tracking file info
+        csv_info = result.get('csv_files', {})
+        if csv_info:
+            logger.info(f"  [TRACKING] CSV files generated:")
+            logger.info(f"    - Inserted records: {csv_info.get('inserted_count', 0)}")
+            logger.info(f"    - Updated records: {csv_info.get('updated_count', 0)}")
+            logger.info(f"    - Error records: {csv_info.get('error_count', 0)}")
+        
         logger.info(f"[OK] Job completed successfully in {duration} seconds")
         logger.info("=" * 80)
 

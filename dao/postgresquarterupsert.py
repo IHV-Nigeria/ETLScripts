@@ -244,6 +244,179 @@ def batch_upsert_by_quarter(conn, table_name, records_list, protected_keys=None)
     return {"inserted": ins_count, "updated": upd_count, "skipped": skipped_count}
 
 
+def batch_upsert_by_quarter_with_tracking(conn, table_name, records_list, protected_keys=None):
+    """
+    Performs batch upsert with detailed tracking of inserts, updates, and errors.
+    
+    Returns detailed information for logging:
+    - inserted_details: List of {patientuuid, datim_code, uniqueID}
+    - updated_details: List of {patientuuid, datim_code, uniqueID, old_touchtime, new_touchtime}
+    - error_details: List of {patientuuid, datim_code, uniqueID, error_message}
+    
+    Args:
+        conn: PostgreSQL connection object
+        table_name: Name of the target table
+        records_list: List of dictionaries representing records to upsert
+        protected_keys: Set of column names not to update (default: {'recordid', 'patientuuid', 'quarter'})
+    
+    Returns:
+        Dictionary with counts and details:
+        {
+            "inserted": int,
+            "updated": int,
+            "skipped": int,
+            "errors": int,
+            "inserted_details": [...],
+            "updated_details": [...],
+            "error_details": [...]
+        }
+    """
+    
+    logging.basicConfig(
+        filename='postgresql_errors.log',
+        level=logging.ERROR,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    
+    if not records_list:
+        return {
+            "inserted": 0, "updated": 0, "skipped": 0, "errors": 0,
+            "inserted_details": [], "updated_details": [], "error_details": []
+        }
+    
+    # Normalize all records to have lowercase keys
+    normalized_records = []
+    for r in records_list:
+        normalized = _normalize_record_keys(r)
+        # Validate required keys exist
+        if normalized.get('patientuuid') is not None and normalized.get('quarter') is not None:
+            normalized_records.append(normalized)
+    
+    skipped_count = len(records_list) - len(normalized_records)
+    
+    if not normalized_records:
+        return {
+            "inserted": 0, "updated": 0, "skipped": skipped_count, "errors": 0,
+            "inserted_details": [], "updated_details": [], "error_details": []
+        }
+    
+    # Set default protected keys if not provided
+    if protected_keys is None:
+        protected_keys = {'recordid', 'patientuuid', 'quarter'}
+    
+    # Fetch existing records to determine insert vs update
+    patientuuid_list = [r.get('patientuuid') for r in normalized_records]
+    key_pairs = [(r.get('patientuuid'), r.get('quarter')) for r in normalized_records]
+    
+    try:
+        existing_map = get_existing_touchtimes_by_quarter(conn, table_name, key_pairs)
+    except Exception as e:
+        logging.error(f"Error fetching existing records: {e}")
+        existing_map = {}
+    
+    # Extract columns and determine which ones to update
+    columns = list(normalized_records[0].keys())
+    update_columns = [col for col in columns if col.lower() not in protected_keys]
+    
+    if not update_columns:
+        print(f"Warning: No columns available for update. Protected keys: {protected_keys}")
+    
+    # Build the UPDATE clause with EXCLUDED values
+    update_clause = ", ".join([f"{col} = EXCLUDED.{col}" for col in update_columns])
+    
+    # SQL for upsert with touchtime comparison
+    sql_query = f"""
+        INSERT INTO {table_name} ({", ".join(columns)})
+        VALUES %s
+        ON CONFLICT (patientuuid, quarter)
+        DO UPDATE SET 
+            {update_clause}
+        WHERE {table_name}.touchtime IS NULL
+           OR (EXCLUDED.touchtime IS NOT NULL AND EXCLUDED.touchtime > {table_name}.touchtime)
+        RETURNING (xmax = 0) AS is_insert;
+    """
+    
+    # Prepare values as list of tuples
+    values = [[r[col] for col in columns] for r in normalized_records]
+    
+    ins_count = 0
+    upd_count = 0
+    err_count = 0
+    inserted_details = []
+    updated_details = []
+    error_details = []
+    
+    try:
+        with conn.cursor() as cur:
+            # execute_values with fetch=True returns the RETURNING rows
+            results = execute_values(cur, sql_query, values, fetch=True) or []
+            
+            # Map results back to original records
+            for idx, (record, result) in enumerate(zip(normalized_records, results)):
+                try:
+                    is_insert = result[0]
+                    datim_code = record.get('datimcode', 'N/A')
+                    uniqueid = record.get('uniqueid', 'N/A')
+                    patientuuid = record.get('patientuuid')
+                    quarter = record.get('quarter')
+                    touchtime = record.get('touchtime')
+                    
+                    if is_insert:
+                        ins_count += 1
+                        inserted_details.append({
+                            'patientuuid': patientuuid,
+                            'datim_code': datim_code,
+                            'uniqueID': uniqueid,
+                            'quarter': quarter,
+                            'touchtime': touchtime
+                        })
+                    else:
+                        upd_count += 1
+                        old_touchtime = existing_map.get((patientuuid, quarter))
+                        updated_details.append({
+                            'patientuuid': patientuuid,
+                            'datim_code': datim_code,
+                            'uniqueID': uniqueid,
+                            'quarter': quarter,
+                            'old_touchtime': old_touchtime,
+                            'new_touchtime': touchtime
+                        })
+                except Exception as e:
+                    logging.error(f"Error processing record result: {e}")
+            
+            conn.commit()
+            print(f"Upsert completed: {ins_count} inserted, {upd_count} updated, {len(normalized_records) - len(results) + skipped_count} skipped")
+            
+    except Exception as e:
+        logging.error(f"Error processing batch: {e}. Sample record: {normalized_records[0] if normalized_records else 'None'}")
+        conn.rollback()
+        print(f"Database Error: {e}")
+        
+        # Log all records as errors
+        for record in normalized_records:
+            error_details.append({
+                'patientuuid': record.get('patientuuid'),
+                'datim_code': record.get('datimcode', 'N/A'),
+                'uniqueID': record.get('uniqueid', 'N/A'),
+                'error': str(e)
+            })
+        err_count = len(normalized_records)
+        raise e
+    
+    # Calculate final skipped count
+    skipped_count += max(0, len(normalized_records) - len(results))
+    
+    return {
+        "inserted": ins_count,
+        "updated": upd_count,
+        "skipped": skipped_count,
+        "errors": err_count,
+        "inserted_details": inserted_details,
+        "updated_details": updated_details,
+        "error_details": error_details
+    }
+
+
 def get_existing_quarter_records(conn, table_name, patientuuid_list):
     """
     Retrieves existing records from the database for given patientuuids.
@@ -360,7 +533,7 @@ def delete_records_by_quarter(conn, table_name, patientuuid, quarter):
         raise e
 
 
-def get_records_by_quarter_range(conn, table_name, quarte_start, quarter_end, limit=None):
+def get_records_by_quarter_range(conn, table_name, quarter_start, quarter_end, limit=None):
     """
     Retrieves records within a quarter range.
     
