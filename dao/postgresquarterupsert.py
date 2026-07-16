@@ -351,6 +351,10 @@ def batch_upsert_by_quarter_with_tracking(conn, table_name, records_list, protec
             # execute_values with fetch=True returns the RETURNING rows
             results = execute_values(cur, sql_query, values, fetch=True) or []
             
+            # Track which records were actually affected by the upsert
+            # Build a set of (patientuuid, quarter) pairs that got results
+            result_keys = set()
+            
             # Map results back to original records
             for idx, (record, result) in enumerate(zip(normalized_records, results)):
                 try:
@@ -360,6 +364,9 @@ def batch_upsert_by_quarter_with_tracking(conn, table_name, records_list, protec
                     patientuuid = record.get('patientuuid')
                     quarter = record.get('quarter')
                     touchtime = record.get('touchtime')
+                    
+                    # Track this key as processed
+                    result_keys.add((patientuuid, quarter))
                     
                     if is_insert:
                         ins_count += 1
@@ -384,8 +391,21 @@ def batch_upsert_by_quarter_with_tracking(conn, table_name, records_list, protec
                 except Exception as e:
                     logging.error(f"Error processing record result: {e}")
             
+            # Process records that didn't get results (skipped by WHERE clause)
+            # These are records where the WHERE condition failed (existing touchtime >= new touchtime)
+            for record in normalized_records:
+                patientuuid = record.get('patientuuid')
+                quarter = record.get('quarter')
+                
+                # If this record didn't appear in results, it was skipped
+                if (patientuuid, quarter) not in result_keys:
+                    # This record was genuinely skipped due to touchtime check
+                    # We don't track skipped records in CSV by design
+                    pass
+            
             conn.commit()
             print(f"Upsert completed: {ins_count} inserted, {upd_count} updated, {len(normalized_records) - len(results) + skipped_count} skipped")
+            
             
     except Exception as e:
         logging.error(f"Error processing batch: {e}. Sample record: {normalized_records[0] if normalized_records else 'None'}")
@@ -403,13 +423,14 @@ def batch_upsert_by_quarter_with_tracking(conn, table_name, records_list, protec
         err_count = len(normalized_records)
         raise e
     
-    # Calculate final skipped count
-    skipped_count += max(0, len(normalized_records) - len(results))
+    # Calculate final skipped count: records that were in normalized_records but not affected by upsert
+    # (because the WHERE clause prevented the update)
+    final_skipped_count = len(normalized_records) - ins_count - upd_count
     
     return {
         "inserted": ins_count,
         "updated": upd_count,
-        "skipped": skipped_count,
+        "skipped": final_skipped_count,
         "errors": err_count,
         "inserted_details": inserted_details,
         "updated_details": updated_details,

@@ -480,6 +480,7 @@ def _upsert_batch(pg_conn, table_name, records, batch_number, logger):
 def _write_csv_file(filepath, fieldnames, rows, logger):
     """
     Helper function to write detailed tracking information to CSV.
+    Ensures all rows have all required fields.
     
     Args:
         filepath: Path to CSV file
@@ -490,12 +491,18 @@ def _write_csv_file(filepath, fieldnames, rows, logger):
     try:
         os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else '.', exist_ok=True)
         
+        # Ensure all rows have all fieldnames (fill missing with empty string)
+        sanitized_rows = []
+        for row in rows:
+            sanitized_row = {field: row.get(field, '') for field in fieldnames}
+            sanitized_rows.append(sanitized_row)
+        
         with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(rows)
+            writer.writerows(sanitized_rows)
         
-        logger.info(f"Wrote {len(rows)} records to {filepath}")
+        logger.info(f"Wrote {len(sanitized_rows)} records to {filepath}")
     except Exception as e:
         logger.error(f"Error writing CSV file {filepath}: {e}")
 

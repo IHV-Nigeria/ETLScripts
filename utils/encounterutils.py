@@ -2,10 +2,13 @@
 from typing import Optional
 from datetime import datetime, date
 
+import legacy.constants
 from formslib import pharmacyutils
 import formslib.ctdutils as ctdutils
 from utils import commonutils
 
+PMTCT_HTS_REGISTER_FORM_ID = legacy.constants.pmtct_hts_register_concepts.get("Form_ID")
+GENERAL_ANTENATAL_FORM_ID = legacy.constants.pmtct_hts_register_concepts.get("Form_ID")
 
 def get_next_pickup_date_from_encounterlist(doc,encounter_list, pickup_date: datetime):
     future_pickup_dates = []
@@ -106,7 +109,7 @@ def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[dateti
 
 
 def get_last_encounter_date(doc, cutoff_datetime: Optional[datetime] = None):
-    encounter = get_last_encounter(doc, cutoff_datetime) 
+    encounter = get_last_encounter(doc, cutoff_datetime)
     encounter_datetime = encounter.get('encounterDatetime') if encounter else None
     return commonutils.validate_date(encounter_datetime)
 
@@ -187,6 +190,59 @@ def get_encounter_id(encounter):
     encounter_id = encounter.get('encounterId')
     return encounter_id
 
+def get_last_pmtct_hts_encounter(doc,cutoff_datetime: Optional[datetime] = None):
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    matching_encounters = []
+
+    # If a cutoff date is not provided use current date as cutoff
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+
+    for encounter in encounter_list:
+        if (encounter.get("formId") == PMTCT_HTS_REGISTER_FORM_ID and
+                encounter.get("voided") == 0):
+
+            encounter_datetime = commonutils.normalize_clinical_date(encounter.get("encounterDatetime"))
+
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime <= cutoff_datetime:
+                    matching_encounters.append(encounter)
+
+    if not matching_encounters:
+        return None
+
+    # 3. Sort by the actual datetime objects (Newest first)
+    matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1), reverse=True)
+
+    return matching_encounters[0]
+
+def get_last_general_antenatal_encounter(doc,cutoff_datetime: Optional[datetime] = None):
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    matching_encounters = []
+
+    # If a cutoff date is not provided use current date as cutoff
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+
+    for encounter in encounter_list:
+        if (encounter.get("formId") == GENERAL_ANTENATAL_FORM_ID and
+                encounter.get("voided") == 0):
+
+            encounter_datetime = commonutils.normalize_clinical_date(encounter.get("encounterDatetime"))
+
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime <= cutoff_datetime:
+                    matching_encounters.append(encounter)
+
+    if not matching_encounters:
+        return None
+
+    # 3. Sort by the actual datetime objects (Newest first)
+    matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1), reverse=True)
+
+    return matching_encounters[0]
+
+
 def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
     matching_encounters = []
@@ -212,4 +268,33 @@ def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
     matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1), reverse=True)
     
     return matching_encounters[0]
+
+def get_last_encounter_date_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    matching_encounters = []
+
+    # If a cutoff date is not provided use current date as cutoff
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+
+    for encounter in encounter_list:
+        if (encounter.get("formId") == form_id and
+                encounter.get("voided") ==0):
+
+            encounter_datetime = commonutils.normalize_clinical_date(encounter.get("encounterDatetime"))
+
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime <= cutoff_datetime:
+                    matching_encounters.append(encounter)
+
+    if not matching_encounters:
+        return None
+
+    # 3. Sort by the actual datetime objects (Newest first)
+    matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1), reverse=True)
+
+    encounter = matching_encounters[0]
+    encounter_datetime = encounter.get('encounterDatetime') if encounter else None
+    return commonutils.validate_date(encounter_datetime)
+
                 

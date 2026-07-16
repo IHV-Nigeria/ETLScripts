@@ -38,6 +38,22 @@ def get_art_containers(db, db_name=config.MONGO_DATABASE_NAME):
 
     return art_containers_cursor, count
 
+def get_pmtct_containers(db, db_name=config.MONGO_DATABASE_NAME):
+    if db is None:
+        db = get_db_connection(config.MONGO_DATABASE_NAME)
+    query = {
+        "messageData.patientIdentifiers": {
+            "$elemMatch": {
+                "voided": 0
+            }
+        },
+        "messageData.patientPrograms.programName": "PMTCT"
+    }
+    art_containers_cursor = db.container.find(query)
+    count = db.container.count_documents(query)
+
+    return art_containers_cursor, count
+
 def get_containers_by_states(db, states_list, db_name=config.MONGO_DATABASE_NAME):
     """
     Retrieves all active ART containers belonging to a list of DATIM codes.

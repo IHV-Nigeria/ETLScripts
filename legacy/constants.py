@@ -34,6 +34,30 @@ MMD_CONCEPT_ID = 166278
 NEXT_APPOINTMENT_DATE_CONCEPT_ID = 5096
 DAYS_BEFORE_LTFU: Final[int] = 28
 
+
+pmtct_hts_register_concepts = {
+    "Form_ID": 54,
+    "Weight loss": 832,
+    "Night sweats": 133027,
+    "Fever": 140238,
+    "Cough": 143264,
+    "Result of HIV test": 159427,
+    "HIV Test accepted": 164167,
+    "Received HIV test result": 164848,
+    "Agreed To Partner Notification": 164954,
+    "TB Screening Score": 165808,
+    "HTS Register Date": 166029,
+    "Previously Known HIV Positive Result": 166030
+}
+
+general_antenatal_care_concepts = {
+    "Form_ID": 16,
+    "VDRL": 299,
+    "Date Tested For Syphilis": 164952,
+    "Tested for Syphilis": 165280,
+    "General Antenatal Number": 165567
+}
+
 # Popular Identifiers
 PEPFAR_UNIQUE_ID = 4
 HOSPITAL_UNIQUE_ID = 3
@@ -47,9 +71,12 @@ CLIENT_TRACKING_DISCONTINUATION_FORM_ID = 13
 EAC_FORM_ID = 69
 LAB_FORM_ID = 21
 
+PMTCT_HTS_REGISTER_FORM_ID = pmtct_hts_register_concepts.get("Form_ID")
+
 # Popular Analysis Period 
 FY25_START_DATE: Final[datetime] = datetime(2024, 10, 1, 0, 0, 0)
 FY25_END_DATE: Final[datetime] = datetime(2025, 9, 30, 23, 59, 59)
 
-
+FY26_START_DATE: Final[datetime] = datetime(2025, 10, 1, 0, 0, 0)
+FY26_END_DATE: Final[datetime] = datetime(2026, 9, 30, 23, 59, 59)
 

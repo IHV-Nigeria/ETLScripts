@@ -3,6 +3,7 @@ from datetime import datetime
 
 from pandas import to_datetime
 
+import legacy.constants
 from utils import commonutils
 
 
@@ -250,6 +251,56 @@ def get_last_obs_before_date(doc, form_id, concept_id, cutoff_datetime: Optional
     )
     
     return matching_obs[0]
+
+
+def get_last_pregnant_obs(doc, form_id : Optional[int] = legacy.constants.CARE_CARD_FORM_ID, concept_id : Optional[datetime] = legacy.constants.PREGNANCY_STATUS_CONCEPT_ID, cutoff_datetime: Optional[datetime] = None):
+    """
+    Finds the most recent non-voided observation for a specific form and concept
+    that occurred on or before the cutoff date.
+
+    Args:
+        doc (dict): The patient JSON document.
+        form_id (int): The specific formId (e.g., 14 for Care Card).
+        concept_id (int): The specific conceptId (e.g., 5089 for Weight).
+        cutoff_datetime (datetime): The Python datetime object for the cutoff.
+
+    Returns:
+        dict: The most recent observation object, or None if not found.
+    """
+    obs_list = doc.get("messageData", {}).get("obs", [])
+
+    # 1. Standardize the cutoff to be Naive and WAT (+1)
+    # If None, it defaults to Now (standardized)
+    target_cutoff = commonutils.normalize_clinical_date(cutoff_datetime or datetime.now())
+
+    matching_obs = []
+
+    for obs in obs_list:
+        # 1. Check basic criteria
+        if (obs.get("formId") == form_id and
+                obs.get("conceptId") == concept_id and
+                obs.get("voided") == 0 and
+                obs.get("variableValue") == "Pregnant"):
+
+            # 2. Standardize the clinical date from MongoDB
+            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+
+            # 3. Safe comparison between two normalized datetimes.
+            # Include observations exactly at the cutoff.
+            if isinstance(obs_dt, datetime) and target_cutoff and obs_dt <= target_cutoff:
+                matching_obs.append(obs)
+
+    if not matching_obs:
+        return None
+
+    # 4. Sort using the normalized dates to ensure stability
+    matching_obs.sort(
+        key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900,1,1),
+        reverse=True
+    )
+
+    return matching_obs[0]
+
 
 
 def get_nth_obs_of_last_x_obs_with_valuecoded(doc, form_id, concept_id,  value_coded_arr, n, x, cutoff_datetime: Optional[datetime] = None):
