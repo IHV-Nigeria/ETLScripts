@@ -32,7 +32,7 @@ def export_ctd_line_list_data(cutoff_datetime=None):
 
     try:
         #extracted_results = []
-        for doc in tqdm(cursor, total=size, desc="ART Line List ETL Progress"):
+        for doc in tqdm(cursor, total=size, desc="CTD Line List ETL Progress"):
 
 
             if not is_aspire_state(doc):
@@ -45,20 +45,12 @@ def export_ctd_line_list_data(cutoff_datetime=None):
             facility_info = get_facility_by_datim(datim_code)
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
             last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
-            last_sample_collection_obs = labutils.get_last_sample_taken_date_obs(doc,cutoff_datetime)
-            last_sample_collection_date = last_sample_collection_obs.get("ObsDateTime") if last_sample_collection_obs else None
-            last_viral_load_obs = labutils.get_last_viral_load_obs_before(doc,cutoff_datetime)
-            last_viral_load = last_viral_load_obs.get("variableValue") if last_viral_load_obs else None
 
 
 
 
             record = {
 
-                "id": demographics.get("patientUuid"),
-                "cuttoffperiod": cutoff_datetime,
-                "create_date": commonutils.format_date(demographics.get("dateCreated")),
-                "update_date": commonutils.format_date(header.get("touchTime")),
                 "state": facility_info.get("State") if facility_info else None,
                 "lga" : facility_info.get("LGA") if facility_info else None,
                 "facility_name": header.get("facilityName"),
@@ -66,16 +58,36 @@ def export_ctd_line_list_data(cutoff_datetime=None):
                 "patient_id": demographicsutils.get_patient_identifier(4, doc),
                 "hospital_no": demographicsutils.get_patient_identifier(5, doc),
                 "dob": birthdate,
-                "current_age": demographicsutils.calculateAge(birthdate),
                 "sex": demographics.get("gender"),
-                "current_art_status": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
-                "last_visit_date": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
                 "art_start_date": art_start_date,
                 "last_pickup_date": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
                 "days_of_arv_pickup": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
                 "pill_balance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
-                "viral_load_sample_collection_date": last_sample_collection_date,
-                "last_viral_load": last_viral_load,
+
+                "Date of Tracking": "",
+                "Reason for Tracking": "",
+                "Guardian / Treatment Partner's Name": "",
+                "Guardian / Treatment Partner's Contact Address": "",
+                "Guardian / Treatment Partner's Phone Number": "",
+                "Date of Last Actual Contact/ Appointment": "",
+                "Date of Missed Scheduled Appointment": "",
+                "Client Verification": "",
+                "Indication for Client Verification": "",
+                "Patient Care in Facility Discontinued": "",
+                "Date of Discontinuation": "",
+                "Reason for Discontinuation": "",
+                "Facility transferred to": "",
+                "Cause of Death": "",
+                "VA Cause of Death": "",
+                "Adult Causes": "",
+                "Child Causes": "",
+                "Other cause of death": "",
+                "Reason to Discontinue Care": "",
+                "Discontinue Care other specify": "",
+                "Date of Lost to follow up": "",
+                "Reason for Lost to follow up": "",
+                "Reason for Lost to follow up_Other": "",
+
             }
             batch_list.append(record)
 

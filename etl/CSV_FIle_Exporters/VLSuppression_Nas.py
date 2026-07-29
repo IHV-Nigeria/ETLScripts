@@ -21,19 +21,11 @@ from dao.config import MONGO_DATABASE_NAME
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
-<<<<<<< HEAD
-
-
-def export_data(cutoff_datetime=None, filename=None):
-    db_name = MONGO_DATABASE_NAME
-=======
-
 
 
 
 def export_data(cutoff_datetime=None, filename=None):
     db_name=MONGO_DATABASE_NAME
->>>>>>> e2742709331445a815483d242c009dea0a6a62f2
     TARGET_STATES = ["Nasarawa", "Rivers"]
     db = mongo_dao.get_db_connection(db_name)
     cursor, size = mongo_dao.get_containers_by_states(db=db, states_list=TARGET_STATES)

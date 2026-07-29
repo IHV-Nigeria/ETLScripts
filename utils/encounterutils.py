@@ -176,6 +176,7 @@ def get_nth_encounter(doc, form_id, n):
         return matching_encounters[n-1]
     
     return None
+
 def get_encounter_datetime(encounter):
     if encounter is None:
         return None
@@ -243,7 +244,7 @@ def get_last_general_antenatal_encounter(doc,cutoff_datetime: Optional[datetime]
     return matching_encounters[0]
 
 
-def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
+def get_last_encounter_of_form(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])
     matching_encounters = []
 
@@ -252,8 +253,8 @@ def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
         cutoff_datetime = datetime.now()
 
     for encounter in encounter_list:
-        if (encounter.get("formId") != ctdutils.CLIENT_TRACKING_DISCONTINUATION_FORM_ID and
-            encounter.get("voided") ==0):
+        if (encounter.get("formId") == form_id and
+                encounter.get("voided") ==0):
 
             encounter_datetime = commonutils.normalize_clinical_date(encounter.get("encounterDatetime"))
 
@@ -266,8 +267,10 @@ def get_last_encounter(doc,cutoff_datetime: Optional[datetime] = None):
 
     # 3. Sort by the actual datetime objects (Newest first)
     matching_encounters.sort(key=lambda x: commonutils.normalize_clinical_date(x.get('encounterDatetime')) or datetime(1900,1,1), reverse=True)
-    
-    return matching_encounters[0]
+
+    encounter = matching_encounters[0]
+
+    return encounter
 
 def get_last_encounter_date_by_form_id(doc, form_id, cutoff_datetime: Optional[datetime] = None):
     encounter_list = doc.get("messageData", {}).get("encounters", [])

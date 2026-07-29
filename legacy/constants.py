@@ -58,6 +58,32 @@ general_antenatal_care_concepts = {
     "General Antenatal Number": 165567
 }
 
+ctd_concepts = {
+    "Form_ID": 13,
+    "Reason for Tracking": 165460,
+    "Guardian / Treatment Partner's Name": 161135,
+    "Guardian / Treatment Partner's Contact Address": 160641,
+    "Guardian / Treatment Partner's Phone Number": 159635,
+    "Date of Last Actual Contact/ Appointment": 165461,
+    "Date of Missed Scheduled Appointment": 165778,
+    "Client Verification": 167221,
+    "Indication for Client Verification": 167222,
+    "Patient Care in Facility Discontinued": 165586,
+    "Date of Discontinuation": 165469,
+    "Reason for Discontinuation": 165470,
+    "Facility transferred to": 159495,
+    "Cause of Death": 165889,
+    "VA Cause of Death": 166349,
+    "Adult Causes": 166348,
+    "Child Causes": 166347,
+    "Other cause of death": 165915,
+    "Reason to Discontinue Care": 165916,
+    "Discontinue Care other specify": 165917,
+    "Date of Lost to follow up": 166152,
+    "Reason for Lost to follow up": 166157,
+    "Reason for Lost to follow up_Other": 167149,
+}
+
 # Popular Identifiers
 PEPFAR_UNIQUE_ID = 4
 HOSPITAL_UNIQUE_ID = 3
