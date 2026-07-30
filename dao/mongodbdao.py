@@ -38,6 +38,23 @@ def get_art_containers(db, db_name=config.MONGO_DATABASE_NAME):
 
     return art_containers_cursor, count
 
+def get_ctd_containers(db, db_name=config.MONGO_DATABASE_NAME):
+    if db is None:
+        db = get_db_connection(config.MONGO_DATABASE_NAME)
+    query = {
+        "messageData.patientIdentifiers": {
+            "$elemMatch": {
+                "identifierType": 4,
+                "voided": 0
+            }
+        },
+        "messageData.encounters.formId": 13
+    }
+    art_containers_cursor = db.container.find(query)
+    count = db.container.count_documents(query)
+
+    return art_containers_cursor, count
+
 def get_pmtct_containers(db, db_name=config.MONGO_DATABASE_NAME):
     if db is None:
         db = get_db_connection(config.MONGO_DATABASE_NAME)

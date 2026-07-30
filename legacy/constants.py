@@ -84,6 +84,18 @@ ctd_concepts = {
     "Reason for Lost to follow up_Other": 167149,
 }
 
+encounter_type_ids = {
+
+    "Laboratory Order and Result form": 11,
+    "Care Card" : 12,
+    "Pharmacy Order Form" : 13,
+    "HIV Enrollment": 14,
+    "Client Tracking and Termination": 15,
+    "ART Commencement Form": 25,
+    "Viral Load Sample Collection" : 31,
+    "Enhanced Adherence Counselling" : 32,
+
+}
 # Popular Identifiers
 PEPFAR_UNIQUE_ID = 4
 HOSPITAL_UNIQUE_ID = 3
@@ -105,4 +117,5 @@ FY25_END_DATE: Final[datetime] = datetime(2025, 9, 30, 23, 59, 59)
 
 FY26_START_DATE: Final[datetime] = datetime(2025, 10, 1, 0, 0, 0)
 FY26_END_DATE: Final[datetime] = datetime(2026, 9, 30, 23, 59, 59)
+
 
