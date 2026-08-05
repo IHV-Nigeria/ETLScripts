@@ -23,7 +23,7 @@ from dao.config import MONGO_DATABASE_NAME
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
 ASPIRE_STATES = {"FCT", "KATSINA", "NASARAWA", "RIVERS"}
-GC7_STATES = {"Kwara", "Anambra", "Ebonyi", "Gombe"}
+GC7_STATES = {"KWARA", "ANAMBRA", "EBONYI", "GOMBE"}
 
 
 # functions for DB insertion
@@ -467,8 +467,8 @@ def export_aspire_eac_data(cutoff_datetime=None, filename=None):
     for doc in tqdm(cursor, total=size, desc="ASPIRE EAC ETL Progress"):
             
            
-            # if not is_aspire_state(doc):
-            #     continue  # Skip this record and move to the next one
+            if not is_aspire_state(doc):
+                continue  # Skip this record and move to the next one
 
             header = demographicsutils.get_message_header(doc)
             datim_code = header.get("facilityDatimCode")
@@ -605,171 +605,171 @@ def export_aspire_eac_data(cutoff_datetime=None, filename=None):
     print(f"File saved to: {full_path}")
     return full_path
 
-# def export_gf_eac_data(cutoff_datetime=None, filename=None):
-#     db_name=MONGO_DATABASE_NAME
-#     db = mongo_dao.get_db_connection(db_name)
-#     cursor, size = mongo_dao.get_art_containers(db, db_name)
-#     print(f"Processing {size} ART containers...")
-#     load_facility_cache(db, db_name)
-#     BATCH_SIZE = 1000
-#     batch_list = []
-#
-#     # cutoff_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1)) if cutoff_datetime else None
-#
-#     start_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1))
-#     # end_datetime = commonutils.normalize_clinical_date(datetime.now())
-#     end_datetime = commonutils.normalize_clinical_date(datetime.now())
-#
-#     # 1. Prepare the file path (create directory and name)
-#     full_path = prepare_filepath(filename)
-#
-#     # Track if it's the first batch so we can write the CSV header
-#     is_first_batch = True
-#
-#     #extracted_results = []
-#     for doc in tqdm(cursor, total=size, desc="GF EAC ETL Progress"):
-#
-#
-#         # if not is_gc7_state(doc):
-#         #     continue  # Skip this record and move to the next one
-#
-#         header = demographicsutils.get_message_header(doc)
-#         datim_code = header.get("facilityDatimCode")
-#         demographics = demographicsutils.get_patient_demographics(doc)
-#         birthdate = commonutils.normalize_clinical_date(demographics.get("birthdate"))
-#         facility_info = get_facility_by_datim(datim_code)
-#         art_start_date = commonutils.normalize_clinical_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-#         eac_1_date = commonutils.normalize_clinical_date(eacutils.get_eac_date(1, doc))
-#         last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
-#         viral_load_before_first_eac_obs = labutils.get_last_viral_load_obs_before(doc, eac_1_date)
-#         viral_load_1_obs = labutils.get_nth_viral_load_obs(doc, 1, cutoff_datetime)
-#         viral_load_2_obs = labutils.get_nth_viral_load_obs(doc, 2, cutoff_datetime)
-#         viral_load_3_obs = labutils.get_nth_viral_load_obs(doc, 3, cutoff_datetime)
-#
-#         current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
-#         #current_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
-#         current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None
-#         last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
-#         current_pregnancy_status_obs=carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
-#         first_unsuppressed_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
-#         first_unsuppressed_viral_load_value = obsutils.getValueNumericFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
-#         first_unsuppressed_viral_load_datetime = obsutils.getObsDatetimeFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
-#         last_eac_encounter_datetime = encounterutils.get_encounter_datetime(last_eac_encounter) if last_eac_encounter else None
-#         viral_load_after_last_eac_obs = labutils.get_first_viral_load_after_date(doc, last_eac_encounter_datetime) if last_eac_encounter_datetime else None
-#         viral_load_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
-#         viral_load_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
-#         regimen_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
-#         regimen_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
-#
-#         kptype_obs = obsutils.get_last_obs_before_date(doc=doc, form_id=10, concept_id=166369, cutoff_datetime=cutoff_datetime)
-#         kp_type = obsutils.getVariableValueFromObs(kptype_obs) if kptype_obs else None
-#
-#         record = {
-#             "touchtime": header.get("touchTime"),
-#             "State": facility_info.get("State") if facility_info else None,
-#             "LGA" : facility_info.get("LGA") if facility_info else None,
-#             "DatimCode" : header.get("facilityDatimCode"),
-#             "FacilityName": header.get("facilityName"),
-#             "UniqueID": demographicsutils.get_patient_identifier(4, doc),
-#             "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
-#             "Sex": demographics.get("gender"),
-#             "AgeAtARTStartYears": demographicsutils.get_age_art_start_years(doc, birthdate, art_start_date),
-#             "AgeAtARTStartMonths": demographicsutils.get_pediatric_age_art_start_months(doc, birthdate, art_start_date),
-#             "CurrentAgeYears": demographicsutils.get_current_age_at_date(doc,cutoff_datetime),
-#             "CurrentAgeMonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),
-#             "DOB": birthdate,
-#             "CareEntryPoint": hivenrollmentutils.get_care_entry_point(doc,cutoff_datetime),
-#             "MonthsOnArt": demographicsutils.get_months_on_art(doc,art_start_date,cutoff_datetime),
-#             "DateTransferredIn": hivenrollmentutils.get_date_transferred_in(doc,cutoff_datetime),
-#             "TransferredInStatus": hivenrollmentutils.get_prior_art(doc,cutoff_datetime),
-#             "ArtStartDate": art_start_date,
-#             "KPType": kp_type,
-#             "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
-#             "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
-#             "DaysOfARVRefill": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
-#             "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
-#             "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
-#             "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
-#             "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
-#             "DispensingModality": pharmacyutils.get_last_dsd_model(doc,cutoff_datetime),
-#             "FacilityDispensingModality": pharmacyutils.get_facility_dsd_model(doc,cutoff_datetime),
-#             "DDDDispensingModality": pharmacyutils.get_ddd_dsd_model(doc,cutoff_datetime),
-#             "MMDType": pharmacyutils.get_mmd_type(doc,cutoff_datetime),
-#             "PharmacyNextAppointmentDate": pharmacyutils.get_pharmacy_next_appointment_date(doc, cutoff_datetime),
-#             "ClinicalNextAppointmentDate": carecardutils.get_clinical_next_appointment_date(doc,cutoff_datetime),
-#             "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
-#             "ViralLoadEncounterDate": obsutils.getObsDatetimeFromObs(current_viral_load_obs),
-#             "ViralLoadSampleDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, current_viral_load_obs)),
-#             "ViralLoadIndication": obsutils.getVariableValueFromObs(labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, current_viral_load_obs)),
-#             "LastSampleTakenDate": obsutils.getValueDatetimeFromObs(labutils.get_last_sample_taken_date_obs(doc,cutoff_datetime)),
-#             "ViralLoadBefore1stEAC": obsutils.getValueNumericFromObs(viral_load_before_first_eac_obs),
-#             "ViralLoadBefore1stEACDate": obsutils.getObsDatetimeFromObs(viral_load_before_first_eac_obs),
-#             "ViralLoadBefore1stEACSampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
-#             "ViralLoadBefore1stEACReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
-#             "EAC1date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,1,current_viral_load_obsdatetime)),
-#             "EAC2date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,2,current_viral_load_obsdatetime)),
-#             "EAC3date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,3,current_viral_load_obsdatetime)),
-#             "EAC4date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,4,current_viral_load_obsdatetime)),
-#             "EAC5date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,5,current_viral_load_obsdatetime)),
-#             "EAC6date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,6,current_viral_load_obsdatetime)),
-#             "EAC7date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,7,current_viral_load_obsdatetime)),
-#             "EAC8date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,8,current_viral_load_obsdatetime)),
-#             "ViralLoad1": obsutils.getValueNumericFromObs(viral_load_1_obs),
-#             "ViralLoad1ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
-#             "ViralLoad1SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
-#             "ViralLoad2": obsutils.getValueNumericFromObs(viral_load_2_obs),
-#             "ViralLoad2ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_2_obs)),
-#             "ViralLoad2SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_2_obs)),
-#             "ViralLoad3": obsutils.getValueNumericFromObs(viral_load_3_obs),
-#             "ViralLoad3ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_3_obs)),
-#             "ViralLoad3SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_3_obs)),
-#             "CurrentRegimenLine": pharmacyutils.get_current_regimen_line(doc,cutoff_datetime) ,
-#             "CurrentRegimen": pharmacyutils.get_current_regimen(doc,cutoff_datetime),
-#             "SecondLineRegimenStartDate": pharmacyutils.get_min_second_line_regimen_date(doc,cutoff_datetime),
-#             "ThirdLineRegimenStartDate": pharmacyutils.get_min_third_line_regimen_date(doc,cutoff_datetime),
-#             "CurrentPregnancyStatus": obsutils.getVariableValueFromObs(current_pregnancy_status_obs),
-#             "CurrentPregnancyStatusDatetime": obsutils.getObsDatetimeFromObs(current_pregnancy_status_obs),
-#             "EDD": obsutils.getValueDatetimeFromObs(carecardutils.get_edd_for_last_pregnancy(doc,current_pregnancy_status_obs)),
-#             "LastEACSessionType": eacutils.get_last_eac_session_type(doc,last_eac_encounter,cutoff_datetime),
-#             "LastEACSessionDate": encounterutils.get_encounter_datetime (last_eac_encounter),
-#             "LastEACBarriersToAdherence": eacutils.get_last_eac_barriers_to_adherence(doc,last_eac_encounter, cutoff_datetime),
-#             "LastEACRegimenPlan": eacutils.get_last_eac_regimen_plan(doc, last_eac_encounter, cutoff_datetime),
-#             "LastEACFollowupDate": eacutils.get_last_eac_followup_date(doc, last_eac_encounter, cutoff_datetime),
-#             "LastEACAdherenceComments": eacutils.get_last_eac_comments(doc, last_eac_encounter, cutoff_datetime),
-#             "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
-#             "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
-#             "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-#             "Quarter": commonutils.get_fy_and_quarter_from_date(
-#                 obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
-#             "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
-#             "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
-#             "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
-#             "viralLoadAfterLastEACDate": viral_load_after_last_eac_datetime,
-#             "regimenAfterEAC": regimen_after_last_eac_value,
-#             "regimenAfterEACDate": regimen_after_last_eac_datetime
-#
-#
-#         }
-#         batch_list.append(record)
-#
-#         if len(batch_list) >= BATCH_SIZE:
-#             save_batch_to_csv(batch_list, full_path, is_first_batch)
-#             batch_list = [] # Clear memory
-#             is_first_batch = False # Next batches append without headers
-#
-#
-#     # 3. Save any remaining records (the last partial batch)
-#     if batch_list:
-#         save_batch_to_csv(batch_list, full_path, is_first_batch)
-#
-#     #df = pd.DataFrame(extracted_results)
-#     #print(f"Found {len(df)} matching records.")
-#     #print(df.head(20))
-#     #return export_dataframe(df, filename)
-#     db.client.close()
-#     print(f"\nFinal export complete. Total records processed: {size}")
-#     print(f"File saved to: {full_path}")
-#     return full_path
+def export_gf_eac_data(cutoff_datetime=None, filename=None):
+    db_name=MONGO_DATABASE_NAME
+    db = mongo_dao.get_db_connection(db_name)
+    cursor, size = mongo_dao.get_art_containers(db, db_name)
+    print(f"Processing {size} ART containers...")
+    load_facility_cache(db, db_name)
+    BATCH_SIZE = 1000
+    batch_list = []
+
+    # cutoff_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1)) if cutoff_datetime else None
+
+    start_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1))
+    # end_datetime = commonutils.normalize_clinical_date(datetime.now())
+    end_datetime = commonutils.normalize_clinical_date(datetime.now())
+
+    # 1. Prepare the file path (create directory and name)
+    full_path = prepare_filepath(filename)
+
+    # Track if it's the first batch so we can write the CSV header
+    is_first_batch = True
+
+    #extracted_results = []
+    for doc in tqdm(cursor, total=size, desc="GF EAC ETL Progress"):
+
+
+        if not is_gc7_state(doc):
+            continue  # Skip this record and move to the next one
+
+        header = demographicsutils.get_message_header(doc)
+        datim_code = header.get("facilityDatimCode")
+        demographics = demographicsutils.get_patient_demographics(doc)
+        birthdate = commonutils.normalize_clinical_date(demographics.get("birthdate"))
+        facility_info = get_facility_by_datim(datim_code)
+        art_start_date = commonutils.normalize_clinical_date(artcommence.get_art_start_date(doc, cutoff_datetime))
+        eac_1_date = commonutils.normalize_clinical_date(eacutils.get_eac_date(1, doc))
+        last_eac_encounter=eacutils.get_last_eac_encounter(doc,cutoff_datetime)
+        viral_load_before_first_eac_obs = labutils.get_last_viral_load_obs_before(doc, eac_1_date)
+        viral_load_1_obs = labutils.get_nth_viral_load_obs(doc, 1, cutoff_datetime)
+        viral_load_2_obs = labutils.get_nth_viral_load_obs(doc, 2, cutoff_datetime)
+        viral_load_3_obs = labutils.get_nth_viral_load_obs(doc, 3, cutoff_datetime)
+
+        current_viral_load_obs = labutils.get_last_viral_load_obs_before(doc, cutoff_datetime)
+        #current_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
+        current_viral_load_obsdatetime = obsutils.getObsDatetimeFromObs(current_viral_load_obs) if current_viral_load_obs else None
+        last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
+        current_pregnancy_status_obs=carecardutils.get_current_pregnancy_status_obs(doc,cutoff_datetime)
+        first_unsuppressed_viral_load_obs = labutils.get_first_unsuppressed_viral_load_between_dates(doc, start_datetime, end_datetime)
+        first_unsuppressed_viral_load_value = obsutils.getValueNumericFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
+        first_unsuppressed_viral_load_datetime = obsutils.getObsDatetimeFromObs(first_unsuppressed_viral_load_obs) if first_unsuppressed_viral_load_obs else None
+        last_eac_encounter_datetime = encounterutils.get_encounter_datetime(last_eac_encounter) if last_eac_encounter else None
+        viral_load_after_last_eac_obs = labutils.get_first_viral_load_after_date(doc, last_eac_encounter_datetime) if last_eac_encounter_datetime else None
+        viral_load_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+        viral_load_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+        regimen_after_last_eac_value = obsutils.getValueNumericFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+        regimen_after_last_eac_datetime = obsutils.getObsDatetimeFromObs(viral_load_after_last_eac_obs) if viral_load_after_last_eac_obs else None
+
+        kptype_obs = obsutils.get_last_obs_before_date(doc=doc, form_id=10, concept_id=166369, cutoff_datetime=cutoff_datetime)
+        kp_type = obsutils.getVariableValueFromObs(kptype_obs) if kptype_obs else None
+
+        record = {
+            "touchtime": header.get("touchTime"),
+            "State": facility_info.get("State") if facility_info else None,
+            "LGA" : facility_info.get("LGA") if facility_info else None,
+            "DatimCode" : header.get("facilityDatimCode"),
+            "FacilityName": header.get("facilityName"),
+            "UniqueID": demographicsutils.get_patient_identifier(4, doc),
+            "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
+            "Sex": demographics.get("gender"),
+            "AgeAtARTStartYears": demographicsutils.get_age_art_start_years(doc, birthdate, art_start_date),
+            "AgeAtARTStartMonths": demographicsutils.get_pediatric_age_art_start_months(doc, birthdate, art_start_date),
+            "CurrentAgeYears": demographicsutils.get_current_age_at_date(doc,cutoff_datetime),
+            "CurrentAgeMonths": demographicsutils.get_current_age_at_date_in_months(doc,cutoff_datetime),
+            "DOB": birthdate,
+            "CareEntryPoint": hivenrollmentutils.get_care_entry_point(doc,cutoff_datetime),
+            "MonthsOnArt": demographicsutils.get_months_on_art(doc,art_start_date,cutoff_datetime),
+            "DateTransferredIn": hivenrollmentutils.get_date_transferred_in(doc,cutoff_datetime),
+            "TransferredInStatus": hivenrollmentutils.get_prior_art(doc,cutoff_datetime),
+            "ArtStartDate": art_start_date,
+            "KPType": kp_type,
+            "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
+            "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
+            "DaysOfARVRefill": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
+            "PillBalance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
+            "PatientOutcome" : ctdutils.get_patient_outcome (doc,cutoff_datetime),
+            "PatientOutcomeDate" : ctdutils.get_outcome_date (doc,cutoff_datetime),
+            "CurrentArtStatus": pharmacyutils.get_current_art_status(doc,cutoff_datetime),
+            "DispensingModality": pharmacyutils.get_last_dsd_model(doc,cutoff_datetime),
+            "FacilityDispensingModality": pharmacyutils.get_facility_dsd_model(doc,cutoff_datetime),
+            "DDDDispensingModality": pharmacyutils.get_ddd_dsd_model(doc,cutoff_datetime),
+            "MMDType": pharmacyutils.get_mmd_type(doc,cutoff_datetime),
+            "PharmacyNextAppointmentDate": pharmacyutils.get_pharmacy_next_appointment_date(doc, cutoff_datetime),
+            "ClinicalNextAppointmentDate": carecardutils.get_clinical_next_appointment_date(doc,cutoff_datetime),
+            "CurrentViralLoad": obsutils.getValueNumericFromObs(current_viral_load_obs),
+            "ViralLoadEncounterDate": obsutils.getObsDatetimeFromObs(current_viral_load_obs),
+            "ViralLoadSampleDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, current_viral_load_obs)),
+            "ViralLoadIndication": obsutils.getVariableValueFromObs(labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, current_viral_load_obs)),
+            "LastSampleTakenDate": obsutils.getValueDatetimeFromObs(labutils.get_last_sample_taken_date_obs(doc,cutoff_datetime)),
+            "ViralLoadBefore1stEAC": obsutils.getValueNumericFromObs(viral_load_before_first_eac_obs),
+            "ViralLoadBefore1stEACDate": obsutils.getObsDatetimeFromObs(viral_load_before_first_eac_obs),
+            "ViralLoadBefore1stEACSampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
+            "ViralLoadBefore1stEACReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc,viral_load_before_first_eac_obs)),
+            "EAC1date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,1,current_viral_load_obsdatetime)),
+            "EAC2date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,2,current_viral_load_obsdatetime)),
+            "EAC3date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,3,current_viral_load_obsdatetime)),
+            "EAC4date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,4,current_viral_load_obsdatetime)),
+            "EAC5date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,5,current_viral_load_obsdatetime)),
+            "EAC6date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,6,current_viral_load_obsdatetime)),
+            "EAC7date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,7,current_viral_load_obsdatetime)),
+            "EAC8date": encounterutils.get_encounter_datetime(eacutils.get_nth_eac_after_date(doc,8,current_viral_load_obsdatetime)),
+            "ViralLoad1": obsutils.getValueNumericFromObs(viral_load_1_obs),
+            "ViralLoad1ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
+            "ViralLoad1SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_1_obs)),
+            "ViralLoad2": obsutils.getValueNumericFromObs(viral_load_2_obs),
+            "ViralLoad2ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_2_obs)),
+            "ViralLoad2SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_2_obs)),
+            "ViralLoad3": obsutils.getValueNumericFromObs(viral_load_3_obs),
+            "ViralLoad3ReportedDate": obsutils.getValueDatetimeFromObs(labutils.get_reported_date_obs_of_viral_load_obs(doc, viral_load_3_obs)),
+            "ViralLoad3SampleCollectionDate": obsutils.getValueDatetimeFromObs(labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, viral_load_3_obs)),
+            "CurrentRegimenLine": pharmacyutils.get_current_regimen_line(doc,cutoff_datetime) ,
+            "CurrentRegimen": pharmacyutils.get_current_regimen(doc,cutoff_datetime),
+            "SecondLineRegimenStartDate": pharmacyutils.get_min_second_line_regimen_date(doc,cutoff_datetime),
+            "ThirdLineRegimenStartDate": pharmacyutils.get_min_third_line_regimen_date(doc,cutoff_datetime),
+            "CurrentPregnancyStatus": obsutils.getVariableValueFromObs(current_pregnancy_status_obs),
+            "CurrentPregnancyStatusDatetime": obsutils.getObsDatetimeFromObs(current_pregnancy_status_obs),
+            "EDD": obsutils.getValueDatetimeFromObs(carecardutils.get_edd_for_last_pregnancy(doc,current_pregnancy_status_obs)),
+            "LastEACSessionType": eacutils.get_last_eac_session_type(doc,last_eac_encounter,cutoff_datetime),
+            "LastEACSessionDate": encounterutils.get_encounter_datetime (last_eac_encounter),
+            "LastEACBarriersToAdherence": eacutils.get_last_eac_barriers_to_adherence(doc,last_eac_encounter, cutoff_datetime),
+            "LastEACRegimenPlan": eacutils.get_last_eac_regimen_plan(doc, last_eac_encounter, cutoff_datetime),
+            "LastEACFollowupDate": eacutils.get_last_eac_followup_date(doc, last_eac_encounter, cutoff_datetime),
+            "LastEACAdherenceComments": eacutils.get_last_eac_comments(doc, last_eac_encounter, cutoff_datetime),
+            "LastEACReferral": eacutils.get_eac_referral(doc, last_eac_encounter, cutoff_datetime),
+            "LastReferralSwitchCommitteeDate": eacutils.get_referral_switch_commitee_date(doc, last_eac_encounter, cutoff_datetime),
+            "PatientUUID": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
+            "Quarter": commonutils.get_fy_and_quarter_from_date(
+                obsutils.getObsDatetimeFromObs(current_viral_load_obs)), # type: ignore
+            "firstUnsuppressedViralLoad": first_unsuppressed_viral_load_value,
+            "firstUnsuppressedViralLoadDate": first_unsuppressed_viral_load_datetime,
+            "viralLoadAfterLastEAC": viral_load_after_last_eac_value,
+            "viralLoadAfterLastEACDate": viral_load_after_last_eac_datetime,
+            "regimenAfterEAC": regimen_after_last_eac_value,
+            "regimenAfterEACDate": regimen_after_last_eac_datetime
+
+
+        }
+        batch_list.append(record)
+
+        if len(batch_list) >= BATCH_SIZE:
+            save_batch_to_csv(batch_list, full_path, is_first_batch)
+            batch_list = [] # Clear memory
+            is_first_batch = False # Next batches append without headers
+
+
+    # 3. Save any remaining records (the last partial batch)
+    if batch_list:
+        save_batch_to_csv(batch_list, full_path, is_first_batch)
+
+    #df = pd.DataFrame(extracted_results)
+    #print(f"Found {len(df)} matching records.")
+    #print(df.head(20))
+    #return export_dataframe(df, filename)
+    db.client.close()
+    print(f"\nFinal export complete. Total records processed: {size}")
+    print(f"File saved to: {full_path}")
+    return full_path
 
 
 def prepare_filepath(filename=None):
