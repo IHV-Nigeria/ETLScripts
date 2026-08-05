@@ -106,6 +106,32 @@ def get_last_encounter_by_form_id(doc, form_id, cutoff_datetime: Optional[dateti
     
     return matching_encounters[0]
 
+def get_last_encounter(doc, cutoff_datetime: Optional[datetime] = None):
+    encounter_list = doc.get("messageData", {}).get("encounters", [])
+    matching_encounters = []
+
+    # If a cutoff date is not provided use current date as cutoff
+    if cutoff_datetime is None:
+        cutoff_datetime = datetime.now()
+
+    for encounter in encounter_list:
+        if (encounter.get("formId") != ctdutils.CLIENT_TRACKING_DISCONTINUATION_FORM_ID and
+                encounter.get("voided") ==0):
+
+            encounter_datetime = encounter.get("encounterDatetime")
+
+            if isinstance(encounter_datetime, datetime):
+                if encounter_datetime <= cutoff_datetime:
+                    matching_encounters.append(encounter)
+
+    if not matching_encounters:
+        return None
+
+    # 3. Sort by the actual datetime objects (Newest first)
+    matching_encounters.sort(key=lambda x: x.get('encounterDatetime'), reverse=True)
+
+    return matching_encounters[0]
+
 
 
 def get_last_encounter_date(doc, cutoff_datetime: Optional[datetime] = None):

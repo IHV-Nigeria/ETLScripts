@@ -14,7 +14,8 @@ print ("Start time: ", start_time )
 
 cutoff_date = datetime(2025, 12, 31, 23, 59, 59)
 
-EACExporter.export_eac_data(filename="EACLineList_Output_"+datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+".csv", cutoff_datetime=None)
+EACExporter.export_aspire_eac_data(cutoff_datetime=None, filename="EACLineList_Output_" + datetime.now().strftime(
+    "%Y_%m_%d_%H_%M_%S") + ".csv")
 
 end_time = datetime.now()
 print ("End time: ", end_time )

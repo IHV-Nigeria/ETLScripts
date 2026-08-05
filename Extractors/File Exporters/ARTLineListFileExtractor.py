@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, date
+
 import sys
 import os
 
@@ -6,7 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-import etl.CSV_FIle_Exporters.CTDDataExport as CTDLineList
+import etl.CSV_FIle_Exporters.ARTDataExport as ARTLineList
 
 
 start_time = datetime.now()
@@ -14,7 +15,9 @@ print ("Start time: ", start_time )
 
 cutoff_date = datetime(2025, 12, 31, 23, 59, 59)
 
-CTDLineList.export_ctd_data(cutoff_datetime=None)
+# ARTLineList.initialize_art_line_list_data()
+
+ARTLineList.export
 
 end_time = datetime.now()
 print ("End time: ", end_time )

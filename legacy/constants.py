@@ -91,6 +91,7 @@ encounter_type_ids = {
     "Pharmacy Order Form" : 13,
     "HIV Enrollment": 14,
     "Client Tracking and Termination": 15,
+    "Client intake": 20,
     "ART Commencement Form": 25,
     "Viral Load Sample Collection" : 31,
     "Enhanced Adherence Counselling" : 32,
@@ -108,6 +109,7 @@ PHARMACY_FORM_ID = 27
 CLIENT_TRACKING_DISCONTINUATION_FORM_ID = 13
 EAC_FORM_ID = 69
 LAB_FORM_ID = 21
+CLIENT_INTAKE_FORM_ID = 10
 
 PMTCT_HTS_REGISTER_FORM_ID = pmtct_hts_register_concepts.get("Form_ID")
 
