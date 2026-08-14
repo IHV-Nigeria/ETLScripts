@@ -76,38 +76,39 @@ def export_data(cutoff_datetime=None, start_date=None, end_date=None, filename=N
         if not viral_load_obs_list:
             continue
 
-        # Create one record per viral load observation
-        for vl_obs in viral_load_obs_list:
+        # Get pregnancy status from the most recent encounter with a viral load
+        pregnancy_status = None
+        if viral_load_obs_list:
+            pregnancy_status = get_pregnancy_status_for_encounter(doc, viral_load_obs_list[-1].get('encounterId'))
+
+        # Extract data for the first 5 viral loads
+        vl_data_list = []
+        for vl_obs in viral_load_obs_list[:5]:
             viral_load = obsutils.getValueNumericFromObs(vl_obs)
-            
-            # Use sample collection date as the primary date for viral load entry
             viral_load_sample_collection_date = obsutils.getValueDatetimeFromObs(
                 labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, vl_obs))
-            
             viral_load_report_date = obsutils.getValueDatetimeFromObs(
                 labutils.get_reported_date_obs_of_viral_load_obs(doc, vl_obs))
-            
             indication_for_viral_load_test = obsutils.getVariableValueFromObs(
                 labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, vl_obs))
-
-            # Visit date is the sample collection date if available, otherwise observation date
-            visit_date = viral_load_sample_collection_date or obsutils.getObsDatetimeFromObs(vl_obs)
-
-            # Get pregnancy status for this specific visit/encounter
-            pregnancy_status = get_pregnancy_status_for_encounter(doc, vl_obs.get('encounterId'))
-
-            # Get status (e.g., suppressed or not)
             status = "Suppressed" if viral_load and viral_load < 1000 else "Unsuppressed" if viral_load else None
+            
+            vl_data_list.append({
+                "viral_load": viral_load,
+                "sample_collection_date": viral_load_sample_collection_date,
+                "report_date": viral_load_report_date,
+                "indication": indication_for_viral_load_test,
+                "status": status
+            })
 
-            record = create_base_record(
-                doc, header, demographics, birthdate, facility_info, datim_code,
-                art_start_date, pregnancy_status, visit_date,
-                last_drug_pickup_date, last_regimen, days_of_arv_refill,
-                indication_for_viral_load_test, viral_load,
-                viral_load_sample_collection_date, viral_load_report_date,
-                status, visit_date
-            )
-            batch_list.append(record)
+        # Create one record per patient with first 5 viral loads in columns
+        record = create_flattened_record(
+            doc, header, demographics, birthdate, facility_info, datim_code,
+            art_start_date, pregnancy_status,
+            last_drug_pickup_date, last_regimen, days_of_arv_refill,
+            vl_data_list
+        )
+        batch_list.append(record)
 
         if len(batch_list) >= BATCH_SIZE:
             save_batch_to_csv(batch_list, full_path, is_first_batch)
@@ -124,23 +125,21 @@ def export_data(cutoff_datetime=None, start_date=None, end_date=None, filename=N
     return full_path
 
 
-def create_base_record(doc, header, demographics, birthdate, facility_info, datim_code,
-                      art_start_date, pregnancy_status, visit_date,
-                      last_drug_pickup_date, last_regimen, days_of_arv_refill,
-                      indication_for_viral_load_test, viral_load,
-                      viral_load_sample_collection_date, viral_load_report_date,
-                      status, visit_date_record):
-    """Creates a flattened record with all viral load data"""
+def create_flattened_record(doc, header, demographics, birthdate, facility_info, datim_code,
+                         art_start_date, pregnancy_status,
+                         last_drug_pickup_date, last_regimen, days_of_arv_refill,
+                         vl_data_list):
+    """Creates a flattened record with facility info, patient demographics, and first 5 viral loads in columns"""
 
     # Get patient identifiers
     patient_identifier = demographicsutils.get_patient_identifier(4, doc)
     hospital_number = demographicsutils.get_patient_identifier(5, doc)
     patient_uuid = demographics.get("patientUuid")
 
-    # Create record with all required headers (removed create_date and update_date)
+    # Base record with facility and demographics info
     record = {
         "id": patient_uuid,
-        "visit_date": visit_date,
+        "patient_uuid": patient_uuid,
         "state": facility_info.get("State") if facility_info else None,
         "lga": facility_info.get("LGA") if facility_info else None,
         "facility": header.get("facilityName"),
@@ -154,13 +153,24 @@ def create_base_record(doc, header, demographics, birthdate, facility_info, dati
         "last_regimen": last_regimen,
         "days_of_arv_refill": days_of_arv_refill,
         "pregnancy_status": pregnancy_status,
-        "indication_for_viral_load_test": indication_for_viral_load_test,
-        "viral_load": viral_load,
-        "viral_load_sample_collection_date": viral_load_sample_collection_date,
-        "viral_load_report_date": viral_load_report_date,
-        "status": status,
-        "patient_uuid": patient_uuid,
     }
+
+    # Add first 5 viral loads as columns
+    for idx, vl_data in enumerate(vl_data_list, start=1):
+        record[f"viral_load_{idx}"] = vl_data["viral_load"]
+        record[f"viral_load_{idx}_sample_collection_date"] = vl_data["sample_collection_date"]
+        record[f"viral_load_{idx}_report_date"] = vl_data["report_date"]
+        record[f"viral_load_{idx}_indication"] = vl_data["indication"]
+        record[f"viral_load_{idx}_status"] = vl_data["status"]
+
+    # Add empty columns for missing viral loads (up to 5)
+    for idx in range(len(vl_data_list) + 1, 6):
+        record[f"viral_load_{idx}"] = None
+        record[f"viral_load_{idx}_sample_collection_date"] = None
+        record[f"viral_load_{idx}_report_date"] = None
+        record[f"viral_load_{idx}_indication"] = None
+        record[f"viral_load_{idx}_status"] = None
+
     return record
 
 

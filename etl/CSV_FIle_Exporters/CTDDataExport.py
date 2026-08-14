@@ -7,20 +7,16 @@ import logging
 import dao.mongodbdao as mongo_dao
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
-import formslib.hivenrollmentutil as hivenrollmentutils
-import formslib.carecardutils as carecardutils
 import formslib.pharmacyutils as pharmacyutils
 import utils.encounterutils as encounterutils
-import formslib.labutils as labutils
-import formslib.eacutils as eacutils
 import utils.obsutils as obsutils
-import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 import dao.postgresdao as postgres_dao
 from dao.config import MONGO_DATABASE_NAME
 from legacy.constants import ctd_concepts
 
 ctd_form_id = ctd_concepts.get("Form_ID")
+logger = logging.getLogger(__name__)
 
 
 # Global cache to store facilities for O(1) lookup speed
@@ -249,6 +245,14 @@ def upsert_art_line_list_data(cutoff_datetime=None):
 
     print(f"\nBatch insert to postgresql completed. Total records processed: {size}")
 
+
+def _resolve_cutoff_datetime(cutoff_datetime=None):
+    if cutoff_datetime is None:
+        return datetime.now()
+    if isinstance(cutoff_datetime, str):
+        return datetime.fromisoformat(cutoff_datetime.replace("Z", "+00:00"))
+    return cutoff_datetime
+
 def initialize_eac_line_list_data(cutoff_datetime=None):
 
 
@@ -418,146 +422,128 @@ def convert_doc_to_record(doc, cutoff_datetime):
 
 
 def export_ctd_data(cutoff_datetime=None, filename=None):
+    cutoff_datetime = _resolve_cutoff_datetime(cutoff_datetime)
     db_name=MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor, size = mongo_dao.get_ctd_containers(db, db_name)
-    #size = mongo_dao.get_art_container_size(db, db_name)
-    # size=725000
-    print(f"Processing {size} CTD containers...")
-    load_facility_cache(db, db_name)
-    BATCH_SIZE = 1000
-    batch_list = []
+    try:
+        cursor, size = mongo_dao.get_ctd_containers(db, db_name)
+        print(f"Processing {size} CTD containers...")
+        logger.info("Starting CTD export with cutoff %s", cutoff_datetime)
+        load_facility_cache(db, db_name)
+        BATCH_SIZE = 1000
+        batch_list = []
 
-    # cutoff_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1)) if cutoff_datetime else None
+        full_path = prepare_filepath(filename)
+        is_first_batch = True
 
-    start_datetime = commonutils.normalize_clinical_date(datetime(2024, 10, 1))
-    # end_datetime = commonutils.normalize_clinical_date(datetime.now())
-    end_datetime = commonutils.normalize_clinical_date(datetime.now())
+        for doc in tqdm(cursor, total=size, desc="CTD ETL Progress"):
+            if not is_aspire_state(doc):
+                continue
 
-    # 1. Prepare the file path (create directory and name)
-    full_path = prepare_filepath(filename)
+            header = demographicsutils.get_message_header(doc)
+            datim_code = header.get("facilityDatimCode")
+            demographics = demographicsutils.get_patient_demographics(doc)
+            birthdate = commonutils.validate_date(demographics.get("birthdate"))
+            facility_info = get_facility_by_datim(datim_code)
+            art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
+            last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
 
-    # Track if it's the first batch so we can write the CSV header
-    is_first_batch = True
+            last_ctd_encounter = encounterutils.get_last_encounter_date_by_form_id(doc, form_id=ctd_form_id)
+            reason_for_tracking_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Tracking"))
+            reason_for_tracking = obsutils.getVariableValueFromObs(reason_for_tracking_obs)
+            Date_of_Last_Actual_Contact_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Last Actual Contact/ Appointment"))
+            Date_of_Last_Actual_Contact = obsutils.getValueDatetimeFromObs(Date_of_Last_Actual_Contact_obs) if Date_of_Last_Actual_Contact_obs else None
+            date_of_missed_schedule = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Missed Scheduled Appointment"))
+            Date_of_Missed_Scheduled_Appointment = obsutils.getValueDatetimeFromObs(date_of_missed_schedule) if date_of_missed_schedule else None
+            client_verification_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Client Verification"))
+            Client_Verification = obsutils.getVariableValueFromObs(client_verification_obs)
+            indication_for_client_verification_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Indication for Client Verification"))
+            Indication_for_Client_Verification = obsutils.getVariableValueFromObs(indication_for_client_verification_obs)
+            patient_care_discontinued_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Patient Care in Facility Discontinued"))
+            Patient_Care_in_Facility_Discontinued = obsutils.getVariableValueFromObs(patient_care_discontinued_obs)
+            date_of_discontinuation_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Discontinuation"))
+            Date_of_Discontinuation = obsutils.getValueDatetimeFromObs(date_of_discontinuation_obs) if date_of_discontinuation_obs else None
+            reason_for_discontinuation_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Discontinuation"))
+            Reason_for_Discontinuation = obsutils.getVariableValueFromObs(reason_for_discontinuation_obs)
+            facility_transferred_to_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Facility transferred to"))
+            Facility_transferred_to = obsutils.getVariableValueFromObs(facility_transferred_to_obs)
+            cause_of_death_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Cause of Death"))
+            Cause_of_Death = obsutils.getVariableValueFromObs(cause_of_death_obs)
+            va_cause_of_death_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("VA Cause of Death"))
+            VA_Cause_of_Death = obsutils.getVariableValueFromObs(va_cause_of_death_obs)
+            adult_causes_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Adult Causes"))
+            Adult_Causes = obsutils.getVariableValueFromObs(adult_causes_obs)
+            child_causes_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Child Causes"))
+            Child_Causes = obsutils.getVariableValueFromObs(child_causes_obs)
+            other_cause_of_death_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Other cause of death"))
+            Other_cause_of_death = obsutils.getVariableValueFromObs(other_cause_of_death_obs)
+            reason_to_discontinue_care_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason to Discontinue Care"))
+            Reason_to_Discontinue_Care = obsutils.getVariableValueFromObs(reason_to_discontinue_care_obs)
+            discontinue_care_other_specify_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Discontinue Care other specify"))
+            Discontinue_Care_other_specify = obsutils.getVariableValueFromObs(discontinue_care_other_specify_obs)
+            date_of_lost_to_follow_up_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Lost to follow up"))
+            Date_of_Lost_to_follow_up = obsutils.getValueDatetimeFromObs(date_of_lost_to_follow_up_obs) if date_of_lost_to_follow_up_obs else None
+            reason_for_lost_to_follow_up_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Lost to follow up"))
+            Reason_for_Lost_to_follow_up = obsutils.getVariableValueFromObs(reason_for_lost_to_follow_up_obs)
+            reason_for_lost_to_follow_up_other_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Lost to follow up_Other"))
+            Reason_for_Lost_to_follow_up_Other = obsutils.getVariableValueFromObs(reason_for_lost_to_follow_up_other_obs)
 
-    #extracted_results = []
-    for doc in tqdm(cursor, total=size, desc="CTD ETL Progress"):
+            record = {
+                "uuid": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
+                "state": facility_info.get("State") if facility_info else None,
+                "lga" : facility_info.get("LGA") if facility_info else None,
+                "facility_name": header.get("facilityName"),
+                "datim_code": header.get("facilityDatimCode"),
+                "patient_id": demographicsutils.get_patient_identifier(4, doc),
+                "hospital_no": demographicsutils.get_patient_identifier(5, doc),
+                "last_pickup_date": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
+                "Date of Tracking": last_ctd_encounter,
+                "Reason for Tracking": reason_for_tracking,
+                "Date of Last Actual Contact/ Appointment": Date_of_Last_Actual_Contact,
+                "Date of Missed Scheduled Appointment": Date_of_Missed_Scheduled_Appointment,
+                "Client Verification": Client_Verification,
+                "Indication for Client Verification": Indication_for_Client_Verification,
+                "Patient Care in Facility Discontinued": Patient_Care_in_Facility_Discontinued,
+                "Date of Discontinuation": Date_of_Discontinuation,
+                "Reason for Discontinuation": Reason_for_Discontinuation,
+                "Facility transferred to": Facility_transferred_to,
+                "Cause of Death": Cause_of_Death,
+                "VA Cause of Death": VA_Cause_of_Death,
+                "Adult Causes": Adult_Causes,
+                "Child Causes": Child_Causes,
+                "Other cause of death": Other_cause_of_death,
+                "Reason to Discontinue Care": Reason_to_Discontinue_Care,
+                "Discontinue Care other specify": Discontinue_Care_other_specify,
+                "Date of Lost to follow up": Date_of_Lost_to_follow_up,
+                "Reason for Lost to follow up": Reason_for_Lost_to_follow_up,
+                "Reason for Lost to follow up_Other": Reason_for_Lost_to_follow_up_Other,
+            }
+            batch_list.append(record)
 
+            if len(batch_list) >= BATCH_SIZE:
+                save_batch_to_csv(batch_list, full_path, is_first_batch)
+                batch_list = []
+                is_first_batch = False
 
-        if not is_aspire_state(doc):
-            continue  # Skip this record and move to the next one
-
-        header = demographicsutils.get_message_header(doc)
-        datim_code = header.get("facilityDatimCode")
-        demographics = demographicsutils.get_patient_demographics(doc)
-        birthdate = commonutils.validate_date(demographics.get("birthdate"))
-        facility_info = get_facility_by_datim(datim_code)
-        art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
-        last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
-
-        last_ctd_encounter = encounterutils.get_last_encounter_date_by_form_id(doc, form_id=ctd_form_id)
-        # last_ctd_encounter_date = encounterutils.get_encounter_datetime(last_ctd_encounter) if last_ctd_encounter else None
-        reason_for_tracking_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Tracking"))
-        reason_for_tracking = obsutils.getVariableValueFromObs(reason_for_tracking_obs)
-        Date_of_Last_Actual_Contact_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Last Actual Contact/ Appointment"))
-        Date_of_Last_Actual_Contact = obsutils.getValueDatetimeFromObs(Date_of_Last_Actual_Contact_obs) if Date_of_Last_Actual_Contact_obs else None
-        date_of_missed_schedule = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Missed Scheduled Appointment"))
-        Date_of_Missed_Scheduled_Appointment = obsutils.getValueDatetimeFromObs(date_of_missed_schedule) if date_of_missed_schedule else None
-        client_verification_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Client Verification"))
-        Client_Verification = obsutils.getVariableValueFromObs(client_verification_obs)
-        indication_for_client_verification_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Indication for Client Verification"))
-        Indication_for_Client_Verification = obsutils.getVariableValueFromObs(indication_for_client_verification_obs)
-        patient_care_discontinued_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Patient Care in Facility Discontinued"))
-        Patient_Care_in_Facility_Discontinued = obsutils.getVariableValueFromObs(patient_care_discontinued_obs)
-        date_of_discontinuation_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Discontinuation"))
-        Date_of_Discontinuation = obsutils.getValueDatetimeFromObs(date_of_discontinuation_obs) if date_of_discontinuation_obs else None
-        reason_for_discontinuation_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Discontinuation"))
-        Reason_for_Discontinuation = obsutils.getVariableValueFromObs(reason_for_discontinuation_obs)
-        facility_transferred_to_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Facility transferred to"))
-        Facility_transferred_to = obsutils.getVariableValueFromObs(facility_transferred_to_obs)
-        cause_of_death_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Cause of Death"))
-        Cause_of_Death = obsutils.getVariableValueFromObs(cause_of_death_obs)
-        va_cause_of_death_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("VA Cause of Death"))
-        VA_Cause_of_Death = obsutils.getVariableValueFromObs(va_cause_of_death_obs)
-        adult_causes_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Adult Causes"))
-        Adult_Causes = obsutils.getVariableValueFromObs(adult_causes_obs)
-        child_causes_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Child Causes"))
-        Child_Causes = obsutils.getVariableValueFromObs(child_causes_obs)
-        other_cause_of_death_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Other cause of death"))
-        Other_cause_of_death = obsutils.getVariableValueFromObs(other_cause_of_death_obs)
-        reason_to_discontinue_care_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason to Discontinue Care"))
-        Reason_to_Discontinue_Care = obsutils.getVariableValueFromObs(reason_to_discontinue_care_obs)
-        discontinue_care_other_specify_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Discontinue Care other specify"))
-        Discontinue_Care_other_specify = obsutils.getVariableValueFromObs(discontinue_care_other_specify_obs)
-        date_of_lost_to_follow_up_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Date of Lost to follow up"))
-        Date_of_Lost_to_follow_up = obsutils.getValueDatetimeFromObs(date_of_lost_to_follow_up_obs) if date_of_lost_to_follow_up_obs else None
-        reason_for_lost_to_follow_up_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Lost to follow up"))
-        Reason_for_Lost_to_follow_up = obsutils.getVariableValueFromObs(reason_for_lost_to_follow_up_obs)
-        reason_for_lost_to_follow_up_other_obs = obsutils.get_last_obs_before_date(doc, form_id=ctd_form_id, concept_id=ctd_concepts.get("Reason for Lost to follow up_Other"))
-        Reason_for_Lost_to_follow_up_Other = obsutils.getVariableValueFromObs(reason_for_lost_to_follow_up_other_obs)
-
-
-        record = {
-
-            "uuid": demographicsutils.get_patient_demographics(doc).get("patientUuid"),
-            "state": facility_info.get("State") if facility_info else None,
-            "lga" : facility_info.get("LGA") if facility_info else None,
-            "facility_name": header.get("facilityName"),
-            "datim_code": header.get("facilityDatimCode"),
-            "patient_id": demographicsutils.get_patient_identifier(4, doc),
-            "hospital_no": demographicsutils.get_patient_identifier(5, doc),
-            # "dob": birthdate,
-            # "sex": demographics.get("gender"),
-            # "art_start_date": art_start_date,
-            "last_pickup_date": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
-            # "days_of_arv_pickup": pharmacyutils.get_last_drug_pickup_duration(doc,last_arv_pickup_obs),
-            # "pill_balance": pharmacyutils.get_pill_balance(doc,last_arv_pickup_obs),
-
-            "Date of Tracking": last_ctd_encounter,
-            "Reason for Tracking": reason_for_tracking,
-            # "Guardian / Treatment Partner's Name": "",
-            # "Guardian / Treatment Partner's Contact Address": "",
-            # "Guardian / Treatment Partner's Phone Number": "",
-            "Date of Last Actual Contact/ Appointment": Date_of_Last_Actual_Contact,
-            "Date of Missed Scheduled Appointment": Date_of_Missed_Scheduled_Appointment,
-            "Client Verification": Client_Verification,
-            "Indication for Client Verification": Indication_for_Client_Verification,
-            "Patient Care in Facility Discontinued": Patient_Care_in_Facility_Discontinued,
-            "Date of Discontinuation": Date_of_Discontinuation,
-            "Reason for Discontinuation": Reason_for_Discontinuation,
-            "Facility transferred to": Facility_transferred_to,
-            "Cause of Death": Cause_of_Death,
-            "VA Cause of Death": VA_Cause_of_Death,
-            "Adult Causes": Adult_Causes,
-            "Child Causes": Child_Causes,
-            "Other cause of death": Other_cause_of_death,
-            "Reason to Discontinue Care": Reason_to_Discontinue_Care,
-            "Discontinue Care other specify": Discontinue_Care_other_specify,
-            "Date of Lost to follow up": Date_of_Lost_to_follow_up,
-            "Reason for Lost to follow up": Reason_for_Lost_to_follow_up,
-            "Reason for Lost to follow up_Other": Reason_for_Lost_to_follow_up_Other,
-
-        }
-        batch_list.append(record)
-
-        if len(batch_list) >= BATCH_SIZE:
+        if batch_list:
             save_batch_to_csv(batch_list, full_path, is_first_batch)
-            batch_list = [] # Clear memory
-            is_first_batch = False # Next batches append without headers
+
+        print(f"\nFinal export complete. Total records processed: {size}")
+        print(f"File saved to: {full_path}")
+        logger.info("Completed CTD export to %s", full_path)
+        return full_path
+    finally:
+        db.client.close()
 
 
-    # 3. Save any remaining records (the last partial batch)
-    if batch_list:
-        save_batch_to_csv(batch_list, full_path, is_first_batch)
-
-    #df = pd.DataFrame(extracted_results)
-    #print(f"Found {len(df)} matching records.")
-    #print(df.head(20))
-    #return export_dataframe(df, filename)
-    db.client.close()
-    print(f"\nFinal export complete. Total records processed: {size}")
-    print(f"File saved to: {full_path}")
-    return full_path
+def run_ctd_export(cutoff_datetime=None, filename=None):
+    resolved_cutoff_datetime = _resolve_cutoff_datetime(cutoff_datetime)
+    output_path = export_ctd_data(cutoff_datetime=resolved_cutoff_datetime, filename=filename)
+    return {
+        "output_path": output_path,
+        "filename": os.path.basename(output_path),
+        "cutoff_datetime": resolved_cutoff_datetime.isoformat(),
+    }
 
 
 def prepare_filepath(filename=None):
@@ -616,4 +602,3 @@ def is_aspire_state(doc):
         state = facility.get("State", "").strip().upper()
         return state in ASPIRE_STATES
     return False
-

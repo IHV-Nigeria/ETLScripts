@@ -22,9 +22,8 @@ def export_transit_line_list_data(cutoff_datetime=None, filename=None):
     """
     db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_transfer_containers(db,db_name)
-    # size = mongo_dao.get_transfer_containers(db,db_name)
-    size = 700_000
+    cursor = mongo_dao.get_transfer_containers(db,db_name)[0]
+    size = mongo_dao.get_transfer_containers(db,db_name)[1]
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -59,7 +58,8 @@ def export_transit_line_list_data(cutoff_datetime=None, filename=None):
             "UniqueID": demographicsutils.get_patient_identifier(4, doc),
             "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
             "Sex": demographics.get("gender"),
-            "TransitId": demographicsutils.get_patient_identifier(100, doc),
+            "TransitId100": demographicsutils.get_patient_identifier(100, doc),
+            "TransitId101": demographicsutils.get_patient_identifier(101, doc),
             "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
             "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
 
