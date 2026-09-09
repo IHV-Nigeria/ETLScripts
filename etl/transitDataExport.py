@@ -22,8 +22,9 @@ def export_transit_line_list_data(cutoff_datetime=None, filename=None):
     """
     db_name=config.MONGO_DATABASE_NAME
     db = mongo_dao.get_db_connection(db_name)
-    cursor = mongo_dao.get_transfer_containers(db,db_name)[0]
-    size = mongo_dao.get_transfer_containers(db,db_name)[1]
+    result = mongo_dao.get_transfer_containers(db, db_name)
+    export_cursor_to_json(result[0], filename="MyExport")
+    cursor, size = result[0], result[1]
     print(f"Processing {size} ART containers...")
     load_facility_cache(db, db_name)
     BATCH_SIZE = 1000
@@ -60,6 +61,8 @@ def export_transit_line_list_data(cutoff_datetime=None, filename=None):
             "Sex": demographics.get("gender"),
             "TransitId100": demographicsutils.get_patient_identifier(100, doc),
             "TransitId101": demographicsutils.get_patient_identifier(101, doc),
+            "TransitId102": demographicsutils.get_patient_identifier(102, doc),
+            "TransitId16": demographicsutils.get_patient_identifier(16, doc),
             "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
             "LastVisitDate": encounterutils.get_last_encounter_date(doc,cutoff_datetime),
 
@@ -82,6 +85,31 @@ def export_transit_line_list_data(cutoff_datetime=None, filename=None):
     print(f"File saved to: {full_path}")
     return full_path
 
+def export_cursor_to_json(cursor, filename=None):
+    """
+    Takes a MongoDB cursor and exports all documents to a JSON file in the /output directory.
+    :param cursor: MongoDB cursor object
+    :param filename: Optional output filename (without extension)
+    :return: Full path of the saved JSON file
+    """
+    import json
+
+    output_dir = './output'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    fname = f"{filename}_{timestamp}.json" if filename else f"TransitExport_{timestamp}.json"
+    full_path = os.path.join(output_dir, fname)
+
+    records = [dict(doc) for doc in cursor]
+
+    with open(full_path, 'w', encoding='utf-8') as f:
+        json.dump(records, f, indent=2, default=str)
+
+    print(f"JSON export complete. Total records: {len(records)}")
+    print(f"File saved to: {full_path}")
+    return full_path
 
 def prepare_filepath(filename=None):
     """Creates the directory and generates the full path for the CSV."""

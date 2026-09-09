@@ -1,7 +1,5 @@
 from typing import Final, Optional
 from datetime import datetime, date
-
-from formslib.artcommencementutil import REGIMEN_LINE_AT_ART_START_CONCEPT_ID
 from formslib.eacutils import get_eac_date
 import utils.obsutils as obsutils
 import formslib.ctdutils as ctdutils
@@ -26,8 +24,8 @@ def get_first_viral_load_obs(doc, cutoff_datetime: Optional[datetime] = None):
     viral_load_obs = obsutils.get_first_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, cutoff_datetime)
     return viral_load_obs
 
-def get_nth_viral_load_obs(doc, n , cutoff_datetime: Optional[datetime] = None):
-    nth_viral_load_obs = obsutils.get_nth_obs(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, cutoff_datetime)
+def get_nth_viral_load_obs(doc, n, cutoff_datetime: Optional[datetime] = None):
+    nth_viral_load_obs = obsutils.get_nth_obs_reversed(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, cutoff_datetime)
     return nth_viral_load_obs
 
 def get_nth_viral_load_obs_of_last_x_viral_load_obs(doc, n, x, cutoff_datetime: Optional[datetime] = None):
@@ -50,15 +48,15 @@ def get_nth_viral_sample_collection_obs(doc, nth_viral_load_obs):
     sample_collection_obs = obsutils.get_obs_with_encounter_id(doc, SAMPLE_COLLECTION_DATE_CONCEPT_ID, encounter_id)
     return sample_collection_obs
 
-def get_nth_viral_load_reported_obs(doc, n , nth_viral_load_obs):
-    if nth_viral_load_obs is None:
-        return None
-    
-    encounter_id = nth_viral_load_obs.get('encounterId') 
-    
-    reported_date_obs = obsutils.get_obs_with_encounter_id(doc, VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID, encounter_id)
-    
-    return reported_date_obs
+# def get_nth_viral_load_reported_obs(doc, n, nth_viral_load_obs):
+#     if nth_viral_load_obs is None:
+#         return None
+#
+#     encounter_id = nth_viral_load_obs.get('encounterId')
+#
+#     reported_date_obs = obsutils.get_obs_with_encounter_id(doc, VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID, encounter_id)
+#
+#     return reported_date_obs
 
 def get_nth_viral_load_obs_of_last_x_viral_loads(doc, n, x, cutoff_datetime: Optional[datetime] = None):
     viral_load_obs = obsutils.get_nth_obs_of_last_x_obs2(doc, LAB_FORM_ID, VIRAL_LOAD_CONCEPT_ID, n, x, cutoff_datetime)

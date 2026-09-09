@@ -22,6 +22,7 @@ from dao.config import MONGO_DATABASE_NAME
 
 # Global cache to store facilities for O(1) lookup speed
 _facility_cache = {}
+ASPIRE_STATES = {"FCT", "KATSINA", "NASARAWA", "RIVERS"}
 
 
 def export_data(cutoff_datetime=None, start_date=None, end_date=None, filename=None):
@@ -56,6 +57,10 @@ def export_data(cutoff_datetime=None, start_date=None, end_date=None, filename=N
         demographics = demographicsutils.get_patient_demographics(doc)
         birthdate = commonutils.normalize_clinical_date(demographics.get("birthdate"))
         facility_info = get_facility_by_datim(datim_code)
+
+        if not is_aspire_state(facility_info):
+            continue
+
         art_start_date = commonutils.normalize_clinical_date(artcommence.get_art_start_date(doc, cutoff_datetime))
 
         # Get pharmacy data (drug pickup and regimen)
@@ -64,42 +69,22 @@ def export_data(cutoff_datetime=None, start_date=None, end_date=None, filename=N
         last_regimen = pharmacyutils.get_current_regimen(doc, cutoff_datetime)
         days_of_arv_refill = pharmacyutils.get_last_drug_pickup_duration(doc, last_arv_obs)
 
-        # Get all viral load observations (non-voided obs from LAB form with VIRAL_LOAD concept)
-        viral_load_obs_list = get_all_viral_load_obs(doc, cutoff_datetime)
-
-        # Filter by date range if provided
-        if start_date or end_date:
-            viral_load_obs_list = [vl for vl in viral_load_obs_list 
-                                   if is_obs_within_date_range(vl, start_date, end_date)]
+        # Populate first-to-fifth viral load columns with the shared labutils helpers.
+        vl_data_list = get_first_five_viral_load_data(
+            doc,
+            cutoff_datetime=cutoff_datetime,
+            start_date=start_date,
+            end_date=end_date
+        )
 
         # If no viral loads after filtering, skip this patient
-        if not viral_load_obs_list:
+        if not vl_data_list:
             continue
 
         # Get pregnancy status from the most recent encounter with a viral load
         pregnancy_status = None
-        if viral_load_obs_list:
-            pregnancy_status = get_pregnancy_status_for_encounter(doc, viral_load_obs_list[-1].get('encounterId'))
-
-        # Extract data for the first 5 viral loads
-        vl_data_list = []
-        for vl_obs in viral_load_obs_list[:5]:
-            viral_load = obsutils.getValueNumericFromObs(vl_obs)
-            viral_load_sample_collection_date = obsutils.getValueDatetimeFromObs(
-                labutils.get_sample_collection_date_obs_of_viral_load_obs(doc, vl_obs))
-            viral_load_report_date = obsutils.getValueDatetimeFromObs(
-                labutils.get_reported_date_obs_of_viral_load_obs(doc, vl_obs))
-            indication_for_viral_load_test = obsutils.getVariableValueFromObs(
-                labutils.get_viral_load_indication_obs_of_viral_load_obs(doc, vl_obs))
-            status = "Suppressed" if viral_load and viral_load < 1000 else "Unsuppressed" if viral_load else None
-            
-            vl_data_list.append({
-                "viral_load": viral_load,
-                "sample_collection_date": viral_load_sample_collection_date,
-                "report_date": viral_load_report_date,
-                "indication": indication_for_viral_load_test,
-                "status": status
-            })
+        if vl_data_list:
+            pregnancy_status = get_pregnancy_status_for_encounter(doc, vl_data_list[-1]["obs"].get('encounterId'))
 
         # Create one record per patient with first 5 viral loads in columns
         record = create_flattened_record(
@@ -153,6 +138,31 @@ def create_flattened_record(doc, header, demographics, birthdate, facility_info,
         "last_regimen": last_regimen,
         "days_of_arv_refill": days_of_arv_refill,
         "pregnancy_status": pregnancy_status,
+        "viral_load_1": "",
+        "viral_load_1_sample_collection_date": "",
+        "viral_load_1_report_date": "",
+        "viral_load_1_indication": "",
+        "viral_load_1_status": "",
+        "viral_load_2": "",
+        "viral_load_2_sample_collection_date": "",
+        "viral_load_2_report_date": "",
+        "viral_load_2_indication": "",
+        "viral_load_2_status": "",
+        "viral_load_3": "",
+        "viral_load_3_sample_collection_date": "",
+        "viral_load_3_report_date": "",
+        "viral_load_3_indication": "",
+        "viral_load_3_status": "",
+        "viral_load_4": "",
+        "viral_load_4_sample_collection_date": "",
+        "viral_load_4_report_date": "",
+        "viral_load_4_indication": "",
+        "viral_load_4_status": "",
+        "viral_load_5": "",
+        "viral_load_5_sample_collection_date": "",
+        "viral_load_5_report_date": "",
+        "viral_load_5_indication": "",
+        "viral_load_5_status": ""
     }
 
     # Add first 5 viral loads as columns
@@ -162,14 +172,6 @@ def create_flattened_record(doc, header, demographics, birthdate, facility_info,
         record[f"viral_load_{idx}_report_date"] = vl_data["report_date"]
         record[f"viral_load_{idx}_indication"] = vl_data["indication"]
         record[f"viral_load_{idx}_status"] = vl_data["status"]
-
-    # Add empty columns for missing viral loads (up to 5)
-    for idx in range(len(vl_data_list) + 1, 6):
-        record[f"viral_load_{idx}"] = None
-        record[f"viral_load_{idx}_sample_collection_date"] = None
-        record[f"viral_load_{idx}_report_date"] = None
-        record[f"viral_load_{idx}_indication"] = None
-        record[f"viral_load_{idx}_status"] = None
 
     return record
 
@@ -218,40 +220,133 @@ def get_facility_by_datim(datim_code):
     return _facility_cache.get(datim_code)
 
 
-def get_all_viral_load_obs(doc, cutoff_datetime=None):
-    """
-    Returns all viral load observations for a patient up to the cutoff date,
-    sorted from oldest to newest.
-    """
-    obs_list = doc.get("messageData", {}).get("obs", [])
+def is_blank_value(value):
+    return value is None or (isinstance(value, str) and value.strip() == "")
+
+
+def get_normalized_value_datetime(obs):
+    if not obs:
+        return None
+
+    value_datetime = obsutils.getValueDatetimeFromObs(obs)
+    if value_datetime is not None:
+        return value_datetime
+
+    raw_value_datetime = obs.get("valueDatetime")
+    if isinstance(raw_value_datetime, dict):
+        raw_value_datetime = raw_value_datetime.get("$date")
+
+    return commonutils.normalize_datetime(raw_value_datetime)
+
+
+def get_indication_value(obs):
+    if not obs:
+        return None
+
+    for value in (
+        obsutils.getVariableValueFromObs(obs),
+        obsutils.getValueTextFromObs(obs),
+        obsutils.getVariableNameFromObs(obs),
+    ):
+        if not is_blank_value(value):
+            return value
+
+    return None
+
+
+def get_lab_obs_by_encounter_id(doc, encounter_id, concept_id):
+    if not encounter_id:
+        return None
+
     matching_obs = []
-
-    if cutoff_datetime is None:
-        cutoff_datetime = datetime.now()
-    cutoff_datetime = commonutils.normalize_clinical_date(cutoff_datetime)
-
-    for obs in obs_list:
-        # Check basic criteria: LAB form, VIRAL_LOAD concept, not voided
+    for obs in doc.get("messageData", {}).get("obs", []):
         if (obs.get("formId") == labutils.LAB_FORM_ID and
-            obs.get("conceptId") == labutils.VIRAL_LOAD_CONCEPT_ID and
-            obs.get("voided") == 0):
-
-            # Normalize the observation date
-            obs_dt = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
-
-            # Check if date is valid and within cutoff
-            if isinstance(obs_dt, datetime) and obs_dt <= cutoff_datetime:
-                matching_obs.append(obs)
+                obs.get("conceptId") == concept_id and
+                obs.get("encounterId") == encounter_id and
+                obs.get("voided") == 0):
+            matching_obs.append(obs)
 
     if not matching_obs:
-        return []
+        return None
 
-    # Sort from oldest to newest
     matching_obs.sort(
-        key=lambda x: commonutils.normalize_clinical_date(x.get('obsDatetime')) or datetime(1900, 1, 1)
+        key=lambda obs: commonutils.normalize_clinical_date(obs.get("obsDatetime")) or datetime(1900, 1, 1)
+    )
+    return matching_obs[0]
+
+
+
+def build_viral_load_data(doc, viral_load_obs):
+    if not viral_load_obs:
+        return None
+
+    viral_load = obsutils.getValueNumericFromObs(viral_load_obs)
+    encounter_id = viral_load_obs.get("encounterId")
+    sample_collection_obs = get_lab_obs_by_encounter_id(doc, encounter_id, labutils.SAMPLE_COLLECTION_DATE_CONCEPT_ID)
+    reported_date_obs = get_lab_obs_by_encounter_id(doc, encounter_id, labutils.VIRAL_LOAD_REPORTED_DATE_CONCEPT_ID)
+    indication_obs = get_lab_obs_by_encounter_id(doc, encounter_id, labutils.VIRAL_LOAD_INDICATION_CONCEPT_ID)
+
+    return {
+        "obs": viral_load_obs,
+        "viral_load": viral_load,
+        "sample_collection_date": get_normalized_value_datetime(sample_collection_obs),
+        "report_date": get_normalized_value_datetime(reported_date_obs),
+        "indication": get_indication_value(indication_obs),
+        "status": "Suppressed" if viral_load is not None and viral_load < 1000
+        else "Unsuppressed" if viral_load is not None else None
+    }
+
+
+def get_first_five_viral_load_data(doc, cutoff_datetime=None, start_date=None, end_date=None):
+    viral_load_obs_list = get_all_viral_load_obs(doc, cutoff_datetime)
+    effective_end_date = end_date
+
+    if cutoff_datetime and effective_end_date:
+        effective_end_date = min(cutoff_datetime, effective_end_date)
+    elif cutoff_datetime:
+        effective_end_date = cutoff_datetime
+
+    filtered_viral_load_obs_list = [
+        viral_load_obs for viral_load_obs in viral_load_obs_list
+        if is_obs_within_date_range(viral_load_obs, start_date, effective_end_date)
+    ]
+
+    return [
+        build_viral_load_data(doc, viral_load_obs)
+        for viral_load_obs in filtered_viral_load_obs_list[:5]
+    ]
+
+
+def get_all_viral_load_obs(doc, cutoff_datetime=None):
+    viral_load_obs_list = []
+
+    for obs in doc.get("messageData", {}).get("obs", []):
+        if (obs.get("formId") == labutils.LAB_FORM_ID and
+                obs.get("conceptId") == labutils.VIRAL_LOAD_CONCEPT_ID and
+                obs.get("voided") == 0):
+            obs_datetime = commonutils.normalize_clinical_date(obs.get("obsDatetime"))
+            if not isinstance(obs_datetime, datetime):
+                continue
+            if cutoff_datetime and obs_datetime > cutoff_datetime:
+                continue
+            viral_load_obs_list.append(obs)
+
+    viral_load_obs_list.sort(
+        key=lambda obs: commonutils.normalize_clinical_date(obs.get("obsDatetime")) or datetime(1900, 1, 1)
     )
 
-    return matching_obs
+    return viral_load_obs_list
+
+
+def is_aspire_state(facility_info):
+    if not facility_info:
+        return False
+
+    state = facility_info.get("State")
+    if not isinstance(state, str):
+        return False
+
+    return state.strip().upper() in ASPIRE_STATES
 
 
 def get_pregnancy_status_for_encounter(doc, encounter_id):
@@ -294,4 +389,3 @@ def is_obs_within_date_range(obs, start_date=None, end_date=None):
         return False
     
     return True
-

@@ -4,6 +4,7 @@ def has_biometric_captured(doc):
     if patient_biometrics:
         return True
     return False
+
 def get_patient_biometric_data(doc):
     message_data = doc.get("messageData", {})
     patient_biometrics = message_data.get("patientBiometrics", [])

@@ -103,7 +103,7 @@ def get_transfer_containers(db,db_name=config.MONGO_DATABASE_NAME):
     query = {
         "messageData.patientIdentifiers": {
             "$elemMatch": {
-                "identifierType": { "$in": [100, 101] },
+                "identifierType": { "$in": [16, 100, 101, 102] },
                 "voided": 0
             }
         }

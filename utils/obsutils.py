@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict
 from datetime import datetime
-
+import formslib.labutils as labutils
 from pandas import to_datetime
 
 import legacy.constants
@@ -393,6 +393,26 @@ def get_nth_obs_of_last_x_obs(doc, form_id, concept_id, n, x, cutoff_datetime: O
 
     return None
 
+def get_lab_obs_by_encounter_id(doc, encounter_id, concept_id):
+    if not encounter_id:
+        return None
+
+    matching_obs = []
+    for obs in doc.get("messageData", {}).get("obs", []):
+        if (obs.get("formId") == labutils.LAB_FORM_ID and
+                obs.get("conceptId") == concept_id and
+                obs.get("encounterId") == encounter_id and
+                obs.get("voided") == 0):
+            matching_obs.append(obs)
+
+    if not matching_obs:
+        return None
+
+    matching_obs.sort(
+        key=lambda obs: commonutils.normalize_clinical_date(obs.get("obsDatetime")) or datetime(1900, 1, 1)
+    )
+    return matching_obs[0]
+
 def get_nth_obs_of_last_x_obs2(doc, form_id, concept_id, n, x, cutoff_datetime: Optional[datetime] = None):
     obs_list = doc.get("messageData", {}).get("obs", [])
 
@@ -472,7 +492,7 @@ def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime]
                     filtered_obs.append((obs_dt, ob))
     
     # 5. Sort by datetime ascending
-    filtered_obs.sort(key=lambda x: x[0],reverse=True)
+    filtered_obs.sort(key=lambda x: x[0],reverse=False)
     
     # 6. Return nth result (1-indexed)
     try:
@@ -481,6 +501,56 @@ def get_nth_obs(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime]
     except (IndexError, TypeError):
         return None
     
+    return None
+
+def get_nth_obs_reversed(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime] = None):
+    """
+    Retrieves the nth observation for a specific form and concept,
+    sorted by date, starting from a particular start datetime.
+    """
+    # 1. Access observations array
+    observations = doc.get('messageData', {}).get('obs', [])
+
+    filtered_obs = []
+
+    for ob in observations:
+        # 2. Match form and concept IDs
+        if ob.get('formId') == form_id and ob.get('conceptId') == concept_id:
+
+            # 3. FIX: Safely extract and parse the datetime
+            raw_date = ob.get('obsDatetime')
+            obs_dt = None
+
+            if isinstance(raw_date, dict) and '$date' in raw_date:
+                # Handle MongoDB format: {"$date": "2023-07-12T23:00:00.000Z"}
+                date_str = raw_date['$date']
+                # Replace 'Z' with +00:00 for fromisoformat compatibility
+                obs_dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            elif isinstance(raw_date, datetime):
+                # If it's already a datetime (e.g., if using a modern MongoDB driver directly)
+                obs_dt = raw_date
+            elif isinstance(raw_date, str):
+                # If it's stored as a simple string
+                obs_dt = datetime.fromisoformat(raw_date.replace('Z', '+00:00'))
+
+            # 4. Filter and Append
+            if obs_dt:
+                if cutoff_datetime:
+                    if obs_dt >= cutoff_datetime:
+                        filtered_obs.append((obs_dt, ob))
+                else:
+                    filtered_obs.append((obs_dt, ob))
+
+    # 5. Sort by datetime ascending
+    filtered_obs.sort(key=lambda x: x[0],reverse=True)
+
+    # 6. Return nth result (1-indexed)
+    try:
+        if 0 < n <= len(filtered_obs):
+            return filtered_obs[n-1][1]
+    except (IndexError, TypeError):
+        return None
+
     return None
 
 def get_nth_obs3(doc, form_id, concept_id, n, cutoff_datetime: Optional[datetime] = None):
