@@ -1,22 +1,19 @@
-#import mongo_utils as utils
-#import constants as constants
-from email import utils
 import pandas as pd
 from tqdm import tqdm
 from datetime import datetime, date
 import os
-
+from utils.decryptor import decrypt_ciphertext
 import dao.mongodbdao as mongo_dao
 import utils.demographicutils as demographicsutils
 import formslib.artcommencementutil as artcommence
 import formslib.hivenrollmentutil as hivenrollmentutils
-import formslib.carecardutils as carecardutils
+# import formslib.carecardutils as carecardutils
 import formslib.pharmacyutils as pharmacyutils
-import utils.encounterutils as encounterutils
-import formslib.labutils as labutils
-import formslib.eacutils as eacutils
-import utils.obsutils as obsutils
-import formslib.ctdutils as ctdutils
+# import utils.encounterutils as encounterutils
+# import formslib.labutils as labutils
+# import formslib.eacutils as eacutils
+# import utils.obsutils as obsutils
+# import formslib.ctdutils as ctdutils
 import utils.commonutils as commonutils
 from dao import config
 from formslib.hivenrollmentutil import EDUCATION_LEVEL_CONCEPT_ID
@@ -63,18 +60,25 @@ def export_cdr_line_list_data(cutoff_datetime=None, filename=None):
             art_start_date = commonutils.validate_date(artcommence.get_art_start_date(doc, cutoff_datetime))
             last_arv_pickup_obs = pharmacyutils.get_last_arv_obs(doc, cutoff_datetime)
             educational_status = hivenrollmentutils.get_last_education_level_obs(doc, cutoff_datetime)
-
+            State_Province = demographics.get("stateProvince")
+            Phone_Number = demographics.get("phoneNumber")
+            Address = demographics.get("address2")
+            City_Village = demographics.get("cityVillage")
 
 
             record = {
                 "State": facility_info.get("State") if facility_info else None,
                 "LGA" : facility_info.get("LGA") if facility_info else None,
+                "State Province": State_Province,
+                "Phone Number": decrypt_ciphertext(Phone_Number) if Phone_Number else None,
+                "Address" : decrypt_ciphertext(Address) if Address else None,
+                "City/Village": City_Village if City_Village and "NULL" not in City_Village else None,
                 "DatimCode" : header.get("facilityDatimCode"),
                 "FacilityName": header.get("facilityName"),
                 "UniqueID": demographicsutils.get_patient_identifier(4, doc),
                 "HospitalNumber": demographicsutils.get_patient_identifier(5, doc),
                 "Sex": demographics.get("gender"),
-                "EducationalStatus": educational_status.get("variableValue"),
+                # "EducationalStatus": educational_status.get("variableValue"),
                 # "DOB": birthdate,
                 # "ArtStartDate": art_start_date,
                 # "LastPickupDate": pharmacyutils.get_last_arv_pickup_date(doc,cutoff_datetime),
@@ -147,7 +151,8 @@ def get_facility_by_datim(datim_code):
 
 # check if document belongs to a facility in ASPIRE states (FCT,Katsina,Nasarawa,Rivers) ignore casing and whitespace
 def is_aspire_state(doc):
-    aspire_states = ["FCT", "KATSINA", "NASARAWA", "RIVERS"]
+    # aspire_states = ["FCT", "KATSINA", "NASARAWA", "RIVERS"]
+    aspire_states = ["NASARAWA"]
     header = demographicsutils.get_message_header(doc)
     datim_code = header.get("facilityDatimCode")
    

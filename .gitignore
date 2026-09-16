@@ -23,3 +23,4 @@ output/
 Extractors/File Exporters/output/*.csv
 *.log
 Extractors/Postgre Importers/*.log
+utils/decryptor.py
