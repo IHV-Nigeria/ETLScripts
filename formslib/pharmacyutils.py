@@ -477,6 +477,11 @@ def get_initial_regimen(doc, cutoff_datetime: Optional[datetime] = None):
     initial_regimen = initial_regimen_obs.get("variableValue") if initial_regimen_obs else None
     return initial_regimen
 
+def get_initial_regimen_line(doc, cutoff_datetime: Optional[datetime] = None):
+    obs = obsutils.get_first_obs(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
+    current_regimen_line = obs.get("variableValue") if obs else None
+    return current_regimen_line
+
 def get_current_regimen_line(doc, cutoff_datetime: Optional[datetime] = None):
     obs = obsutils.get_last_obs_before_date(doc, PHARMACY_FORM_ID, CURRENT_REGIMEN_LINE_CONCEPT_ID, cutoff_datetime)
     current_regimen_line = obs.get("variableValue") if obs else None
